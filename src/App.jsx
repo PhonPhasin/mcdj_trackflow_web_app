@@ -92,6 +92,7 @@ const translations = {
     statusPending: 'รอรับเรื่อง', statusInProgress: 'กำลังดำเนินการ', statusRejected: 'ส่งกลับแก้ไข', statusApproved: 'เสร็จสิ้นแล้ว',
     colClient: 'ชื่อลูกค้า / ชื่องาน *', colType: 'ประเภทงาน', colDue: 'กำหนดส่งงาน', colFa: 'ผู้รับผิดชอบ', colManage: 'จัดการ',
     viewData: 'ดูข้อมูล', totalTasks: 'งานทั้งหมด', clientName: 'ชื่อลูกค้า / ชื่องาน *',
+    policyNumber: 'เลขกรมธรรม์ / เลขที่อ้างอิง', // Added Thai translation
     serviceType: 'ประเภทงาน', dueDate: 'กำหนดส่งงาน', urgency: 'ความเร่งด่วน', normal: 'ปกติ', urgent: 'ด่วน 🔥',
     details: 'รายละเอียดเพิ่มเติม...', attach: 'ถ่ายรูป หรือ แนบไฟล์ PDF', submit: 'ส่งคำขอ', empty: 'ว่างเปล่า',
     personal: 'ส่วนตัว', company: 'บริษัท', assignTask: 'สั่งมอบหมายงาน',
@@ -126,6 +127,7 @@ const translations = {
     statusPending: 'Pending', statusInProgress: 'In Progress', statusRejected: 'Rejected', statusApproved: 'Completed',
     colClient: 'Client / Task *', colType: 'Service Type', colDue: 'Due Date', colFa: 'Assignee', colManage: 'Action',
     viewData: 'View', totalTasks: 'Total Tasks', clientName: 'Client Name *',
+    policyNumber: 'Policy Number / Ref. No', // Added English translation
     serviceType: 'Service Type', dueDate: 'Due Date', urgency: 'Urgency', normal: 'Normal', urgent: 'Urgent 🔥',
     details: 'More details...', attach: 'Upload Photo or PDF', submit: 'Submit', empty: 'Empty',
     personal: 'Personal', company: 'Company', assignTask: 'Assign Task',
@@ -160,6 +162,7 @@ const translations = {
     statusPending: '保留中', statusInProgress: '進行中', statusRejected: '却下', statusApproved: '完了',
     colClient: '顧客 / タスク *', colType: 'サービス', colDue: '期日', colFa: '担当者', colManage: 'アクション',
     viewData: '詳細', totalTasks: '全タスク', clientName: '顧客名 *',
+    policyNumber: '証券番号 / 参照番号', // Added Japanese translation
     serviceType: 'サービス', dueDate: '期日', urgency: '緊急度', normal: '通常', urgent: '緊急 🔥',
     details: '詳細...', attach: '写真またはPDF', submit: '送信', empty: '空',
     personal: '個人', company: '会社', assignTask: 'タスク割り当て',
@@ -208,7 +211,8 @@ export default function App() {
   const [selectedTaskModal, setSelectedTaskModal] = useState(null);
   const [pdfTask, setPdfTask] = useState(null);
   const [isDownloadingInfo, setIsDownloadingInfo] = useState(false);
-  const [showFilesModal, setShowFilesModal] = useState(false); // ควบคุมการแสดง Modal โหลดไฟล์
+  const [isDownloadingImages, setIsDownloadingImages] = useState(false);
+  const [showFilesModal, setShowFilesModal] = useState(false); 
   const [hideImagesForPdf, setHideImagesForPdf] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   
@@ -220,6 +224,7 @@ export default function App() {
   const [signingIn, setSigningIn] = useState(false);
 
   const [clientName, setClientName] = useState("");
+  const [policyNumber, setPolicyNumber] = useState(""); // Added state for policy number
   const [serviceType, setServiceType] = useState(TASK_TYPES[0]);
   const [urgency, setUrgency] = useState("ปกติ"); 
   const [dueDate, setDueDate] = useState("");
@@ -229,7 +234,7 @@ export default function App() {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [assignForm, setAssignForm] = useState({ faUid: "", clientName: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" });
+  const [assignForm, setAssignForm] = useState({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); // Added policyNumber to assignForm
   const [assignFilesToUpload, setAssignFilesToUpload] = useState([]);
   const [assigningTask, setAssigningTask] = useState(false);
 
@@ -410,14 +415,16 @@ export default function App() {
       if (notes.trim()) msgs.push({ text: notes.trim(), senderName: userProfile?.name || 'FA', senderRole: 'FA', timestamp: new Date().toISOString() });
       const taskData = {
         trackingId: generateTrackingId(tasks),
-        clientName: clientName.trim(), serviceType, urgency, dueDate,
+        clientName: clientName.trim(),
+        policyNumber: policyNumber.trim(), // Save policy number
+        serviceType, urgency, dueDate,
         attachments, status: "Pending", formMode: frontFormMode,
         faUid: user.uid, faName: userProfile?.name || 'FA',
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         messages: msgs
       };
       await addDoc(collection(db, 'tasks'), taskData);
-      setClientName(""); setNotes(""); setDueDate(""); setFilesToUpload([]); setUploadProgress(0);
+      setClientName(""); setPolicyNumber(""); setNotes(""); setDueDate(""); setFilesToUpload([]); setUploadProgress(0); // Clear policy number
       showToast("ยื่นงานสำเร็จเรียบร้อย!");
     } catch (e) { showToast("เกิดข้อผิดพลาดในการยื่นงาน", "error"); }
     finally { setSubmittingTask(false); }
@@ -437,14 +444,16 @@ export default function App() {
       }
       const taskData = {
         trackingId: generateTrackingId(tasks),
-        clientName: assignForm.clientName.trim(), serviceType: assignForm.serviceType, urgency: assignForm.urgency, dueDate: assignForm.dueDate,
+        clientName: assignForm.clientName.trim(),
+        policyNumber: assignForm.policyNumber.trim(), // Save assigned policy number
+        serviceType: assignForm.serviceType, urgency: assignForm.urgency, dueDate: assignForm.dueDate,
         attachments, status: "Pending", formMode: 'backend',
         faUid: targetFa.uid, faName: targetFa.name,
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         messages: msgs
       };
       await addDoc(collection(db, 'tasks'), taskData);
-      setAssignForm({ faUid: "", clientName: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" });
+      setAssignForm({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); // Clear policy number
       setAssignFilesToUpload([]); setShowAssignModal(false); setUploadProgress(0);
       showToast("มอบหมายงานสำเร็จ!");
     } catch (e) { showToast("เกิดข้อผิดพลาดในการมอบหมายงาน", "error"); }
@@ -531,6 +540,7 @@ export default function App() {
 
     return list.filter(t => {
       const matchSearch = (t.clientName||'').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (t.policyNumber||'').toLowerCase().includes(searchQuery.toLowerCase()) || // Search by policy number
                           (t.faName||'').toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (t.trackingId||'').toLowerCase().includes(searchQuery.toLowerCase());
       const matchFa = selectedFaFilter === "all" || t.faUid === selectedFaFilter;
@@ -904,6 +914,71 @@ export default function App() {
     }, 500);
   };
 
+  const handleDownloadAllFiles = async () => {
+    setIsDownloadingImages(true); 
+    try {
+      const filesToDownload = [];
+      
+      // 1. ค้นหา URL จากไฟล์แนบทั้งหมด
+      if (pdfTask.attachments) {
+        pdfTask.attachments.forEach(f => {
+          filesToDownload.push({ url: f.url, name: f.name || `attachment_${Date.now()}` });
+        });
+      }
+      
+      // 2. ค้นหา URL จากไฟล์แนบในแชททั้งหมด
+      if (pdfTask.messages) {
+        pdfTask.messages.forEach(m => {
+          if (m.attachmentUrl) {
+            filesToDownload.push({ url: m.attachmentUrl, name: m.attachmentName || `chat_file_${Date.now()}` });
+          }
+        });
+      }
+
+      if (filesToDownload.length === 0) {
+        showToast("ไม่พบไฟล์แนบในงานนี้", "error");
+        setIsDownloadingImages(false);
+        return;
+      }
+
+      showToast(`กำลังเตรียมดาวน์โหลดไฟล์ทั้งหมด ${filesToDownload.length} ไฟล์...`);
+
+      // วนลูปดาวน์โหลดทีละไฟล์
+      for (let i = 0; i < filesToDownload.length; i++) {
+        const file = filesToDownload[i];
+        try {
+          // ดึงข้อมูลไฟล์เพื่อแก้ปัญหาเรื่องชื่อไฟล์ไม่ตรงและให้เซฟลงเครื่องแทนการเปิด Tab ใหม่
+          const response = await fetch(file.url);
+          if (!response.ok) throw new Error("Network response was not ok");
+          const blob = await response.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+
+          // หน่วงเวลา 500ms ระหว่างไฟล์ ป้องกันเบราว์เซอร์บล็อกการโหลดไฟล์รัวๆ
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (err) {
+          console.warn("Fetch failed, fallback to open window:", file.url, err);
+          // หากติด CORS ให้ใช้วิธีเปิดไฟล์ใน Tab ใหม่แทน
+          window.open(file.url, '_blank');
+        }
+      }
+      
+      showToast("ดาวน์โหลดไฟล์แนบสำเร็จ");
+    } catch (err) {
+      console.error(err);
+      showToast("เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์แนบ", "error");
+    } finally {
+      setIsDownloadingImages(false);
+    }
+  };
+
   const allDownloadableFiles = useMemo(() => {
     if (!pdfTask) return [];
     const files = [];
@@ -931,12 +1006,12 @@ export default function App() {
            <button onClick={() => { setPdfTask(null); setActiveTab('front'); }} className="text-gray-300 hover:text-white flex items-center gap-2 text-xs sm:text-sm font-light transition-colors"><ChevronLeft className="w-4 h-4"/> <span className="hidden sm:inline">{t('back')}</span></button>
            <span className="text-gray-300 text-[10px] sm:text-xs font-light hidden sm:flex items-center gap-2"><FileText className="w-4 h-4 text-gray-500"/> {t('pdfReport')}</span>
            <div className="flex gap-2 sm:gap-3">
-             <button onClick={handleDownloadInfoPDF} disabled={isDownloadingInfo} className="bg-white text-[#161A22] border border-gray-200 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50">
+             <button onClick={handleDownloadInfoPDF} disabled={isDownloadingInfo || isDownloadingImages} className="bg-white text-[#161A22] border border-gray-200 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50">
                 {isDownloadingInfo ? <Loader2 className="w-4 h-4 animate-spin"/> : <FileText className="w-4 h-4"/>}
                 <span className="hidden sm:inline">โหลดรายงาน (ตัวหนังสือ)</span>
                 <span className="sm:hidden">รายงาน</span>
              </button>
-             <button onClick={() => setShowFilesModal(true)} disabled={isDownloadingInfo} className="bg-[#DEFF00] text-[#161A22] px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md transition-all disabled:opacity-50">
+             <button onClick={() => setShowFilesModal(true)} disabled={isDownloadingInfo || isDownloadingImages} className="bg-[#DEFF00] text-[#161A22] px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md transition-all disabled:opacity-50">
                 <Download className="w-4 h-4"/>
                 <span className="hidden sm:inline">โหลดไฟล์แนบทั้งหมด</span>
                 <span className="sm:hidden">โหลดไฟล์</span>
@@ -1004,6 +1079,12 @@ export default function App() {
                       <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('clientName')}</p>
                       <p className="text-[15px] font-semibold text-gray-800 break-words leading-relaxed">{task.clientName}</p>
                   </div>
+                  {task.policyNumber && (
+                    <div className="w-full bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm mb-3">
+                        <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('policyNumber')}</p>
+                        <p className="text-[15px] font-semibold text-gray-800 break-words leading-relaxed">{task.policyNumber}</p>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-3 w-full">
                       <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
                           <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('currentStatus')}</p>
@@ -1188,6 +1269,9 @@ export default function App() {
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
                     <div className="space-y-4 text-sm font-light">
+                       {selectedTaskModal.policyNumber && (
+                         <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('policyNumber')}</span><span className="text-gray-800">{selectedTaskModal.policyNumber}</span></div>
+                       )}
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('serviceType')}</span><span className="text-gray-800">{t(selectedTaskModal.serviceType)}</span></div>
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('colFa')}</span><span className="text-gray-800">{selectedTaskModal.faName}</span></div>
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('dueDate')}</span><span className="text-orange-600">{selectedTaskModal.dueDate ? new Date(selectedTaskModal.dueDate).toLocaleDateString('th-TH') : '-'}</span></div>
@@ -1309,6 +1393,10 @@ export default function App() {
                   <input required type="text" value={assignForm.clientName} onChange={e=>setAssignForm({...assignForm, clientName:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none" placeholder={t('clientName')} />
                 </div>
                 <div>
+                  <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('policyNumber')}</label>
+                  <input type="text" value={assignForm.policyNumber} onChange={e=>setAssignForm({...assignForm, policyNumber:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none" placeholder={t('policyNumber')} />
+                </div>
+                <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('serviceType')}</label>
                   <select value={assignForm.serviceType} onChange={e=>setAssignForm({...assignForm, serviceType:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light appearance-none outline-none">{TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}</select>
                 </div>
@@ -1377,6 +1465,7 @@ export default function App() {
 
                 <form onSubmit={handleSubmitTask} className="space-y-4 sm:space-y-5">
                   <div><input required type="text" value={clientName} onChange={e=>setClientName(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 outline-none focus:border-[#DEFF00] transition-colors" placeholder={t('clientName')} /></div>
+                  <div><input type="text" value={policyNumber} onChange={e=>setPolicyNumber(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 outline-none focus:border-[#DEFF00] transition-colors" placeholder={t('policyNumber')} /></div>
                   <div>
                     <select value={serviceType} onChange={e=>setServiceType(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 appearance-none outline-none focus:border-[#DEFF00] transition-colors">
                       {TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}
