@@ -92,7 +92,7 @@ const translations = {
     statusPending: 'รอรับเรื่อง', statusInProgress: 'กำลังดำเนินการ', statusRejected: 'ส่งกลับแก้ไข', statusApproved: 'เสร็จสิ้นแล้ว',
     colClient: 'ชื่อลูกค้า / ชื่องาน *', colType: 'ประเภทงาน', colDue: 'กำหนดส่งงาน', colFa: 'ผู้รับผิดชอบ', colManage: 'จัดการ',
     viewData: 'ดูข้อมูล', totalTasks: 'งานทั้งหมด', clientName: 'ชื่อลูกค้า / ชื่องาน *',
-    policyNumber: 'เลขกรมธรรม์ / เลขที่อ้างอิง', // Added Thai translation
+    policyNumber: 'เลขกรมธรรม์ / เลขที่อ้างอิง', 
     serviceType: 'ประเภทงาน', dueDate: 'กำหนดส่งงาน', urgency: 'ความเร่งด่วน', normal: 'ปกติ', urgent: 'ด่วน 🔥',
     details: 'รายละเอียดเพิ่มเติม...', attach: 'ถ่ายรูป หรือ แนบไฟล์ PDF', submit: 'ส่งคำขอ', empty: 'ว่างเปล่า',
     personal: 'ส่วนตัว', company: 'บริษัท', assignTask: 'สั่งมอบหมายงาน',
@@ -127,7 +127,7 @@ const translations = {
     statusPending: 'Pending', statusInProgress: 'In Progress', statusRejected: 'Rejected', statusApproved: 'Completed',
     colClient: 'Client / Task *', colType: 'Service Type', colDue: 'Due Date', colFa: 'Assignee', colManage: 'Action',
     viewData: 'View', totalTasks: 'Total Tasks', clientName: 'Client Name *',
-    policyNumber: 'Policy Number / Ref. No', // Added English translation
+    policyNumber: 'Policy Number / Ref. No', 
     serviceType: 'Service Type', dueDate: 'Due Date', urgency: 'Urgency', normal: 'Normal', urgent: 'Urgent 🔥',
     details: 'More details...', attach: 'Upload Photo or PDF', submit: 'Submit', empty: 'Empty',
     personal: 'Personal', company: 'Company', assignTask: 'Assign Task',
@@ -162,7 +162,7 @@ const translations = {
     statusPending: '保留中', statusInProgress: '進行中', statusRejected: '却下', statusApproved: '完了',
     colClient: '顧客 / タスク *', colType: 'サービス', colDue: '期日', colFa: '担当者', colManage: 'アクション',
     viewData: '詳細', totalTasks: '全タスク', clientName: '顧客名 *',
-    policyNumber: '証券番号 / 参照番号', // Added Japanese translation
+    policyNumber: '証券番号 / 参照番号', 
     serviceType: 'サービス', dueDate: '期日', urgency: '緊急度', normal: '通常', urgent: '緊急 🔥',
     details: '詳細...', attach: '写真またはPDF', submit: '送信', empty: '空',
     personal: '個人', company: '会社', assignTask: 'タスク割り当て',
@@ -211,7 +211,6 @@ export default function App() {
   const [selectedTaskModal, setSelectedTaskModal] = useState(null);
   const [pdfTask, setPdfTask] = useState(null);
   const [isDownloadingInfo, setIsDownloadingInfo] = useState(false);
-  const [isDownloadingImages, setIsDownloadingImages] = useState(false);
   const [showFilesModal, setShowFilesModal] = useState(false); 
   const [hideImagesForPdf, setHideImagesForPdf] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
@@ -219,12 +218,15 @@ export default function App() {
   const [frontFormMode, setFrontFormMode] = useState("backend"); 
   const [frontListMode, setFrontListMode] = useState("backend");
 
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+  const [isUploadingDmFile, setIsUploadingDmFile] = useState(false);
+  const prevDmCountRef = useRef(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signingIn, setSigningIn] = useState(false);
 
   const [clientName, setClientName] = useState("");
-  const [policyNumber, setPolicyNumber] = useState(""); // Added state for policy number
+  const [policyNumber, setPolicyNumber] = useState(""); 
   const [serviceType, setServiceType] = useState(TASK_TYPES[0]);
   const [urgency, setUrgency] = useState("ปกติ"); 
   const [dueDate, setDueDate] = useState("");
@@ -234,7 +236,7 @@ export default function App() {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [assignForm, setAssignForm] = useState({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); // Added policyNumber to assignForm
+  const [assignForm, setAssignForm] = useState({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); 
   const [assignFilesToUpload, setAssignFilesToUpload] = useState([]);
   const [assigningTask, setAssigningTask] = useState(false);
 
@@ -314,8 +316,12 @@ export default function App() {
       setTasks(taskList);
       if (selectedTaskModal) {
         const updated = taskList.find(t => t.id === selectedTaskModal.id);
+        const isNewMessage = updated?.messages?.length !== selectedTaskModal?.messages?.length;
         setSelectedTaskModal(updated || null);
-        setTimeout(() => taskChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        
+        if (isNewMessage) {
+          setTimeout(() => taskChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        }
       }
       if (pdfTask) {
         const updated = taskList.find(t => t.id === pdfTask.id);
@@ -338,7 +344,12 @@ export default function App() {
     const unSubDm = onSnapshot(qMsg, (snap) => {
       let list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() }));
       setDmMessages(list);
-      setTimeout(() => dmChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      
+      if (list.length !== prevDmCountRef.current) {
+        setTimeout(() => dmChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        prevDmCountRef.current = list.length;
+      }
+
       if (isDmOpen && dmView === 'chat') {
         list.forEach(m => {
           if (m.senderId !== user.uid && !m.isRead) updateDoc(doc(db, `chats/${chatId}/messages`, m.id), { isRead: true });
@@ -416,7 +427,7 @@ export default function App() {
       const taskData = {
         trackingId: generateTrackingId(tasks),
         clientName: clientName.trim(),
-        policyNumber: policyNumber.trim(), // Save policy number
+        policyNumber: policyNumber.trim(), 
         serviceType, urgency, dueDate,
         attachments, status: "Pending", formMode: frontFormMode,
         faUid: user.uid, faName: userProfile?.name || 'FA',
@@ -424,7 +435,7 @@ export default function App() {
         messages: msgs
       };
       await addDoc(collection(db, 'tasks'), taskData);
-      setClientName(""); setPolicyNumber(""); setNotes(""); setDueDate(""); setFilesToUpload([]); setUploadProgress(0); // Clear policy number
+      setClientName(""); setPolicyNumber(""); setNotes(""); setDueDate(""); setFilesToUpload([]); setUploadProgress(0); 
       showToast("ยื่นงานสำเร็จเรียบร้อย!");
     } catch (e) { showToast("เกิดข้อผิดพลาดในการยื่นงาน", "error"); }
     finally { setSubmittingTask(false); }
@@ -445,7 +456,7 @@ export default function App() {
       const taskData = {
         trackingId: generateTrackingId(tasks),
         clientName: assignForm.clientName.trim(),
-        policyNumber: assignForm.policyNumber.trim(), // Save assigned policy number
+        policyNumber: assignForm.policyNumber.trim(), 
         serviceType: assignForm.serviceType, urgency: assignForm.urgency, dueDate: assignForm.dueDate,
         attachments, status: "Pending", formMode: 'backend',
         faUid: targetFa.uid, faName: targetFa.name,
@@ -453,7 +464,7 @@ export default function App() {
         messages: msgs
       };
       await addDoc(collection(db, 'tasks'), taskData);
-      setAssignForm({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); // Clear policy number
+      setAssignForm({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); 
       setAssignFilesToUpload([]); setShowAssignModal(false); setUploadProgress(0);
       showToast("มอบหมายงานสำเร็จ!");
     } catch (e) { showToast("เกิดข้อผิดพลาดในการมอบหมายงาน", "error"); }
@@ -502,6 +513,25 @@ export default function App() {
     } catch (e) { showToast("ส่งข้อความไม่สำเร็จ", "error"); }
   };
 
+  const handleUploadDmFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !activeChatUser) return;
+    if (file.size > 5 * 1024 * 1024) return showToast("ไฟล์มีขนาดใหญ่เกิน 5MB", "error");
+    setIsUploadingDmFile(true);
+    try {
+      const chatId = getChatId(user.uid, activeChatUser.uid);
+      const refName = `chat_attachments/${Date.now()}_${file.name}`;
+      const uploadTask = uploadBytesResumable(ref(storage, refName), file);
+      const url = await new Promise((res, rej) => { uploadTask.on('state_changed', null, rej, async () => res(await getDownloadURL(uploadTask.snapshot.ref))); });
+      
+      await addDoc(collection(db, `chats/${chatId}/messages`), { 
+         text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type,
+         senderId: user.uid, senderName: userProfile?.name, timestamp: new Date().toISOString(), isRead: false 
+      });
+    } catch (err) { showToast("อัปโหลดไฟล์ไม่สำเร็จ", "error"); } 
+    finally { setIsUploadingDmFile(false); e.target.value = null; }
+  };
+
   const handleAddEventSubmit = async (e) => {
     e.preventDefault();
     if (!eventForm.title || !selectedDateStr) return;
@@ -540,7 +570,7 @@ export default function App() {
 
     return list.filter(t => {
       const matchSearch = (t.clientName||'').toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          (t.policyNumber||'').toLowerCase().includes(searchQuery.toLowerCase()) || // Search by policy number
+                          (t.policyNumber||'').toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (t.faName||'').toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (t.trackingId||'').toLowerCase().includes(searchQuery.toLowerCase());
       const matchFa = selectedFaFilter === "all" || t.faUid === selectedFaFilter;
@@ -581,7 +611,7 @@ export default function App() {
   const renderToast = () => {
     if (!toastMessage) return null;
     return (
-      <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[1000] animate-[fadeIn_0.3s_ease-out]">
+      <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[3000] animate-[fadeIn_0.3s_ease-out]">
         <div className={`flex items-center gap-3 px-6 py-3 rounded-full shadow-[0_4px_20px_rgb(0,0,0,0.08)] font-light text-sm bg-white/95 backdrop-blur-md border border-gray-100 ${toastMessage.type === 'error' ? 'text-red-600' : 'text-gray-800'}`}>
           {toastMessage.type === 'error' ? <AlertTriangle className="w-4 h-4 shrink-0" /> : <CheckCircle className="w-4 h-4 shrink-0 text-[#DEFF00]" />}
           {toastMessage.message}
@@ -750,7 +780,7 @@ export default function App() {
         </div>
         
         {showEventModal && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[2010] flex items-center justify-center p-4">
              <div className="absolute inset-0 bg-gray-900/20 backdrop-blur-sm" onClick={()=>setShowEventModal(false)}></div>
              <div className="relative bg-white p-6 rounded-3xl shadow-xl w-full max-w-sm animate-[fadeIn_0.2s_ease-out]">
                <h3 className="text-sm font-medium mb-4 text-gray-800 flex justify-between items-center">
@@ -820,7 +850,17 @@ export default function App() {
                   const isMe = msg.senderId === user.uid;
                   return (
                     <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] font-light max-w-[85%] ${isMe ? 'bg-[#DEFF00] text-[#161A22] rounded-tr-sm shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm shadow-sm'}`}>{msg.text}</div>
+                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] font-light max-w-[85%] ${isMe ? 'bg-[#DEFF00] text-[#161A22] rounded-tr-sm shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm shadow-sm'}`}>
+                        {msg.text}
+                        {msg.attachmentUrl && (
+                          <div className="mt-2 block pb-1">
+                            {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
+                              <img src={msg.attachmentUrl} alt="attachment" onClick={() => setFullscreenImage(msg.attachmentUrl)} className="max-h-[150px] w-auto object-contain rounded-lg shadow-sm border border-black/5 cursor-pointer hover:opacity-90 transition-opacity" /> :
+                              <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white/40"><Paperclip className="w-3 h-3"/> {msg.attachmentName || t('downloadAttach')}</a>
+                            }
+                          </div>
+                        )}
+                      </div>
                       <span className="text-[9px] text-gray-400 mt-1 mx-1 font-light">{new Date(msg.timestamp).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                   );
@@ -828,9 +868,13 @@ export default function App() {
               }
               <div ref={dmChatEndRef} />
             </div>
-            <form onSubmit={handleSendDM} className="p-3 bg-white border-t border-gray-100 flex gap-2">
-              <input type="text" value={dmInput} onChange={e=>setDmInput(e.target.value)} placeholder={t('typeMessage')} className="flex-1 bg-gray-50 px-4 py-2.5 text-sm font-light rounded-full outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200" />
-              <button type="submit" disabled={!dmInput.trim()} className="w-10 h-10 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50"><Send className="w-4 h-4 ml-0.5 stroke-[1.5]"/></button>
+            <form onSubmit={handleSendDM} className="p-2.5 bg-white border-t border-gray-100 flex gap-2 items-center">
+              <label className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full cursor-pointer transition-colors shrink-0" title={t('attachFileText')}>
+                 {isUploadingDmFile ? <Loader2 className="w-4 h-4 animate-spin"/> : <ImageIcon className="w-4 h-4 stroke-[1.5]" />}
+                 <input type="file" className="hidden" accept="image/*,application/pdf" onChange={handleUploadDmFile} disabled={isUploadingDmFile} />
+              </label>
+              <input type="text" value={dmInput} onChange={e=>setDmInput(e.target.value)} placeholder={t('typeMessage')} className="flex-1 bg-gray-50 px-4 py-2 text-sm font-light rounded-full outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200" />
+              <button type="submit" disabled={!dmInput.trim()} className="w-9 h-9 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50"><Send className="w-3.5 h-3.5 ml-0.5 stroke-[1.5]"/></button>
             </form>
           </>
         )}
@@ -914,71 +958,6 @@ export default function App() {
     }, 500);
   };
 
-  const handleDownloadAllFiles = async () => {
-    setIsDownloadingImages(true); 
-    try {
-      const filesToDownload = [];
-      
-      // 1. ค้นหา URL จากไฟล์แนบทั้งหมด
-      if (pdfTask.attachments) {
-        pdfTask.attachments.forEach(f => {
-          filesToDownload.push({ url: f.url, name: f.name || `attachment_${Date.now()}` });
-        });
-      }
-      
-      // 2. ค้นหา URL จากไฟล์แนบในแชททั้งหมด
-      if (pdfTask.messages) {
-        pdfTask.messages.forEach(m => {
-          if (m.attachmentUrl) {
-            filesToDownload.push({ url: m.attachmentUrl, name: m.attachmentName || `chat_file_${Date.now()}` });
-          }
-        });
-      }
-
-      if (filesToDownload.length === 0) {
-        showToast("ไม่พบไฟล์แนบในงานนี้", "error");
-        setIsDownloadingImages(false);
-        return;
-      }
-
-      showToast(`กำลังเตรียมดาวน์โหลดไฟล์ทั้งหมด ${filesToDownload.length} ไฟล์...`);
-
-      // วนลูปดาวน์โหลดทีละไฟล์
-      for (let i = 0; i < filesToDownload.length; i++) {
-        const file = filesToDownload[i];
-        try {
-          // ดึงข้อมูลไฟล์เพื่อแก้ปัญหาเรื่องชื่อไฟล์ไม่ตรงและให้เซฟลงเครื่องแทนการเปิด Tab ใหม่
-          const response = await fetch(file.url);
-          if (!response.ok) throw new Error("Network response was not ok");
-          const blob = await response.blob();
-          const blobUrl = window.URL.createObjectURL(blob);
-          
-          const a = document.createElement('a');
-          a.href = blobUrl;
-          a.download = file.name;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(blobUrl);
-
-          // หน่วงเวลา 500ms ระหว่างไฟล์ ป้องกันเบราว์เซอร์บล็อกการโหลดไฟล์รัวๆ
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (err) {
-          console.warn("Fetch failed, fallback to open window:", file.url, err);
-          // หากติด CORS ให้ใช้วิธีเปิดไฟล์ใน Tab ใหม่แทน
-          window.open(file.url, '_blank');
-        }
-      }
-      
-      showToast("ดาวน์โหลดไฟล์แนบสำเร็จ");
-    } catch (err) {
-      console.error(err);
-      showToast("เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์แนบ", "error");
-    } finally {
-      setIsDownloadingImages(false);
-    }
-  };
-
   const allDownloadableFiles = useMemo(() => {
     if (!pdfTask) return [];
     const files = [];
@@ -1006,12 +985,12 @@ export default function App() {
            <button onClick={() => { setPdfTask(null); setActiveTab('front'); }} className="text-gray-300 hover:text-white flex items-center gap-2 text-xs sm:text-sm font-light transition-colors"><ChevronLeft className="w-4 h-4"/> <span className="hidden sm:inline">{t('back')}</span></button>
            <span className="text-gray-300 text-[10px] sm:text-xs font-light hidden sm:flex items-center gap-2"><FileText className="w-4 h-4 text-gray-500"/> {t('pdfReport')}</span>
            <div className="flex gap-2 sm:gap-3">
-             <button onClick={handleDownloadInfoPDF} disabled={isDownloadingInfo || isDownloadingImages} className="bg-white text-[#161A22] border border-gray-200 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50">
+             <button onClick={handleDownloadInfoPDF} disabled={isDownloadingInfo} className="bg-white text-[#161A22] border border-gray-200 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50">
                 {isDownloadingInfo ? <Loader2 className="w-4 h-4 animate-spin"/> : <FileText className="w-4 h-4"/>}
                 <span className="hidden sm:inline">โหลดรายงาน (ตัวหนังสือ)</span>
                 <span className="sm:hidden">รายงาน</span>
              </button>
-             <button onClick={() => setShowFilesModal(true)} disabled={isDownloadingInfo || isDownloadingImages} className="bg-[#DEFF00] text-[#161A22] px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md transition-all disabled:opacity-50">
+             <button onClick={() => setShowFilesModal(true)} disabled={isDownloadingInfo} className="bg-[#DEFF00] text-[#161A22] px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md transition-all disabled:opacity-50">
                 <Download className="w-4 h-4"/>
                 <span className="hidden sm:inline">โหลดไฟล์แนบทั้งหมด</span>
                 <span className="sm:hidden">โหลดไฟล์</span>
@@ -1020,7 +999,7 @@ export default function App() {
         </div>
 
         {showFilesModal && (
-          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[2010] flex items-center justify-center p-4">
              <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setShowFilesModal(false)}></div>
              <div className="relative bg-white p-6 rounded-3xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col animate-[fadeIn_0.2s_ease-out]">
                 <div className="flex justify-between items-center mb-5 border-b border-gray-100 pb-3">
@@ -1244,7 +1223,7 @@ export default function App() {
       {renderDMWidget()}
 
       {selectedTaskModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
           <div className="relative w-full h-full sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
             
             <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 sm:bg-white z-10 sticky top-0 shrink-0">
@@ -1264,8 +1243,9 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 custom-scrollbar">
-               <div className="flex flex-col space-y-6">
+            <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 sm:p-8 flex flex-col md:flex-row gap-6 sm:gap-8 custom-scrollbar">
+               {/* ฝั่งซ้าย: ข้อมูลงาน */}
+               <div className="w-full md:w-1/2 flex flex-col space-y-6 md:overflow-y-auto custom-scrollbar md:pr-4 pb-2 md:pb-0">
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
                     <div className="space-y-4 text-sm font-light">
@@ -1329,7 +1309,8 @@ export default function App() {
                   )}
                </div>
 
-               <div className="flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[400px] sm:h-full min-h-[400px]">
+               {/* ฝั่งขวา: แชท */}
+               <div className="w-full md:w-1/2 flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[500px] md:h-full shrink-0">
                   <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('chatHistory')}</h4>
                   <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {(!selectedTaskModal.messages || selectedTaskModal.messages.length===0) ? <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-60"><MessageSquare className="w-8 h-8 mb-2 stroke-[1.5]"/><span className="text-xs font-light">{t('noChatHistory')}</span></div> : 
@@ -1344,7 +1325,7 @@ export default function App() {
                                 <div className="mt-3 block pb-1">
                                   {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
                                     <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3">
-                                        <img src={msg.attachmentUrl} alt="attachment" className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm" />
+                                        <img src={msg.attachmentUrl} alt="attachment" onClick={() => setFullscreenImage(msg.attachmentUrl)} className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm cursor-pointer hover:opacity-90 transition-opacity" />
                                     </div> :
                                     <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white"><Paperclip className="w-3.5 h-3.5"/> {msg.attachmentName || t('downloadAttach')}</a>
                                   }
@@ -1373,7 +1354,7 @@ export default function App() {
       )}
 
       {showAssignModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#161A22]/20 backdrop-blur-sm" onClick={() => setShowAssignModal(false)}></div>
           <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-[0_10px_50px_rgba(0,0,0,0.1)] overflow-hidden animate-[fadeIn_0.2s_ease-out]">
              <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center">
@@ -1402,7 +1383,7 @@ export default function App() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
-                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('typeMessage')}></textarea>
+                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('orderDetails')}></textarea>
                 </div>
                 <button type="submit" disabled={assigningTask} className="w-full bg-[#161A22] text-[#DEFF00] py-4 rounded-full font-medium text-sm hover:bg-black transition-colors mt-2 flex justify-center items-center gap-2">
                   {assigningTask ? <><Loader2 className="w-4 h-4 animate-spin"/> กำลังดำเนินการ...</> : t('confirmAssign')}
@@ -1670,6 +1651,16 @@ export default function App() {
         )}
 
       </div>
+
+      {/* เพิ่มหน้าต่าง Modal สำหรับดูรูปภาพขนาดใหญ่ */}
+      {fullscreenImage && (
+        <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setFullscreenImage(null)}>
+          <button onClick={() => setFullscreenImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"><X className="w-6 h-6"/></button>
+          <img src={fullscreenImage} alt="fullscreen" className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)]" onClick={(e) => e.stopPropagation()} />
+          <a href={fullscreenImage} target="_blank" rel="noopener noreferrer" className="absolute bottom-8 bg-white text-gray-900 px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-gray-100 transition-colors shadow-lg" onClick={e=>e.stopPropagation()}><Download className="w-4 h-4"/> เปิดรูปต้นฉบับ / บันทึกภาพ</a>
+        </div>
+      )}
+
     </div>
   );
 }
