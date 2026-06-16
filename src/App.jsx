@@ -1406,6 +1406,16 @@ export default function App() {
                   <select value={assignForm.serviceType} onChange={e=>setAssignForm({...assignForm, serviceType:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light appearance-none outline-none">{TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}</select>
                 </div>
                 <div>
+                  <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('dueDate')}</label>
+                  <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} value={assignForm.dueDate} onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00] transition-colors" placeholder={t('dueDate')} />
+                </div>
+                <div>
+                  <div className="flex bg-gray-50 border border-gray-100 p-1.5 rounded-2xl">
+                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency: 'ปกติ'})} className={`flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors ${assignForm.urgency==='ปกติ'?'bg-white text-gray-800 shadow-sm':'bg-transparent text-gray-400'}`}>{t('normal')}</button>
+                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency: 'ด่วน'})} className={`flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors ${assignForm.urgency==='ด่วน'?'bg-red-50 text-red-600 shadow-sm':'bg-transparent text-gray-400'}`}>{t('urgent')}</button>
+                  </div>
+                </div>
+                <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
                   <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('orderDetails')}></textarea>
                 </div>
@@ -1675,16 +1685,6 @@ export default function App() {
         )}
 
       </div>
-
-      {/* เพิ่มหน้าต่าง Modal สำหรับดูรูปภาพขนาดใหญ่ */}
-      {fullscreenImage && (
-        <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setFullscreenImage(null)}>
-          <button onClick={() => setFullscreenImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"><X className="w-6 h-6"/></button>
-          <img src={fullscreenImage} alt="fullscreen" className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)]" onClick={(e) => e.stopPropagation()} />
-          <a href={fullscreenImage} target="_blank" rel="noopener noreferrer" className="absolute bottom-8 bg-white text-gray-900 px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-gray-100 transition-colors shadow-lg" onClick={e=>e.stopPropagation()}><Download className="w-4 h-4"/> เปิดรูปต้นฉบับ / บันทึกภาพ</a>
-        </div>
-      )}
-
     </div>
   );
 }
