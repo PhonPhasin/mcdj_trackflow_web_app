@@ -33,16 +33,16 @@ const storage = getStorage(app);
 const TASK_TYPES = [
   'พิจารณาปีแรก ประกันรายเดี่ยว',
   'พิจารณาปีแรก ประกันกลุ่ม',
-  'พิจารณาปีต่อประกันรายเดี่ยว',
-  'พิจารณาปีต่อประกันกลุ่ม',
+  'พิจารณาปีต่อประกันรายเดี่ยว', // Added
+  'พิจารณาปีต่อประกันกลุ่ม', // Added
   'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
-  'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
+  'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม', // Added
   'ติดตามเอกสาร AIA',
   'ติดตาม ประกันวินาศภัย',
   'ติดตาม อสังหาริมทรัพย์',
-  'ต่อใบอนุญาต',
-  'แจ้งเตือน CPD',
-  'แจ้งเตือนผลงาน MOC',
+  'ต่อใบอนุญาต', // Added
+  'แจ้งเตือน CPD', // Added
+  'แจ้งเตือนผลงาน MOC', // Added
   'อื่นๆ'
 ];
 
@@ -113,16 +113,16 @@ const translations = {
     dashboard: 'แดชบอร์ด', deleteTask: 'ลบงานนี้', confirmDelete: 'ยืนยันการลบ?', cancel: 'ยกเลิก', deletePermanent: 'ลบถาวร',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'พิจารณาปีแรก ประกันรายเดี่ยว',
     'พิจารณาปีแรก ประกันกลุ่ม': 'พิจารณาปีแรก ประกันกลุ่ม',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'พิจารณาปีต่อประกันรายเดี่ยว',
-    'พิจารณาปีต่อประกันกลุ่ม': 'พิจารณาปีต่อประกันกลุ่ม',
+    'พิจารณาปีต่อประกันรายเดี่ยว': 'พิจารณาปีต่อประกันรายเดี่ยว', // Added
+    'พิจารณาปีต่อประกันกลุ่ม': 'พิจารณาปีต่อประกันกลุ่ม', // Added
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม', // Added
     'ติดตามเอกสาร AIA': 'ติดตามเอกสาร AIA',
     'ติดตาม ประกันวินาศภัย': 'ติดตาม ประกันวินาศภัย',
     'ติดตาม อสังหาริมทรัพย์': 'ติดตาม อสังหาริมทรัพย์',
-    'ต่อใบอนุญาต': 'ต่อใบอนุญาต',
-    'แจ้งเตือน CPD': 'แจ้งเตือน CPD',
-    'แจ้งเตือนผลงาน MOC': 'แจ้งเตือนผลงาน MOC',
+    'ต่อใบอนุญาต': 'ต่อใบอนุญาต', // Added
+    'แจ้งเตือน CPD': 'แจ้งเตือน CPD', // Added
+    'แจ้งเตือนผลงาน MOC': 'แจ้งเตือนผลงาน MOC', // Added
     'อื่นๆ': 'อื่นๆ',
     sun: 'อา', mon: 'จ', tue: 'อ', wed: 'พ', thu: 'พฤ', fri: 'ศ', sat: 'ส',
     month01: 'มกราคม', month02: 'กุมภาพันธ์', month03: 'มีนาคม', month04: 'เมษายน', month05: 'พฤษภาคม', month06: 'มิถุนายน', month07: 'กรกฎาคม', month08: 'สิงหาคม', month09: 'กันยายน', month10: 'ตุลาคม', month11: 'พฤศจิกายน', month12: 'ธันวาคม',
@@ -154,16 +154,16 @@ const translations = {
     dashboard: 'Dashboard', deleteTask: 'Delete Task', confirmDelete: 'Confirm Delete?', cancel: 'Cancel', deletePermanent: 'Delete Permanent',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'First Year - Individual Life',
     'พิจารณาปีแรก ประกันกลุ่ม': 'First Year - Group Life',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'Renewal - Individual Life',
-    'พิจารณาปีต่อประกันกลุ่ม': 'Renewal - Group Life',
+    'พิจารณาปีต่อประกันรายเดี่ยว': 'Renewal - Individual Life', // Added
+    'พิจารณาปีต่อประกันกลุ่ม': 'Renewal - Group Life', // Added
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'Claim - Group / Individual',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'Follow up Docs - Group / Individual',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'Follow up Docs - Ind/Group', // Added
     'ติดตามเอกสาร AIA': 'Follow up AIA Docs',
     'ติดตาม ประกันวินาศภัย': 'Follow up Non-Life Insurance',
     'ติดตาม อสังหาริมทรัพย์': 'Follow up Real Estate',
-    'ต่อใบอนุญาต': 'License Renewal',
-    'แจ้งเตือน CPD': 'CPD Alert',
-    'แจ้งเตือนผลงาน MOC': 'MOC Alert',
+    'ต่อใบอนุญาต': 'License Renewal', // Added
+    'แจ้งเตือน CPD': 'CPD Alert', // Added
+    'แจ้งเตือนผลงาน MOC': 'MOC Alert', // Added
     'อื่นๆ': 'Others',
     sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
     month01: 'January', month02: 'February', month03: 'March', month04: 'April', month05: 'May', month06: 'June', month07: 'July', month08: 'August', month09: 'September', month10: 'October', month11: 'November', month12: 'December',
@@ -195,16 +195,16 @@ const translations = {
     dashboard: 'ダッシュボード', deleteTask: 'タスク削除', confirmDelete: '削除しますか？', cancel: 'キャンセル', deletePermanent: '永久削除',
     'พิจารณาปีแรก ประกันรายเดี่ยว': '初年度 - 個人生命保険',
     'พิจารณาปีแรก ประกันกลุ่ม': '初年度 - グループ生命保険',
-    'พิจารณาปีต่อประกันรายเดี่ยว': '更新 - 個人生命保険',
-    'พิจารณาปีต่อประกันกลุ่ม': '更新 - グループ生命保険',
+    'พิจารณาปีต่อประกันรายเดี่ยว': '更新 - 個人生命保険', // Added
+    'พิจารณาปีต่อประกันกลุ่ม': '更新 - グループ生命保険', // Added
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': '請求 - グループ / 個人',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': '書類フォローアップ - グループ / 個人',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': '書類フォローアップ - 個人/グループ', // Added
     'ติดตามเอกสาร AIA': 'AIA書類フォローアップ',
     'ติดตาม ประกันวินาศภัย': '損害保険フォローアップ',
     'ติดตาม อสังหาริมทรัพย์': '不動産フォローアップ',
-    'ต่อใบอนุญาต': 'ライセンス更新',
-    'แจ้งเตือน CPD': 'CPDアラート',
-    'แจ้งเตือนผลงาน MOC': 'MOCアラート',
+    'ต่อใบอนุญาต': 'ライセンス更新', // Added
+    'แจ้งเตือน CPD': 'CPDアラート', // Added
+    'แจ้งเตือนผลงาน MOC': 'MOCアラート', // Added
     'อื่นๆ': 'その他',
     sun: '日', mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土',
     month01: '1月', month02: '2月', month03: '3月', month04: '4月', month05: '5月', month06: '6月', month07: '7月', month08: '8月', month09: '9月', month10: '10月', month11: '11月', month12: '12月',
@@ -501,6 +501,34 @@ export default function App() {
     finally { setActionLoading(p => ({ ...p, [`status-${taskId}`]: false })); }
   };
 
+  const handleChangeAssignee = async (taskId, newFaUid) => {
+    setActionLoading(p => ({ ...p, [`assign-${taskId}`]: true }));
+    try {
+      const targetFa = allAvailableFAs.find(f => f.uid === newFaUid);
+      if (!targetFa) return;
+
+      const roleName = userProfile?.role === 'Admin' ? 'แอดมิน' : 'ผู้บริหาร';
+      const msg = { 
+        text: `[${roleName}เปลี่ยนผู้รับผิดชอบ]: มอบหมายงานนี้ให้คุณ ${targetFa.name} เรียบร้อยแล้ว`, 
+        senderName: "System", 
+        senderRole: "System", 
+        timestamp: new Date().toISOString() 
+      };
+
+      await updateDoc(doc(db, 'tasks', taskId), { 
+        faUid: targetFa.uid, 
+        faName: targetFa.name,
+        messages: arrayUnion(msg),
+        updatedAt: new Date().toISOString() 
+      });
+      showToast("เปลี่ยนผู้รับผิดชอบเรียบร้อยแล้ว");
+    } catch (err) {
+      showToast("เกิดข้อผิดพลาดในการเปลี่ยนผู้รับผิดชอบ", "error");
+    } finally {
+      setActionLoading(p => ({ ...p, [`assign-${taskId}`]: false }));
+    }
+  };
+
   const handleSendMessage = async (taskId) => {
     const text = chatInputs[taskId] || "";
     if (!text.trim()) return;
@@ -580,8 +608,11 @@ export default function App() {
     const map = new Map();
     tasks.forEach(t => map.set(t.faUid, { uid: t.faUid, name: t.faName, role: 'FA' }));
     dbUsers.forEach(u => { if(u.role === 'FA' || u.role === 'Admin' || u.role === 'Executive' || !u.role) map.set(u.uid, u); });
+    if (user && userProfile) {
+      map.set(user.uid, { uid: user.uid, name: `${userProfile.name} (ฉัน)`, role: userProfile.role || 'Admin' });
+    }
     return Array.from(map.values());
-  }, [tasks, dbUsers]);
+  }, [tasks, dbUsers, user, userProfile]);
 
   const filteredTasks = useMemo(() => {
     let list = tasks;
@@ -879,7 +910,9 @@ export default function App() {
                         {msg.attachmentUrl && (
                           <div className="mt-2 block pb-1">
                             {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
-                              <img src={msg.attachmentUrl} alt="attachment" onClick={() => setFullscreenImage(msg.attachmentUrl)} className="max-h-[150px] w-auto object-contain rounded-lg shadow-sm border border-black/5 cursor-pointer hover:opacity-90 transition-opacity" /> :
+                              <div className="cursor-pointer inline-block" onClick={() => setFullscreenImage(msg.attachmentUrl)}>
+                                <img src={msg.attachmentUrl} alt="attachment" className="max-h-[150px] w-auto object-contain rounded-lg shadow-sm border border-black/5 hover:opacity-90 transition-opacity" />
+                              </div> :
                               <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white/40"><Paperclip className="w-3 h-3"/> {msg.attachmentName || t('downloadAttach')}</a>
                             }
                           </div>
@@ -1277,7 +1310,24 @@ export default function App() {
                          <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('policyNumber')}</span><span className="text-gray-800">{selectedTaskModal.policyNumber}</span></div>
                        )}
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('serviceType')}</span><span className="text-gray-800">{t(selectedTaskModal.serviceType)}</span></div>
-                       <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('colFa')}</span><span className="text-gray-800">{selectedTaskModal.faName}</span></div>
+                       <div>
+                         <span className="text-gray-400 block text-[11px] mb-1">{t('colFa')}</span>
+                         {(userProfile?.role === 'Admin' || userProfile?.role === 'Executive') ? (
+                           <div className="flex items-center gap-2">
+                             <select 
+                               value={selectedTaskModal.faUid} 
+                               onChange={e => handleChangeAssignee(selectedTaskModal.id, e.target.value)}
+                               disabled={actionLoading[`assign-${selectedTaskModal.id}`]}
+                               className="w-full bg-white border border-gray-200 text-gray-800 text-[13px] font-medium rounded-xl px-3 py-2 outline-none focus:border-[#DEFF00] hover:border-gray-300 transition-colors cursor-pointer"
+                             >
+                               {allAvailableFAs.map(fa => <option key={fa.uid} value={fa.uid}>{fa.name}</option>)}
+                             </select>
+                             {actionLoading[`assign-${selectedTaskModal.id}`] && <Loader2 className="w-4 h-4 animate-spin text-gray-400 shrink-0"/>}
+                           </div>
+                         ) : (
+                           <span className="text-gray-800">{selectedTaskModal.faName}</span>
+                         )}
+                       </div>
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('dueDate')}</span><span className="text-orange-600">{selectedTaskModal.dueDate ? new Date(selectedTaskModal.dueDate).toLocaleDateString('th-TH') : '-'}</span></div>
                     </div>
                   </div>
@@ -1289,7 +1339,7 @@ export default function App() {
                         {selectedTaskModal.attachments.map((file, idx) => {
                           const isImg = file.url.match(/\.(jpeg|jpg|gif|png|webp)/i) || file.url.includes('images%2F') || file.type?.startsWith('image/');
                           return (
-                            <a key={idx} href={file.url} target="_blank" rel="noopener noreferrer" className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden">
+                            <a key={idx} href={file.url} target="_blank" rel="noopener noreferrer" onClick={(e) => { if(isImg) { e.preventDefault(); setFullscreenImage(file.url); } }} className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden cursor-pointer">
                               {isImg ? (
                                 <img src={file.url} alt="attachment" className="w-full h-24 object-cover rounded-lg mb-2" />
                               ) : (
@@ -1348,8 +1398,8 @@ export default function App() {
                               {msg.attachmentUrl && (
                                 <div className="mt-3 block pb-1">
                                   {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
-                                    <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3">
-                                        <img src={msg.attachmentUrl} alt="attachment" onClick={() => setFullscreenImage(msg.attachmentUrl)} className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm cursor-pointer hover:opacity-90 transition-opacity" />
+                                    <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3 cursor-pointer hover:bg-black/10 transition-colors" onClick={() => setFullscreenImage(msg.attachmentUrl)}>
+                                        <img src={msg.attachmentUrl} alt="attachment" className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm" />
                                     </div> :
                                     <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white"><Paperclip className="w-3.5 h-3.5"/> {msg.attachmentName || t('downloadAttach')}</a>
                                   }
@@ -1407,12 +1457,12 @@ export default function App() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('dueDate')}</label>
-                  <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} value={assignForm.dueDate} onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00] transition-colors" placeholder={t('dueDate')} />
+                  <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} value={assignForm.dueDate} onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none" placeholder={t('dueDate')} />
                 </div>
                 <div>
                   <div className="flex bg-gray-50 border border-gray-100 p-1.5 rounded-2xl">
-                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency: 'ปกติ'})} className={`flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors ${assignForm.urgency==='ปกติ'?'bg-white text-gray-800 shadow-sm':'bg-transparent text-gray-400'}`}>{t('normal')}</button>
-                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency: 'ด่วน'})} className={`flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors ${assignForm.urgency==='ด่วน'?'bg-red-50 text-red-600 shadow-sm':'bg-transparent text-gray-400'}`}>{t('urgent')}</button>
+                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency:'ปกติ'})} className={`flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors ${assignForm.urgency==='ปกติ'?'bg-white text-gray-800 shadow-sm':'bg-transparent text-gray-400'}`}>{t('normal')}</button>
+                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency:'ด่วน'})} className={`flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors ${assignForm.urgency==='ด่วน'?'bg-red-50 text-red-600 border border-red-100':'bg-transparent text-gray-400'}`}>{t('urgent')}</button>
                   </div>
                 </div>
                 <div>
@@ -1685,6 +1735,15 @@ export default function App() {
         )}
 
       </div>
+
+      {fullscreenImage && (
+        <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setFullscreenImage(null)}>
+          <button onClick={() => setFullscreenImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"><X className="w-6 h-6"/></button>
+          <img src={fullscreenImage} alt="fullscreen" className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)]" onClick={(e) => e.stopPropagation()} />
+          <a href={fullscreenImage} target="_blank" rel="noopener noreferrer" className="absolute bottom-8 bg-white text-gray-900 px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-gray-100 transition-colors shadow-lg" onClick={e=>e.stopPropagation()}><Download className="w-4 h-4"/> เปิดรูปต้นฉบับ / บันทึกภาพ</a>
+        </div>
+      )}
+
     </div>
   );
 }
