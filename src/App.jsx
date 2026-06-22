@@ -12,7 +12,8 @@ import {
 import { 
   Lock, Mail, LogOut, CheckCircle, AlertTriangle, 
   Send, Loader2, Search, FileText, Camera, Paperclip, MessageSquare,
-  LayoutDashboard, Users, X, Plus, Calendar as CalendarIcon, Trash2, Globe, MessageCircle, ChevronLeft, Download, Image as ImageIcon
+  LayoutDashboard, Users, X, Plus, Calendar as CalendarIcon, Trash2, Globe, MessageCircle, ChevronLeft, Download, Image as ImageIcon,
+  Link as LinkIcon
 } from 'lucide-react';
 
 const firebaseConfig = {
@@ -25,6 +26,9 @@ const firebaseConfig = {
   measurementId: "G-421DEJT06S"
 };
 
+// ⚠️ รหัส LIFF ID ของคุณ
+const LIFF_ID = "2010475900-0hTYAPSL"; 
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -33,16 +37,16 @@ const storage = getStorage(app);
 const TASK_TYPES = [
   'พิจารณาปีแรก ประกันรายเดี่ยว',
   'พิจารณาปีแรก ประกันกลุ่ม',
-  'พิจารณาปีต่อประกันรายเดี่ยว', // Added
-  'พิจารณาปีต่อประกันกลุ่ม', // Added
+  'พิจารณาปีต่อประกันรายเดี่ยว',
+  'พิจารณาปีต่อประกันกลุ่ม',
   'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
-  'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม', // Added
   'ติดตามเอกสาร AIA',
+  'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
   'ติดตาม ประกันวินาศภัย',
   'ติดตาม อสังหาริมทรัพย์',
-  'ต่อใบอนุญาต', // Added
-  'แจ้งเตือน CPD', // Added
-  'แจ้งเตือนผลงาน MOC', // Added
+  'ต่อใบอนุญาต',
+  'แจ้งเตือน CPD',
+  'แจ้งเตือนผลงาน MOC',
   'อื่นๆ'
 ];
 
@@ -113,22 +117,23 @@ const translations = {
     dashboard: 'แดชบอร์ด', deleteTask: 'ลบงานนี้', confirmDelete: 'ยืนยันการลบ?', cancel: 'ยกเลิก', deletePermanent: 'ลบถาวร',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'พิจารณาปีแรก ประกันรายเดี่ยว',
     'พิจารณาปีแรก ประกันกลุ่ม': 'พิจารณาปีแรก ประกันกลุ่ม',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'พิจารณาปีต่อประกันรายเดี่ยว', // Added
-    'พิจารณาปีต่อประกันกลุ่ม': 'พิจารณาปีต่อประกันกลุ่ม', // Added
+    'พิจารณาปีต่อประกันรายเดี่ยว': 'พิจารณาปีต่อประกันรายเดี่ยว',
+    'พิจารณาปีต่อประกันกลุ่ม': 'พิจารณาปีต่อประกันกลุ่ม',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม', // Added
     'ติดตามเอกสาร AIA': 'ติดตามเอกสาร AIA',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
     'ติดตาม ประกันวินาศภัย': 'ติดตาม ประกันวินาศภัย',
     'ติดตาม อสังหาริมทรัพย์': 'ติดตาม อสังหาริมทรัพย์',
-    'ต่อใบอนุญาต': 'ต่อใบอนุญาต', // Added
-    'แจ้งเตือน CPD': 'แจ้งเตือน CPD', // Added
-    'แจ้งเตือนผลงาน MOC': 'แจ้งเตือนผลงาน MOC', // Added
+    'ต่อใบอนุญาต': 'ต่อใบอนุญาต',
+    'แจ้งเตือน CPD': 'แจ้งเตือน CPD',
+    'แจ้งเตือนผลงาน MOC': 'แจ้งเตือนผลงาน MOC',
     'อื่นๆ': 'อื่นๆ',
     sun: 'อา', mon: 'จ', tue: 'อ', wed: 'พ', thu: 'พฤ', fri: 'ศ', sat: 'ส',
     month01: 'มกราคม', month02: 'กุมภาพันธ์', month03: 'มีนาคม', month04: 'เมษายน', month05: 'พฤษภาคม', month06: 'มิถุนายน', month07: 'กรกฎาคม', month08: 'สิงหาคม', month09: 'กันยายน', month10: 'ตุลาคม', month11: 'พฤศจิกายน', month12: 'ธันวาคม',
     addEventTitle: 'เพิ่มกิจกรรม', eventNameInput: 'ชื่อกิจกรรม...', personalEvent: 'กิจกรรมส่วนตัว', companyEvent: 'กิจกรรมบริษัท', saveEventBtn: 'บันทึกกิจกรรม',
     execSubtitle: 'รายงานสรุปผลการปฏิบัติงานติดตาม',
-    daysLeft: 'เหลือ', overdue: 'เลยกำหนด', days: 'วัน'
+    daysLeft: 'เหลือ', overdue: 'เลยกำหนด', days: 'วัน',
+    linkLine: 'เชื่อมต่อ LINE', lineLinked: 'เชื่อมต่อ LINE แล้ว'
   },
   EN: {
     login: 'Sign In', email: 'Email Address', pass: 'Password',
@@ -154,22 +159,23 @@ const translations = {
     dashboard: 'Dashboard', deleteTask: 'Delete Task', confirmDelete: 'Confirm Delete?', cancel: 'Cancel', deletePermanent: 'Delete Permanent',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'First Year - Individual Life',
     'พิจารณาปีแรก ประกันกลุ่ม': 'First Year - Group Life',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'Renewal - Individual Life', // Added
-    'พิจารณาปีต่อประกันกลุ่ม': 'Renewal - Group Life', // Added
+    'พิจารณาปีต่อประกันรายเดี่ยว': 'Renewal - Individual Life',
+    'พิจารณาปีต่อประกันกลุ่ม': 'Renewal - Group Life',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'Claim - Group / Individual',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'Follow up Docs - Ind/Group', // Added
     'ติดตามเอกสาร AIA': 'Follow up AIA Docs',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'Follow up Docs - Indv/Group',
     'ติดตาม ประกันวินาศภัย': 'Follow up Non-Life Insurance',
     'ติดตาม อสังหาริมทรัพย์': 'Follow up Real Estate',
-    'ต่อใบอนุญาต': 'License Renewal', // Added
-    'แจ้งเตือน CPD': 'CPD Alert', // Added
-    'แจ้งเตือนผลงาน MOC': 'MOC Alert', // Added
+    'ต่อใบอนุญาต': 'License Renewal',
+    'แจ้งเตือน CPD': 'CPD Notification',
+    'แจ้งเตือนผลงาน MOC': 'MOC Notification',
     'อื่นๆ': 'Others',
     sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
     month01: 'January', month02: 'February', month03: 'March', month04: 'April', month05: 'May', month06: 'June', month07: 'July', month08: 'August', month09: 'September', month10: 'October', month11: 'November', month12: 'December',
     addEventTitle: 'Add Event', eventNameInput: 'Event Name...', personalEvent: 'Personal Event', companyEvent: 'Company Event', saveEventBtn: 'Save Event',
     execSubtitle: 'Task Performance Summary Report',
-    daysLeft: 'Remaining', overdue: 'Overdue', days: 'days'
+    daysLeft: 'Remaining', overdue: 'Overdue', days: 'days',
+    linkLine: 'Connect LINE', lineLinked: 'LINE Connected'
   },
   JP: {
     login: 'ログイン', email: 'メールアドレス', pass: 'パスワード',
@@ -195,22 +201,23 @@ const translations = {
     dashboard: 'ダッシュボード', deleteTask: 'タスク削除', confirmDelete: '削除しますか？', cancel: 'キャンセル', deletePermanent: '永久削除',
     'พิจารณาปีแรก ประกันรายเดี่ยว': '初年度 - 個人生命保険',
     'พิจารณาปีแรก ประกันกลุ่ม': '初年度 - グループ生命保険',
-    'พิจารณาปีต่อประกันรายเดี่ยว': '更新 - 個人生命保険', // Added
-    'พิจารณาปีต่อประกันกลุ่ม': '更新 - グループ生命保険', // Added
+    'พิจารณาปีต่อประกันรายเดี่ยว': '更新 - 個人生命保険',
+    'พิจารณาปีต่อประกันกลุ่ม': '更新 - グループ生命保険',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': '請求 - グループ / 個人',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': '書類フォローアップ - 個人/グループ', // Added
     'ติดตามเอกสาร AIA': 'AIA書類フォローアップ',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': '書類フォローアップ',
     'ติดตาม ประกันวินาศภัย': '損害保険フォローアップ',
     'ติดตาม อสังหาริมทรัพย์': '不動産フォローアップ',
-    'ต่อใบอนุญาต': 'ライセンス更新', // Added
-    'แจ้งเตือน CPD': 'CPDアラート', // Added
-    'แจ้งเตือนผลงาน MOC': 'MOCアラート', // Added
+    'ต่อใบอนุญาต': 'ライセンス更新',
+    'แจ้งเตือน CPD': 'CPD通知',
+    'แจ้งเตือนผลงาน MOC': 'MOC通知',
     'อื่นๆ': 'その他',
     sun: '日', mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土',
     month01: '1月', month02: '2月', month03: '3月', month04: '4月', month05: '5月', month06: '6月', month07: '7月', month08: '8月', month09: '9月', month10: '10月', month11: '11月', month12: '12月',
     addEventTitle: 'イベント追加', eventNameInput: 'イベント名...', personalEvent: '個人イベント', companyEvent: '会社イベント', saveEventBtn: 'イベントを保存',
     execSubtitle: 'タスクパフォーマンス概要レポート',
-    daysLeft: '残り', overdue: '期限切れ', days: '日'
+    daysLeft: '残り', overdue: '期限切れ', days: '日',
+    linkLine: 'LINE 連携', lineLinked: 'LINE 連携済み'
   }
 };
 
@@ -286,10 +293,55 @@ export default function App() {
 
   const dmChatEndRef = useRef(null);
   const taskChatEndRef = useRef(null);
+  const [isLiffReady, setIsLiffReady] = useState(false);
 
   const showToast = (message, type = 'success') => {
     setToastMessage({ message, type });
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // 🟢 ฟังก์ชันสำหรับ Load LIFF SDK และตรวจสอบการเชื่อมต่อ
+  useEffect(() => {
+    if (!LIFF_ID || LIFF_ID === "ใส่_LIFF_ID_ของคุณตรงนี้") return;
+
+    const script = document.createElement('script');
+    script.src = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
+    script.async = true;
+    script.onload = () => {
+      window.liff.init({ liffId: LIFF_ID })
+        .then(() => {
+          setIsLiffReady(true);
+          // ถ้าเพิ่งล็อกอิน LINE กลับมา (มี Token) ให้เก็บรหัสลง Firebase
+          if (window.liff.isLoggedIn() && user) {
+            window.liff.getProfile().then(async profile => {
+              try {
+                await updateDoc(doc(db, 'users', user.uid), {
+                  lineUserId: profile.userId,
+                  lineDisplayName: profile.displayName
+                });
+                showToast("เชื่อมต่อ LINE สำเร็จ!");
+                setUserProfile(prev => ({...prev, lineUserId: profile.userId}));
+                window.liff.logout(); 
+              } catch (e) {
+                console.error(e);
+              }
+            });
+          }
+        })
+        .catch(err => console.error("LIFF Init Error:", err));
+    };
+    document.body.appendChild(script);
+    
+    return () => {
+      if (document.body.contains(script)) document.body.removeChild(script);
+    }
+  }, [user]);
+
+  const handleLinkLine = () => {
+    if (!isLiffReady || !window.liff) return showToast("รอโหลดระบบ LINE สักครู่...", "error");
+    if (!window.liff.isLoggedIn()) {
+      window.liff.login({ redirectUri: window.location.href });
+    }
   };
 
   useEffect(() => {
@@ -502,19 +554,18 @@ export default function App() {
   };
 
   const handleChangeAssignee = async (taskId, newFaUid) => {
+    if (!newFaUid) return;
+    const targetFa = allAvailableFAs.find(f => f.uid === newFaUid);
+    if (!targetFa) return;
+    
     setActionLoading(p => ({ ...p, [`assign-${taskId}`]: true }));
     try {
-      const targetFa = allAvailableFAs.find(f => f.uid === newFaUid);
-      if (!targetFa) return;
-
-      const roleName = userProfile?.role === 'Admin' ? 'แอดมิน' : 'ผู้บริหาร';
       const msg = { 
-        text: `[${roleName}เปลี่ยนผู้รับผิดชอบ]: มอบหมายงานนี้ให้คุณ ${targetFa.name} เรียบร้อยแล้ว`, 
+        text: `[อัปเดตระบบ]: ผู้บริหารเปลี่ยนผู้รับผิดชอบงาน มอบหมายงานให้ ${targetFa.name}`, 
         senderName: "System", 
-        senderRole: "System", 
+        senderRole: "ระบบ", 
         timestamp: new Date().toISOString() 
       };
-
       await updateDoc(doc(db, 'tasks', taskId), { 
         faUid: targetFa.uid, 
         faName: targetFa.name,
@@ -522,8 +573,8 @@ export default function App() {
         updatedAt: new Date().toISOString() 
       });
       showToast("เปลี่ยนผู้รับผิดชอบเรียบร้อยแล้ว");
-    } catch (err) {
-      showToast("เกิดข้อผิดพลาดในการเปลี่ยนผู้รับผิดชอบ", "error");
+    } catch (e) {
+      showToast("เกิดข้อผิดพลาดในการเปลี่ยนชื่อ", "error");
     } finally {
       setActionLoading(p => ({ ...p, [`assign-${taskId}`]: false }));
     }
@@ -1301,7 +1352,6 @@ export default function App() {
             </div>
 
             <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 sm:p-8 flex flex-col md:flex-row gap-6 sm:gap-8 custom-scrollbar">
-               {/* ฝั่งซ้าย: ข้อมูลงาน */}
                <div className="w-full md:w-1/2 flex flex-col space-y-6 md:overflow-y-auto custom-scrollbar md:pr-4 pb-2 md:pb-0">
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
@@ -1310,24 +1360,28 @@ export default function App() {
                          <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('policyNumber')}</span><span className="text-gray-800">{selectedTaskModal.policyNumber}</span></div>
                        )}
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('serviceType')}</span><span className="text-gray-800">{t(selectedTaskModal.serviceType)}</span></div>
+                       
                        <div>
                          <span className="text-gray-400 block text-[11px] mb-1">{t('colFa')}</span>
                          {(userProfile?.role === 'Admin' || userProfile?.role === 'Executive') ? (
-                           <div className="flex items-center gap-2">
-                             <select 
-                               value={selectedTaskModal.faUid} 
-                               onChange={e => handleChangeAssignee(selectedTaskModal.id, e.target.value)}
-                               disabled={actionLoading[`assign-${selectedTaskModal.id}`]}
-                               className="w-full bg-white border border-gray-200 text-gray-800 text-[13px] font-medium rounded-xl px-3 py-2 outline-none focus:border-[#DEFF00] hover:border-gray-300 transition-colors cursor-pointer"
-                             >
-                               {allAvailableFAs.map(fa => <option key={fa.uid} value={fa.uid}>{fa.name}</option>)}
-                             </select>
-                             {actionLoading[`assign-${selectedTaskModal.id}`] && <Loader2 className="w-4 h-4 animate-spin text-gray-400 shrink-0"/>}
-                           </div>
+                            <div className="relative">
+                              <select 
+                                value={selectedTaskModal.faUid} 
+                                onChange={(e) => handleChangeAssignee(selectedTaskModal.id, e.target.value)}
+                                disabled={actionLoading[`assign-${selectedTaskModal.id}`]}
+                                className="w-full bg-white border border-gray-200 text-gray-800 text-sm rounded-xl px-3 py-2 outline-none focus:border-[#DEFF00] appearance-none cursor-pointer hover:bg-gray-50 transition-colors"
+                              >
+                                {allAvailableFAs.map(fa => <option key={fa.uid} value={fa.uid}>{fa.name}</option>)}
+                              </select>
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                {actionLoading[`assign-${selectedTaskModal.id}`] ? <Loader2 className="w-3 h-3 animate-spin text-gray-400"/> : <span className="text-xs text-gray-400">▼</span>}
+                              </div>
+                            </div>
                          ) : (
-                           <span className="text-gray-800">{selectedTaskModal.faName}</span>
+                            <span className="text-gray-800">{selectedTaskModal.faName}</span>
                          )}
                        </div>
+
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('dueDate')}</span><span className="text-orange-600">{selectedTaskModal.dueDate ? new Date(selectedTaskModal.dueDate).toLocaleDateString('th-TH') : '-'}</span></div>
                     </div>
                   </div>
@@ -1383,7 +1437,6 @@ export default function App() {
                   )}
                </div>
 
-               {/* ฝั่งขวา: แชท */}
                <div className="w-full md:w-1/2 flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[500px] md:h-full shrink-0">
                   <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('chatHistory')}</h4>
                   <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
@@ -1456,16 +1509,6 @@ export default function App() {
                   <select value={assignForm.serviceType} onChange={e=>setAssignForm({...assignForm, serviceType:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light appearance-none outline-none">{TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}</select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('dueDate')}</label>
-                  <input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} value={assignForm.dueDate} onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none" placeholder={t('dueDate')} />
-                </div>
-                <div>
-                  <div className="flex bg-gray-50 border border-gray-100 p-1.5 rounded-2xl">
-                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency:'ปกติ'})} className={`flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors ${assignForm.urgency==='ปกติ'?'bg-white text-gray-800 shadow-sm':'bg-transparent text-gray-400'}`}>{t('normal')}</button>
-                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency:'ด่วน'})} className={`flex-1 py-2 rounded-xl text-[11px] font-medium transition-colors ${assignForm.urgency==='ด่วน'?'bg-red-50 text-red-600 border border-red-100':'bg-transparent text-gray-400'}`}>{t('urgent')}</button>
-                  </div>
-                </div>
-                <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
                   <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('orderDetails')}></textarea>
                 </div>
@@ -1491,6 +1534,20 @@ export default function App() {
           </div>
           
           <div className="flex gap-3 w-full sm:w-auto justify-center">
+            
+            {/* ปุ่มเชื่อมต่อ LINE */}
+            <div className="relative z-[1000] hidden sm:block">
+              {userProfile?.lineUserId ? (
+                 <div className="bg-[#06C755]/10 px-4 py-2 rounded-full text-[11px] font-medium text-[#06C755] border border-[#06C755]/20 flex items-center gap-2 h-full cursor-default">
+                    <CheckCircle className="w-3.5 h-3.5"/> {t('lineLinked')}
+                 </div>
+              ) : (
+                 <button onClick={handleLinkLine} className="bg-[#06C755] px-4 py-2 rounded-full text-[11px] font-medium text-white shadow-sm flex items-center gap-2 hover:bg-[#05b34c] transition-colors h-full">
+                    <LinkIcon className="w-3.5 h-3.5"/> {t('linkLine')}
+                 </button>
+              )}
+            </div>
+
             <div className="relative z-[1000]">
               <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="bg-white px-4 py-2 rounded-full text-[11px] font-medium text-gray-600 shadow-[0_2px_15px_rgb(0,0,0,0.02)] border border-gray-50 flex items-center gap-2 hover:bg-gray-50 transition-colors h-full relative">
                 <Globe className="w-3.5 h-3.5 text-gray-400"/> {language}
@@ -1514,6 +1571,15 @@ export default function App() {
           </div>
         </div>
       </nav>
+
+      {/* เพิ่มปุ่มเชื่อมต่อ LINE สำหรับมือถือ (ถ้าจอมือถือจะมาอยู่ใต้เมนูบน) */}
+      {!userProfile?.lineUserId && (
+        <div className="sm:hidden px-4 mb-4 flex justify-center">
+          <button onClick={handleLinkLine} className="bg-[#06C755] w-full max-w-sm px-4 py-3 rounded-full text-xs font-medium text-white shadow-sm flex items-center justify-center gap-2 hover:bg-[#05b34c] transition-colors">
+            <LinkIcon className="w-4 h-4"/> {t('linkLine')}
+          </button>
+        </div>
+      )}
 
       <div className="max-w-[1500px] mx-auto px-4 sm:px-10 mt-2 relative z-10">
         
@@ -1736,6 +1802,7 @@ export default function App() {
 
       </div>
 
+      {/* เพิ่มหน้าต่าง Modal สำหรับดูรูปภาพขนาดใหญ่ */}
       {fullscreenImage && (
         <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setFullscreenImage(null)}>
           <button onClick={() => setFullscreenImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"><X className="w-6 h-6"/></button>
