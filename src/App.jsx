@@ -252,6 +252,7 @@ export default function App() {
   const [showFilesModal, setShowFilesModal] = useState(false); 
   const [hideImagesForPdf, setHideImagesForPdf] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [deleteEventConfirmId, setDeleteEventConfirmId] = useState(null);
   
   const [frontFormMode, setFrontFormMode] = useState("backend"); 
   const [frontListMode, setFrontListMode] = useState("backend");
@@ -691,6 +692,14 @@ export default function App() {
     } catch (error) { showToast("เกิดข้อผิดพลาด", "error"); }
   };
 
+  const handleDeleteEvent = async (eventId) => {
+    try {
+      await deleteDoc(doc(db, 'events', eventId));
+      setDeleteEventConfirmId(null);
+      showToast("ลบกิจกรรมเรียบร้อยแล้ว");
+    } catch (error) { showToast("เกิดข้อผิดพลาดในการลบกิจกรรม", "error"); }
+  };
+
   const handleDeleteTask = async (taskId) => {
     setActionLoading(prev => ({ ...prev, [`delete-${taskId}`]: true }));
     try {
@@ -923,9 +932,28 @@ export default function App() {
                        </div>
                    ))}
                    {dayEvents.map(ev => (
-                       <div key={`ev-${ev.id}`} className={`text-[9px] px-2 py-1 rounded-md truncate font-light flex flex-col ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>
-                          <span className="font-medium truncate">{ev.title}</span>
-                          {(ev.startTime || ev.endTime) && <span className="text-[8px] opacity-80 mt-0.5">{ev.startTime || '...'} - {ev.endTime || '...'}</span>}
+                       <div key={`ev-${ev.id}`} onClick={(e) => e.stopPropagation()} className={`relative group text-[9px] px-2 py-1.5 rounded-md font-light flex flex-col ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>
+                          {deleteEventConfirmId === ev.id ? (
+                            <div className="flex items-center justify-between w-full bg-white/60 p-0.5 rounded">
+                               <span className="text-[8px] font-medium text-red-600 truncate mr-1">ลบ?</span>
+                               <div className="flex gap-1 shrink-0">
+                                 <button onClick={(e) => { e.stopPropagation(); handleDeleteEvent(ev.id); }} className="p-0.5 bg-red-500 text-white rounded-sm hover:bg-red-600"><CheckCircle className="w-2.5 h-2.5"/></button>
+                                 <button onClick={(e) => { e.stopPropagation(); setDeleteEventConfirmId(null); }} className="p-0.5 bg-gray-200 text-gray-700 rounded-sm hover:bg-gray-300"><X className="w-2.5 h-2.5"/></button>
+                               </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex justify-between items-start gap-1">
+                                <span className="font-medium truncate">{ev.title}</span>
+                                {(ev.createdBy === user.uid || userProfile?.role === 'Admin' || userProfile?.role === 'Executive') && (
+                                  <button onClick={(e) => { e.stopPropagation(); setDeleteEventConfirmId(ev.id); }} className="opacity-0 group-hover:opacity-100 hover:text-red-600 transition-opacity shrink-0 bg-white/50 rounded-full p-0.5">
+                                    <Trash2 className="w-2.5 h-2.5" />
+                                  </button>
+                                )}
+                              </div>
+                              {(ev.startTime || ev.endTime) && <span className="text-[8px] opacity-80 mt-0.5">{ev.startTime || '...'} - {ev.endTime || '...'}</span>}
+                            </>
+                          )}
                        </div>
                    ))}
                  </div>
