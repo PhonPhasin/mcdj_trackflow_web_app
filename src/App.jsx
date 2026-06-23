@@ -13,7 +13,7 @@ import {
   Lock, Mail, LogOut, CheckCircle, AlertTriangle, 
   Send, Loader2, Search, FileText, Camera, Paperclip, MessageSquare,
   LayoutDashboard, Users, X, Plus, Calendar as CalendarIcon, Trash2, Globe, MessageCircle, ChevronLeft, Download, Image as ImageIcon,
-  Link as LinkIcon
+  Clock
 } from 'lucide-react';
 
 const firebaseConfig = {
@@ -26,7 +26,10 @@ const firebaseConfig = {
   measurementId: "G-421DEJT06S"
 };
 
-// ⚠️ รหัส LIFF ID ของคุณ
+// 🌟 ลิงก์เบอร์โทรสายตรง (Webhook URL) ของเซิร์ฟเวอร์ที่เราอัปโหลดผ่านไปเมื่อสักครู่ครับ
+const LINE_WEBHOOK_URL = "https://asia-southeast1-mcdjwatrackflow.cloudfunctions.net/sendLineNotification";
+
+// 🌟 รหัสกุญแจดอกที่ 2 (LIFF ID) ที่ได้จากช่อง LINE Login (MCDJWealthAdvisorSup) ใน LINE Developers ของคุณครับ
 const LIFF_ID = "2010475900-0hTYAPSL"; 
 
 const app = initializeApp(firebaseConfig);
@@ -37,16 +40,10 @@ const storage = getStorage(app);
 const TASK_TYPES = [
   'พิจารณาปีแรก ประกันรายเดี่ยว',
   'พิจารณาปีแรก ประกันกลุ่ม',
-  'พิจารณาปีต่อประกันรายเดี่ยว',
-  'พิจารณาปีต่อประกันกลุ่ม',
   'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
   'ติดตามเอกสาร AIA',
-  'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
   'ติดตาม ประกันวินาศภัย',
   'ติดตาม อสังหาริมทรัพย์',
-  'ต่อใบอนุญาต',
-  'แจ้งเตือน CPD',
-  'แจ้งเตือนผลงาน MOC',
   'อื่นๆ'
 ];
 
@@ -117,23 +114,18 @@ const translations = {
     dashboard: 'แดชบอร์ด', deleteTask: 'ลบงานนี้', confirmDelete: 'ยืนยันการลบ?', cancel: 'ยกเลิก', deletePermanent: 'ลบถาวร',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'พิจารณาปีแรก ประกันรายเดี่ยว',
     'พิจารณาปีแรก ประกันกลุ่ม': 'พิจารณาปีแรก ประกันกลุ่ม',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'พิจารณาปีต่อประกันรายเดี่ยว',
-    'พิจารณาปีต่อประกันกลุ่ม': 'พิจารณาปีต่อประกันกลุ่ม',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
     'ติดตามเอกสาร AIA': 'ติดตามเอกสาร AIA',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
     'ติดตาม ประกันวินาศภัย': 'ติดตาม ประกันวินาศภัย',
     'ติดตาม อสังหาริมทรัพย์': 'ติดตาม อสังหาริมทรัพย์',
-    'ต่อใบอนุญาต': 'ต่อใบอนุญาต',
-    'แจ้งเตือน CPD': 'แจ้งเตือน CPD',
-    'แจ้งเตือนผลงาน MOC': 'แจ้งเตือนผลงาน MOC',
     'อื่นๆ': 'อื่นๆ',
     sun: 'อา', mon: 'จ', tue: 'อ', wed: 'พ', thu: 'พฤ', fri: 'ศ', sat: 'ส',
     month01: 'มกราคม', month02: 'กุมภาพันธ์', month03: 'มีนาคม', month04: 'เมษายน', month05: 'พฤษภาคม', month06: 'มิถุนายน', month07: 'กรกฎาคม', month08: 'สิงหาคม', month09: 'กันยายน', month10: 'ตุลาคม', month11: 'พฤศจิกายน', month12: 'ธันวาคม',
     addEventTitle: 'เพิ่มกิจกรรม', eventNameInput: 'ชื่อกิจกรรม...', personalEvent: 'กิจกรรมส่วนตัว', companyEvent: 'กิจกรรมบริษัท', saveEventBtn: 'บันทึกกิจกรรม',
     execSubtitle: 'รายงานสรุปผลการปฏิบัติงานติดตาม',
     daysLeft: 'เหลือ', overdue: 'เลยกำหนด', days: 'วัน',
-    linkLine: 'เชื่อมต่อ LINE', lineLinked: 'เชื่อมต่อ LINE แล้ว'
+    linkLine: 'เชื่อมต่อ LINE', lineLinked: 'เชื่อมต่อ LINE แล้ว',
+    startTime: 'เวลาเริ่ม', endTime: 'เวลาสิ้นสุด'
   },
   EN: {
     login: 'Sign In', email: 'Email Address', pass: 'Password',
@@ -159,23 +151,18 @@ const translations = {
     dashboard: 'Dashboard', deleteTask: 'Delete Task', confirmDelete: 'Confirm Delete?', cancel: 'Cancel', deletePermanent: 'Delete Permanent',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'First Year - Individual Life',
     'พิจารณาปีแรก ประกันกลุ่ม': 'First Year - Group Life',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'Renewal - Individual Life',
-    'พิจารณาปีต่อประกันกลุ่ม': 'Renewal - Group Life',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'Claim - Group / Individual',
     'ติดตามเอกสาร AIA': 'Follow up AIA Docs',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'Follow up Docs - Indv/Group',
     'ติดตาม ประกันวินาศภัย': 'Follow up Non-Life Insurance',
     'ติดตาม อสังหาริมทรัพย์': 'Follow up Real Estate',
-    'ต่อใบอนุญาต': 'License Renewal',
-    'แจ้งเตือน CPD': 'CPD Notification',
-    'แจ้งเตือนผลงาน MOC': 'MOC Notification',
     'อื่นๆ': 'Others',
     sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
     month01: 'January', month02: 'February', month03: 'March', month04: 'April', month05: 'May', month06: 'June', month07: 'July', month08: 'August', month09: 'September', month10: 'October', month11: 'November', month12: 'December',
     addEventTitle: 'Add Event', eventNameInput: 'Event Name...', personalEvent: 'Personal Event', companyEvent: 'Company Event', saveEventBtn: 'Save Event',
     execSubtitle: 'Task Performance Summary Report',
     daysLeft: 'Remaining', overdue: 'Overdue', days: 'days',
-    linkLine: 'Connect LINE', lineLinked: 'LINE Connected'
+    linkLine: 'Connect LINE', lineLinked: 'LINE Connected',
+    startTime: 'Start Time', endTime: 'End Time'
   },
   JP: {
     login: 'ログイン', email: 'メールアドレス', pass: 'パスワード',
@@ -201,23 +188,18 @@ const translations = {
     dashboard: 'ダッシュボード', deleteTask: 'タスク削除', confirmDelete: '削除しますか？', cancel: 'キャンセル', deletePermanent: '永久削除',
     'พิจารณาปีแรก ประกันรายเดี่ยว': '初年度 - 個人生命保険',
     'พิจารณาปีแรก ประกันกลุ่ม': '初年度 - グループ生命保険',
-    'พิจารณาปีต่อประกันรายเดี่ยว': '更新 - 個人生命保険',
-    'พิจารณาปีต่อประกันกลุ่ม': '更新 - グループ生命保険',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': '請求 - グループ / 個人',
     'ติดตามเอกสาร AIA': 'AIA書類フォローアップ',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': '書類フォローアップ',
     'ติดตาม ประกันวินาศภัย': '損害保険フォローアップ',
     'ติดตาม อสังหาริมทรัพย์': '不動産フォローアップ',
-    'ต่อใบอนุญาต': 'ライセンス更新',
-    'แจ้งเตือน CPD': 'CPD通知',
-    'แจ้งเตือนผลงาน MOC': 'MOC通知',
     'อื่นๆ': 'その他',
     sun: '日', mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土',
     month01: '1月', month02: '2月', month03: '3月', month04: '4月', month05: '5月', month06: '6月', month07: '7月', month08: '8月', month09: '9月', month10: '10月', month11: '11月', month12: '12月',
     addEventTitle: 'イベント追加', eventNameInput: 'イベント名...', personalEvent: '個人イベント', companyEvent: '会社イベント', saveEventBtn: 'イベントを保存',
     execSubtitle: 'タスクパフォーマンス概要レポート',
     daysLeft: '残り', overdue: '期限切れ', days: '日',
-    linkLine: 'LINE 連携', lineLinked: 'LINE 連携済み'
+    linkLine: 'LINE 連携', lineLinked: 'LINE 連携済み',
+    startTime: '開始時間', endTime: '終了時間'
   }
 };
 
@@ -242,6 +224,7 @@ export default function App() {
   const [selectedTaskModal, setSelectedTaskModal] = useState(null);
   const [pdfTask, setPdfTask] = useState(null);
   const [isDownloadingInfo, setIsDownloadingInfo] = useState(false);
+  const [isDownloadingImages, setIsDownloadingImages] = useState(false);
   const [showFilesModal, setShowFilesModal] = useState(false); 
   const [hideImagesForPdf, setHideImagesForPdf] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
@@ -249,9 +232,6 @@ export default function App() {
   const [frontFormMode, setFrontFormMode] = useState("backend"); 
   const [frontListMode, setFrontListMode] = useState("backend");
 
-  const [fullscreenImage, setFullscreenImage] = useState(null);
-  const [isUploadingDmFile, setIsUploadingDmFile] = useState(false);
-  const prevDmCountRef = useRef(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signingIn, setSigningIn] = useState(false);
@@ -273,7 +253,8 @@ export default function App() {
 
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedDateStr, setSelectedDateStr] = useState("");
-  const [eventForm, setEventForm] = useState({ title: "", type: "personal", color: "blue" });
+  // 🗓️ กำหนดเวลาเริ่มต้น - สิ้นสุด สำหรับปฏิทินบริษัท/ส่วนตัว
+  const [eventForm, setEventForm] = useState({ title: "", type: "personal", color: "blue", startTime: "", endTime: "" });
 
   const [actionLoading, setActionLoading] = useState({});
   const [chatInputs, setChatInputs] = useState({});
@@ -300,9 +281,22 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // 🟢 ฟังก์ชันสำหรับ Load LIFF SDK และตรวจสอบการเชื่อมต่อ
+  // 📢 ฟังก์ชันส่งสัญญาณเรียกแจ้งเตือน LINE Webhook
+  const notifyLine = async (type, data, targetFaUid) => {
+    try {
+      await fetch(LINE_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, data, targetFaUid })
+      });
+    } catch (error) {
+      console.error("LINE Webhook Error:", error);
+    }
+  };
+
+  // 📱 ตั้งค่าระบบผูกบัญชี LINE (LIFF)
   useEffect(() => {
-    if (!LIFF_ID || LIFF_ID === "ใส่_LIFF_ID_ของคุณตรงนี้") return;
+    if (!LIFF_ID || LIFF_ID === "วางรหัส LIFF ID ของคุณตรงนี้") return;
 
     const script = document.createElement('script');
     script.src = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
@@ -311,7 +305,6 @@ export default function App() {
       window.liff.init({ liffId: LIFF_ID })
         .then(() => {
           setIsLiffReady(true);
-          // ถ้าเพิ่งล็อกอิน LINE กลับมา (มี Token) ให้เก็บรหัสลง Firebase
           if (window.liff.isLoggedIn() && user) {
             window.liff.getProfile().then(async profile => {
               try {
@@ -322,9 +315,7 @@ export default function App() {
                 showToast("เชื่อมต่อ LINE สำเร็จ!");
                 setUserProfile(prev => ({...prev, lineUserId: profile.userId}));
                 window.liff.logout(); 
-              } catch (e) {
-                console.error(e);
-              }
+              } catch (e) { console.error(e); }
             });
           }
         })
@@ -332,13 +323,11 @@ export default function App() {
     };
     document.body.appendChild(script);
     
-    return () => {
-      if (document.body.contains(script)) document.body.removeChild(script);
-    }
+    return () => { if (document.body.contains(script)) document.body.removeChild(script); }
   }, [user]);
 
   const handleLinkLine = () => {
-    if (!isLiffReady || !window.liff) return showToast("รอโหลดระบบ LINE สักครู่...", "error");
+    if (!isLiffReady || !window.liff) return showToast("กำลังโหลดบริการ LINE...", "error");
     if (!window.liff.isLoggedIn()) {
       window.liff.login({ redirectUri: window.location.href });
     }
@@ -392,12 +381,8 @@ export default function App() {
       setTasks(taskList);
       if (selectedTaskModal) {
         const updated = taskList.find(t => t.id === selectedTaskModal.id);
-        const isNewMessage = updated?.messages?.length !== selectedTaskModal?.messages?.length;
         setSelectedTaskModal(updated || null);
-        
-        if (isNewMessage) {
-          setTimeout(() => taskChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-        }
+        setTimeout(() => taskChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       }
       if (pdfTask) {
         const updated = taskList.find(t => t.id === pdfTask.id);
@@ -420,12 +405,7 @@ export default function App() {
     const unSubDm = onSnapshot(qMsg, (snap) => {
       let list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() }));
       setDmMessages(list);
-      
-      if (list.length !== prevDmCountRef.current) {
-        setTimeout(() => dmChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-        prevDmCountRef.current = list.length;
-      }
-
+      setTimeout(() => dmChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
       if (isDmOpen && dmView === 'chat') {
         list.forEach(m => {
           if (m.senderId !== user.uid && !m.isRead) updateDoc(doc(db, `chats/${chatId}/messages`, m.id), { isRead: true });
@@ -513,10 +493,16 @@ export default function App() {
       await addDoc(collection(db, 'tasks'), taskData);
       setClientName(""); setPolicyNumber(""); setNotes(""); setDueDate(""); setFilesToUpload([]); setUploadProgress(0); 
       showToast("ยื่นงานสำเร็จเรียบร้อย!");
+
+      // 🔔 1. แจ้งเตือนเมื่อมีการยื่นงานส่งหลังบ้าน (ส่งหาแอดมินหรือผู้เกี่ยวข้อง)
+      if (frontFormMode === 'backend') {
+        notifyLine('ASSIGN_TASK', taskData, 'ALL');
+      }
     } catch (e) { showToast("เกิดข้อผิดพลาดในการยื่นงาน", "error"); }
     finally { setSubmittingTask(false); }
   };
 
+  // 🔔 1. แจ้งเตือนเมื่อมีมอบหมายงานใหม่ (จากฝั่งแอดมิน/ผู้บริหาร)
   const handleAssignSubmit = async (e) => {
     e.preventDefault();
     if (!assignForm.clientName || !assignForm.faUid) return showToast("กรุณากรอกข้อมูลให้ครบ", "error");
@@ -540,6 +526,10 @@ export default function App() {
         messages: msgs
       };
       await addDoc(collection(db, 'tasks'), taskData);
+
+      // 🔔 ส่งสัญญาณแจ้งเตือนไปยังผู้รับผิดชอบงาน
+      notifyLine('ASSIGN_TASK', taskData, targetFa.uid);
+
       setAssignForm({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); 
       setAssignFilesToUpload([]); setShowAssignModal(false); setUploadProgress(0);
       showToast("มอบหมายงานสำเร็จ!");
@@ -547,39 +537,22 @@ export default function App() {
     finally { setAssigningTask(false); }
   };
 
+  // 🔔 2. แจ้งเตือนเมื่อมีการเปลี่ยนสถานะงาน
   const handleUpdateStatus = async (taskId, newStatus) => {
     setActionLoading(p => ({ ...p, [`status-${taskId}`]: true }));
-    try { await updateDoc(doc(db, 'tasks', taskId), { status: newStatus, updatedAt: new Date().toISOString() }); }
-    finally { setActionLoading(p => ({ ...p, [`status-${taskId}`]: false })); }
+    try { 
+      await updateDoc(doc(db, 'tasks', taskId), { status: newStatus, updatedAt: new Date().toISOString() }); 
+      
+      // 🔔 ส่งสัญญาณแจ้งเตือนไปยังผู้รับผิดชอบงานตัวจริง
+      notifyLine('UPDATE_STATUS', {
+        clientName: selectedTaskModal.clientName,
+        newStatus: newStatus
+      }, selectedTaskModal.faUid);
+
+    } finally { setActionLoading(p => ({ ...p, [`status-${taskId}`]: false })); }
   };
 
-  const handleChangeAssignee = async (taskId, newFaUid) => {
-    if (!newFaUid) return;
-    const targetFa = allAvailableFAs.find(f => f.uid === newFaUid);
-    if (!targetFa) return;
-    
-    setActionLoading(p => ({ ...p, [`assign-${taskId}`]: true }));
-    try {
-      const msg = { 
-        text: `[อัปเดตระบบ]: ผู้บริหารเปลี่ยนผู้รับผิดชอบงาน มอบหมายงานให้ ${targetFa.name}`, 
-        senderName: "System", 
-        senderRole: "ระบบ", 
-        timestamp: new Date().toISOString() 
-      };
-      await updateDoc(doc(db, 'tasks', taskId), { 
-        faUid: targetFa.uid, 
-        faName: targetFa.name,
-        messages: arrayUnion(msg),
-        updatedAt: new Date().toISOString() 
-      });
-      showToast("เปลี่ยนผู้รับผิดชอบเรียบร้อยแล้ว");
-    } catch (e) {
-      showToast("เกิดข้อผิดพลาดในการเปลี่ยนชื่อ", "error");
-    } finally {
-      setActionLoading(p => ({ ...p, [`assign-${taskId}`]: false }));
-    }
-  };
-
+  // 🔔 4. แจ้งเตือนเมื่อส่งข้อความในแชทของงานแต่ละงาน
   const handleSendMessage = async (taskId) => {
     const text = chatInputs[taskId] || "";
     if (!text.trim()) return;
@@ -588,6 +561,21 @@ export default function App() {
       const msg = { text: text.trim(), senderName: userProfile?.name, senderRole: userProfile?.role, timestamp: new Date().toISOString() };
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
       setChatInputs(p => ({ ...p, [taskId]: "" }));
+
+      // 🔔 ส่งแจ้งเตือนหาคู่สนทนาที่รับผิดชอบงาน
+      if (user.uid !== selectedTaskModal.faUid) {
+        notifyLine('TASK_CHAT', {
+          taskName: selectedTaskModal.clientName,
+          senderName: userProfile.name,
+          text: text.trim()
+        }, selectedTaskModal.faUid);
+      } else {
+        notifyLine('TASK_CHAT', {
+          taskName: selectedTaskModal.clientName,
+          senderName: userProfile.name,
+          text: text.trim()
+        }, 'ALL'); // แจ้งแอดมินหรือหัวหน้า
+      }
     } finally { setActionLoading(p => ({ ...p, [`chat-${taskId}`]: false })); }
   };
 
@@ -602,45 +590,64 @@ export default function App() {
       const url = await new Promise((res, rej) => { uploadTask.on('state_changed', null, rej, async () => res(await getDownloadURL(uploadTask.snapshot.ref))); });
       const msg = { text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type, senderName: userProfile?.name, senderRole: userProfile?.role, timestamp: new Date().toISOString() };
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
+      
+      // 🔔 แจ้งเตือนไฟล์แนบในช่องแชทงาน
+      notifyLine('TASK_CHAT', {
+        taskName: selectedTaskModal.clientName,
+        senderName: userProfile.name,
+        text: "[ส่งรูปภาพ/ไฟล์แนบ]"
+      }, selectedTaskModal.faUid);
     } catch (err) { showToast("อัปโหลดไฟล์ไม่สำเร็จ", "error"); } 
     finally { setIsUploadingChatFile(false); e.target.value = null; }
   };
 
+  // 🔔 3. แจ้งเตือนเมื่อส่งข้อความในแชทส่วนตัว (DM)
   const handleSendDM = async (e) => {
     e.preventDefault();
     if (!dmInput.trim() || !activeChatUser) return;
     try {
       const chatId = getChatId(user.uid, activeChatUser.uid);
       await addDoc(collection(db, `chats/${chatId}/messages`), { text: dmInput.trim(), senderId: user.uid, senderName: userProfile?.name, timestamp: new Date().toISOString(), isRead: false });
+      
+      // 🔔 ส่งสัญญาณแจ้งเตือน DM
+      notifyLine('DM_CHAT', {
+        senderName: userProfile.name,
+        text: dmInput.trim()
+      }, activeChatUser.uid);
+
       setDmInput("");
     } catch (e) { showToast("ส่งข้อความไม่สำเร็จ", "error"); }
   };
 
-  const handleUploadDmFile = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !activeChatUser) return;
-    if (file.size > 5 * 1024 * 1024) return showToast("ไฟล์มีขนาดใหญ่เกิน 5MB", "error");
-    setIsUploadingDmFile(true);
-    try {
-      const chatId = getChatId(user.uid, activeChatUser.uid);
-      const refName = `chat_attachments/${Date.now()}_${file.name}`;
-      const uploadTask = uploadBytesResumable(ref(storage, refName), file);
-      const url = await new Promise((res, rej) => { uploadTask.on('state_changed', null, rej, async () => res(await getDownloadURL(uploadTask.snapshot.ref))); });
-      
-      await addDoc(collection(db, `chats/${chatId}/messages`), { 
-         text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type,
-         senderId: user.uid, senderName: userProfile?.name, timestamp: new Date().toISOString(), isRead: false 
-      });
-    } catch (err) { showToast("อัปโหลดไฟล์ไม่สำเร็จ", "error"); } 
-    finally { setIsUploadingDmFile(false); e.target.value = null; }
-  };
-
+  // 🔔 5. แจ้งเตือนเมื่อมีการบันทึกปฏิทินของบริษัท (และปฏิทินส่วนตัวแบบระบุเวลาได้)
   const handleAddEventSubmit = async (e) => {
     e.preventDefault();
     if (!eventForm.title || !selectedDateStr) return;
     try {
-      await addDoc(collection(db, 'events'), { title: eventForm.title, date: selectedDateStr, type: eventForm.type, color: eventForm.color, createdBy: user.uid, createdAt: new Date().toISOString() });
-      setShowEventModal(false); setEventForm({ title: "", type: "personal", color: "blue" }); showToast("เพิ่มกิจกรรมเรียบร้อย");
+      await addDoc(collection(db, 'events'), { 
+        title: eventForm.title, 
+        date: selectedDateStr, 
+        type: eventForm.type, 
+        color: eventForm.color,
+        startTime: eventForm.startTime || "", // ⏰ เวลาเริ่ม
+        endTime: eventForm.endTime || "",     // ⏰ เวลาสิ้นสุด
+        createdBy: user.uid, 
+        createdAt: new Date().toISOString() 
+      });
+
+      // 🔔 ส่งสัญญาณแจ้งเตือนทุกคน (ALL) เมื่อสร้างกิจกรรมบริษัท
+      if (eventForm.type === 'company') {
+        notifyLine('COMPANY_EVENT', {
+          title: eventForm.title,
+          date: selectedDateStr,
+          startTime: eventForm.startTime,
+          endTime: eventForm.endTime
+        }, 'ALL');
+      }
+
+      setShowEventModal(false); 
+      setEventForm({ title: "", type: "personal", color: "blue", startTime: "", endTime: "" }); 
+      showToast("เพิ่มกิจกรรมเรียบร้อย");
     } catch (error) { showToast("เกิดข้อผิดพลาด", "error"); }
   };
 
@@ -659,11 +666,8 @@ export default function App() {
     const map = new Map();
     tasks.forEach(t => map.set(t.faUid, { uid: t.faUid, name: t.faName, role: 'FA' }));
     dbUsers.forEach(u => { if(u.role === 'FA' || u.role === 'Admin' || u.role === 'Executive' || !u.role) map.set(u.uid, u); });
-    if (user && userProfile) {
-      map.set(user.uid, { uid: user.uid, name: `${userProfile.name} (ฉัน)`, role: userProfile.role || 'Admin' });
-    }
     return Array.from(map.values());
-  }, [tasks, dbUsers, user, userProfile]);
+  }, [tasks, dbUsers]);
 
   const filteredTasks = useMemo(() => {
     let list = tasks;
@@ -878,7 +882,12 @@ export default function App() {
                            {task.urgency === 'ด่วน' && <span className="ml-auto text-[8px] shrink-0">🔥</span>}
                        </div>
                    ))}
-                   {dayEvents.map(ev => <div key={`ev-${ev.id}`} className={`text-[9px] px-2 py-1 rounded-md truncate font-light ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>{ev.title}</div>)}
+                   {dayEvents.map(ev => (
+                       <div key={`ev-${ev.id}`} className={`text-[9px] px-2 py-1 rounded-md truncate font-light flex flex-col ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>
+                          <span className="font-medium truncate">{ev.title}</span>
+                          {(ev.startTime || ev.endTime) && <span className="text-[8px] opacity-80 mt-0.5">{ev.startTime || '...'} - {ev.endTime || '...'}</span>}
+                       </div>
+                   ))}
                  </div>
               </div>
             )
@@ -895,6 +904,19 @@ export default function App() {
                </h3>
                <form onSubmit={handleAddEventSubmit} className="space-y-4">
                  <input type="text" required placeholder={t('eventNameInput')} value={eventForm.title} onChange={e=>setEventForm({...eventForm, title:e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-light outline-none focus:border-[#DEFF00]" />
+                 
+                 {/* ⏰ ส่วนระบุเวลาเริ่ม - สิ้นสุด */}
+                 <div className="grid grid-cols-2 gap-3">
+                   <div>
+                     <label className="text-[10px] text-gray-500 mb-1 block">{t('startTime')}</label>
+                     <input type="time" value={eventForm.startTime} onChange={e=>setEventForm({...eventForm, startTime:e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-light outline-none focus:border-[#DEFF00]" />
+                   </div>
+                   <div>
+                     <label className="text-[10px] text-gray-500 mb-1 block">{t('endTime')}</label>
+                     <input type="time" value={eventForm.endTime} onChange={e=>setEventForm({...eventForm, endTime:e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-light outline-none focus:border-[#DEFF00]" />
+                   </div>
+                 </div>
+
                  <select value={eventForm.type} onChange={e=>setEventForm({...eventForm, type:e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-light outline-none">
                    <option value="personal">{t('personalEvent')}</option>
                    <option value="company">{t('companyEvent')}</option>
@@ -956,19 +978,7 @@ export default function App() {
                   const isMe = msg.senderId === user.uid;
                   return (
                     <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] font-light max-w-[85%] ${isMe ? 'bg-[#DEFF00] text-[#161A22] rounded-tr-sm shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm shadow-sm'}`}>
-                        {msg.text}
-                        {msg.attachmentUrl && (
-                          <div className="mt-2 block pb-1">
-                            {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
-                              <div className="cursor-pointer inline-block" onClick={() => setFullscreenImage(msg.attachmentUrl)}>
-                                <img src={msg.attachmentUrl} alt="attachment" className="max-h-[150px] w-auto object-contain rounded-lg shadow-sm border border-black/5 hover:opacity-90 transition-opacity" />
-                              </div> :
-                              <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white/40"><Paperclip className="w-3 h-3"/> {msg.attachmentName || t('downloadAttach')}</a>
-                            }
-                          </div>
-                        )}
-                      </div>
+                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] font-light max-w-[85%] ${isMe ? 'bg-[#DEFF00] text-[#161A22] rounded-tr-sm shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm shadow-sm'}`}>{msg.text}</div>
                       <span className="text-[9px] text-gray-400 mt-1 mx-1 font-light">{new Date(msg.timestamp).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                   );
@@ -976,13 +986,9 @@ export default function App() {
               }
               <div ref={dmChatEndRef} />
             </div>
-            <form onSubmit={handleSendDM} className="p-2.5 bg-white border-t border-gray-100 flex gap-2 items-center">
-              <label className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full cursor-pointer transition-colors shrink-0" title={t('attachFileText')}>
-                 {isUploadingDmFile ? <Loader2 className="w-4 h-4 animate-spin"/> : <ImageIcon className="w-4 h-4 stroke-[1.5]" />}
-                 <input type="file" className="hidden" accept="image/*,application/pdf" onChange={handleUploadDmFile} disabled={isUploadingDmFile} />
-              </label>
-              <input type="text" value={dmInput} onChange={e=>setDmInput(e.target.value)} placeholder={t('typeMessage')} className="flex-1 bg-gray-50 px-4 py-2 text-sm font-light rounded-full outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200" />
-              <button type="submit" disabled={!dmInput.trim()} className="w-9 h-9 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50"><Send className="w-3.5 h-3.5 ml-0.5 stroke-[1.5]"/></button>
+            <form onSubmit={handleSendDM} className="p-3 bg-white border-t border-gray-100 flex gap-2">
+              <input type="text" value={dmInput} onChange={e=>setDmInput(e.target.value)} placeholder={t('typeMessage')} className="flex-1 bg-gray-50 px-4 py-2.5 text-sm font-light rounded-full outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200" />
+              <button type="submit" disabled={!dmInput.trim()} className="w-10 h-10 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50"><Send className="w-4 h-4 ml-0.5 stroke-[1.5]"/></button>
             </form>
           </>
         )}
@@ -1066,6 +1072,65 @@ export default function App() {
     }, 500);
   };
 
+  const handleDownloadAllFiles = async () => {
+    setIsDownloadingImages(true); 
+    try {
+      const filesToDownload = [];
+      
+      if (pdfTask.attachments) {
+        pdfTask.attachments.forEach(f => {
+          filesToDownload.push({ url: f.url, name: f.name || `attachment_${Date.now()}` });
+        });
+      }
+      
+      if (pdfTask.messages) {
+        pdfTask.messages.forEach(m => {
+          if (m.attachmentUrl) {
+            filesToDownload.push({ url: m.attachmentUrl, name: m.attachmentName || `chat_file_${Date.now()}` });
+          }
+        });
+      }
+
+      if (filesToDownload.length === 0) {
+        showToast("ไม่พบไฟล์แนบในงานนี้", "error");
+        setIsDownloadingImages(false);
+        return;
+      }
+
+      showToast(`กำลังเตรียมดาวน์โหลดไฟล์ทั้งหมด ${filesToDownload.length} ไฟล์...`);
+
+      for (let i = 0; i < filesToDownload.length; i++) {
+        const file = filesToDownload[i];
+        try {
+          const response = await fetch(file.url);
+          if (!response.ok) throw new Error("Network response was not ok");
+          const blob = await response.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (err) {
+          console.warn("Fetch failed, fallback to open window:", file.url, err);
+          window.open(file.url, '_blank');
+        }
+      }
+      
+      showToast("ดาวน์โหลดไฟล์แนบสำเร็จ");
+    } catch (err) {
+      console.error(err);
+      showToast("เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์แนบ", "error");
+    } finally {
+      setIsDownloadingImages(false);
+    }
+  };
+
   const allDownloadableFiles = useMemo(() => {
     if (!pdfTask) return [];
     const files = [];
@@ -1093,12 +1158,12 @@ export default function App() {
            <button onClick={() => { setPdfTask(null); setActiveTab('front'); }} className="text-gray-300 hover:text-white flex items-center gap-2 text-xs sm:text-sm font-light transition-colors"><ChevronLeft className="w-4 h-4"/> <span className="hidden sm:inline">{t('back')}</span></button>
            <span className="text-gray-300 text-[10px] sm:text-xs font-light hidden sm:flex items-center gap-2"><FileText className="w-4 h-4 text-gray-500"/> {t('pdfReport')}</span>
            <div className="flex gap-2 sm:gap-3">
-             <button onClick={handleDownloadInfoPDF} disabled={isDownloadingInfo} className="bg-white text-[#161A22] border border-gray-200 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50">
+             <button onClick={handleDownloadInfoPDF} disabled={isDownloadingInfo || isDownloadingImages} className="bg-white text-[#161A22] border border-gray-200 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-50">
                 {isDownloadingInfo ? <Loader2 className="w-4 h-4 animate-spin"/> : <FileText className="w-4 h-4"/>}
                 <span className="hidden sm:inline">โหลดรายงาน (ตัวหนังสือ)</span>
                 <span className="sm:hidden">รายงาน</span>
              </button>
-             <button onClick={() => setShowFilesModal(true)} disabled={isDownloadingInfo} className="bg-[#DEFF00] text-[#161A22] px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md transition-all disabled:opacity-50">
+             <button onClick={() => setShowFilesModal(true)} disabled={isDownloadingInfo || isDownloadingImages} className="bg-[#DEFF00] text-[#161A22] px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md transition-all disabled:opacity-50">
                 <Download className="w-4 h-4"/>
                 <span className="hidden sm:inline">โหลดไฟล์แนบทั้งหมด</span>
                 <span className="sm:hidden">โหลดไฟล์</span>
@@ -1107,7 +1172,7 @@ export default function App() {
         </div>
 
         {showFilesModal && (
-          <div className="fixed inset-0 z-[2010] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
              <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setShowFilesModal(false)}></div>
              <div className="relative bg-white p-6 rounded-3xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col animate-[fadeIn_0.2s_ease-out]">
                 <div className="flex justify-between items-center mb-5 border-b border-gray-100 pb-3">
@@ -1331,7 +1396,7 @@ export default function App() {
       {renderDMWidget()}
 
       {selectedTaskModal && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
           <div className="relative w-full h-full sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
             
             <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 sm:bg-white z-10 sticky top-0 shrink-0">
@@ -1351,8 +1416,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 sm:p-8 flex flex-col md:flex-row gap-6 sm:gap-8 custom-scrollbar">
-               <div className="w-full md:w-1/2 flex flex-col space-y-6 md:overflow-y-auto custom-scrollbar md:pr-4 pb-2 md:pb-0">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 custom-scrollbar">
+               <div className="flex flex-col space-y-6">
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
                     <div className="space-y-4 text-sm font-light">
@@ -1360,28 +1425,7 @@ export default function App() {
                          <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('policyNumber')}</span><span className="text-gray-800">{selectedTaskModal.policyNumber}</span></div>
                        )}
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('serviceType')}</span><span className="text-gray-800">{t(selectedTaskModal.serviceType)}</span></div>
-                       
-                       <div>
-                         <span className="text-gray-400 block text-[11px] mb-1">{t('colFa')}</span>
-                         {(userProfile?.role === 'Admin' || userProfile?.role === 'Executive') ? (
-                            <div className="relative">
-                              <select 
-                                value={selectedTaskModal.faUid} 
-                                onChange={(e) => handleChangeAssignee(selectedTaskModal.id, e.target.value)}
-                                disabled={actionLoading[`assign-${selectedTaskModal.id}`]}
-                                className="w-full bg-white border border-gray-200 text-gray-800 text-sm rounded-xl px-3 py-2 outline-none focus:border-[#DEFF00] appearance-none cursor-pointer hover:bg-gray-50 transition-colors"
-                              >
-                                {allAvailableFAs.map(fa => <option key={fa.uid} value={fa.uid}>{fa.name}</option>)}
-                              </select>
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                {actionLoading[`assign-${selectedTaskModal.id}`] ? <Loader2 className="w-3 h-3 animate-spin text-gray-400"/> : <span className="text-xs text-gray-400">▼</span>}
-                              </div>
-                            </div>
-                         ) : (
-                            <span className="text-gray-800">{selectedTaskModal.faName}</span>
-                         )}
-                       </div>
-
+                       <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('colFa')}</span><span className="text-gray-800">{selectedTaskModal.faName}</span></div>
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('dueDate')}</span><span className="text-orange-600">{selectedTaskModal.dueDate ? new Date(selectedTaskModal.dueDate).toLocaleDateString('th-TH') : '-'}</span></div>
                     </div>
                   </div>
@@ -1393,7 +1437,7 @@ export default function App() {
                         {selectedTaskModal.attachments.map((file, idx) => {
                           const isImg = file.url.match(/\.(jpeg|jpg|gif|png|webp)/i) || file.url.includes('images%2F') || file.type?.startsWith('image/');
                           return (
-                            <a key={idx} href={file.url} target="_blank" rel="noopener noreferrer" onClick={(e) => { if(isImg) { e.preventDefault(); setFullscreenImage(file.url); } }} className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden cursor-pointer">
+                            <a key={idx} href={file.url} target="_blank" rel="noopener noreferrer" className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden">
                               {isImg ? (
                                 <img src={file.url} alt="attachment" className="w-full h-24 object-cover rounded-lg mb-2" />
                               ) : (
@@ -1437,7 +1481,7 @@ export default function App() {
                   )}
                </div>
 
-               <div className="w-full md:w-1/2 flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[500px] md:h-full shrink-0">
+               <div className="flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[400px] sm:h-full min-h-[400px]">
                   <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('chatHistory')}</h4>
                   <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {(!selectedTaskModal.messages || selectedTaskModal.messages.length===0) ? <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-60"><MessageSquare className="w-8 h-8 mb-2 stroke-[1.5]"/><span className="text-xs font-light">{t('noChatHistory')}</span></div> : 
@@ -1451,7 +1495,7 @@ export default function App() {
                               {msg.attachmentUrl && (
                                 <div className="mt-3 block pb-1">
                                   {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
-                                    <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3 cursor-pointer hover:bg-black/10 transition-colors" onClick={() => setFullscreenImage(msg.attachmentUrl)}>
+                                    <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3">
                                         <img src={msg.attachmentUrl} alt="attachment" className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm" />
                                     </div> :
                                     <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white"><Paperclip className="w-3.5 h-3.5"/> {msg.attachmentName || t('downloadAttach')}</a>
@@ -1481,7 +1525,7 @@ export default function App() {
       )}
 
       {showAssignModal && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#161A22]/20 backdrop-blur-sm" onClick={() => setShowAssignModal(false)}></div>
           <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-[0_10px_50px_rgba(0,0,0,0.1)] overflow-hidden animate-[fadeIn_0.2s_ease-out]">
              <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center">
@@ -1510,7 +1554,7 @@ export default function App() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
-                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('orderDetails')}></textarea>
+                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('typeMessage')}></textarea>
                 </div>
                 <button type="submit" disabled={assigningTask} className="w-full bg-[#161A22] text-[#DEFF00] py-4 rounded-full font-medium text-sm hover:bg-black transition-colors mt-2 flex justify-center items-center gap-2">
                   {assigningTask ? <><Loader2 className="w-4 h-4 animate-spin"/> กำลังดำเนินการ...</> : t('confirmAssign')}
@@ -1535,18 +1579,20 @@ export default function App() {
           
           <div className="flex gap-3 w-full sm:w-auto justify-center">
             
-            {/* ปุ่มเชื่อมต่อ LINE */}
-            <div className="relative z-[1000] hidden sm:block">
-              {userProfile?.lineUserId ? (
-                 <div className="bg-[#06C755]/10 px-4 py-2 rounded-full text-[11px] font-medium text-[#06C755] border border-[#06C755]/20 flex items-center gap-2 h-full cursor-default">
-                    <CheckCircle className="w-3.5 h-3.5"/> {t('lineLinked')}
-                 </div>
-              ) : (
-                 <button onClick={handleLinkLine} className="bg-[#06C755] px-4 py-2 rounded-full text-[11px] font-medium text-white shadow-sm flex items-center gap-2 hover:bg-[#05b34c] transition-colors h-full">
-                    <LinkIcon className="w-3.5 h-3.5"/> {t('linkLine')}
-                 </button>
-              )}
-            </div>
+            {/* 🟢 ปุ่ม "เชื่อมต่อ LINE" สีเขียวพรีเมียม สไตล์ LINE OA */}
+            {userProfile && (
+              <button 
+                onClick={handleLinkLine} 
+                className={`px-5 py-2 rounded-full text-[11px] font-medium shadow-[0_2px_15px_rgb(0,0,0,0.02)] border flex items-center gap-2 transition-all active:scale-95 ${
+                  userProfile.lineUserId 
+                    ? 'bg-green-50 text-green-600 border-green-200' 
+                    : 'bg-[#06C755] text-white border-[#06C755] hover:bg-[#05b04b]'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full bg-current ${!userProfile.lineUserId && 'animate-pulse'}`}></span>
+                {userProfile.lineUserId ? t('lineLinked') : t('linkLine')}
+              </button>
+            )}
 
             <div className="relative z-[1000]">
               <button onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} className="bg-white px-4 py-2 rounded-full text-[11px] font-medium text-gray-600 shadow-[0_2px_15px_rgb(0,0,0,0.02)] border border-gray-50 flex items-center gap-2 hover:bg-gray-50 transition-colors h-full relative">
@@ -1571,15 +1617,6 @@ export default function App() {
           </div>
         </div>
       </nav>
-
-      {/* เพิ่มปุ่มเชื่อมต่อ LINE สำหรับมือถือ (ถ้าจอมือถือจะมาอยู่ใต้เมนูบน) */}
-      {!userProfile?.lineUserId && (
-        <div className="sm:hidden px-4 mb-4 flex justify-center">
-          <button onClick={handleLinkLine} className="bg-[#06C755] w-full max-w-sm px-4 py-3 rounded-full text-xs font-medium text-white shadow-sm flex items-center justify-center gap-2 hover:bg-[#05b34c] transition-colors">
-            <LinkIcon className="w-4 h-4"/> {t('linkLine')}
-          </button>
-        </div>
-      )}
 
       <div className="max-w-[1500px] mx-auto px-4 sm:px-10 mt-2 relative z-10">
         
@@ -1801,16 +1838,6 @@ export default function App() {
         )}
 
       </div>
-
-      {/* เพิ่มหน้าต่าง Modal สำหรับดูรูปภาพขนาดใหญ่ */}
-      {fullscreenImage && (
-        <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setFullscreenImage(null)}>
-          <button onClick={() => setFullscreenImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"><X className="w-6 h-6"/></button>
-          <img src={fullscreenImage} alt="fullscreen" className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)]" onClick={(e) => e.stopPropagation()} />
-          <a href={fullscreenImage} target="_blank" rel="noopener noreferrer" className="absolute bottom-8 bg-white text-gray-900 px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-gray-100 transition-colors shadow-lg" onClick={e=>e.stopPropagation()}><Download className="w-4 h-4"/> เปิดรูปต้นฉบับ / บันทึกภาพ</a>
-        </div>
-      )}
-
     </div>
   );
 }
