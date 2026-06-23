@@ -26,10 +26,10 @@ const firebaseConfig = {
   measurementId: "G-421DEJT06S"
 };
 
-// 🌟 ลิงก์เบอร์โทรสายตรง (Webhook URL) ของเซิร์ฟเวอร์ที่เราอัปโหลดผ่านไปเมื่อสักครู่ครับ
+// ลิงก์ Webhook สำหรับส่งเข้า LINE
 const LINE_WEBHOOK_URL = "https://asia-southeast1-mcdjwatrackflow.cloudfunctions.net/sendLineNotification";
 
-// 🌟 รหัสกุญแจดอกที่ 2 (LIFF ID) ที่ได้จากช่อง LINE Login (MCDJWealthAdvisorSup) ใน LINE Developers ของคุณครับ
+// กลับมาใช้รหัส LIFF ID ที่ทำงานได้ปกติ
 const LIFF_ID = "2010475900-0hTYAPSL"; 
 
 const app = initializeApp(firebaseConfig);
@@ -40,10 +40,16 @@ const storage = getStorage(app);
 const TASK_TYPES = [
   'พิจารณาปีแรก ประกันรายเดี่ยว',
   'พิจารณาปีแรก ประกันกลุ่ม',
+  'พิจารณาปีต่อประกันรายเดี่ยว',
+  'พิจารณาปีต่อประกันกลุ่ม',
   'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
   'ติดตามเอกสาร AIA',
+  'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
   'ติดตาม ประกันวินาศภัย',
   'ติดตาม อสังหาริมทรัพย์',
+  'ต่อใบอนุญาต',
+  'แจ้งเตือน CPD',
+  'แจ้งเตือนผลงาน MOC',
   'อื่นๆ'
 ];
 
@@ -114,10 +120,16 @@ const translations = {
     dashboard: 'แดชบอร์ด', deleteTask: 'ลบงานนี้', confirmDelete: 'ยืนยันการลบ?', cancel: 'ยกเลิก', deletePermanent: 'ลบถาวร',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'พิจารณาปีแรก ประกันรายเดี่ยว',
     'พิจารณาปีแรก ประกันกลุ่ม': 'พิจารณาปีแรก ประกันกลุ่ม',
+    'พิจารณาปีต่อประกันรายเดี่ยว': 'พิจารณาปีต่อประกันรายเดี่ยว',
+    'พิจารณาปีต่อประกันกลุ่ม': 'พิจารณาปีต่อประกันกลุ่ม',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
     'ติดตามเอกสาร AIA': 'ติดตามเอกสาร AIA',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
     'ติดตาม ประกันวินาศภัย': 'ติดตาม ประกันวินาศภัย',
     'ติดตาม อสังหาริมทรัพย์': 'ติดตาม อสังหาริมทรัพย์',
+    'ต่อใบอนุญาต': 'ต่อใบอนุญาต',
+    'แจ้งเตือน CPD': 'แจ้งเตือน CPD',
+    'แจ้งเตือนผลงาน MOC': 'แจ้งเตือนผลงาน MOC',
     'อื่นๆ': 'อื่นๆ',
     sun: 'อา', mon: 'จ', tue: 'อ', wed: 'พ', thu: 'พฤ', fri: 'ศ', sat: 'ส',
     month01: 'มกราคม', month02: 'กุมภาพันธ์', month03: 'มีนาคม', month04: 'เมษายน', month05: 'พฤษภาคม', month06: 'มิถุนายน', month07: 'กรกฎาคม', month08: 'สิงหาคม', month09: 'กันยายน', month10: 'ตุลาคม', month11: 'พฤศจิกายน', month12: 'ธันวาคม',
@@ -151,10 +163,16 @@ const translations = {
     dashboard: 'Dashboard', deleteTask: 'Delete Task', confirmDelete: 'Confirm Delete?', cancel: 'Cancel', deletePermanent: 'Delete Permanent',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'First Year - Individual Life',
     'พิจารณาปีแรก ประกันกลุ่ม': 'First Year - Group Life',
+    'พิจารณาปีต่อประกันรายเดี่ยว': 'Renewal - Individual Life',
+    'พิจารณาปีต่อประกันกลุ่ม': 'Renewal - Group Life',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'Claim - Group / Individual',
     'ติดตามเอกสาร AIA': 'Follow up AIA Docs',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'Follow up Docs - Indv/Group',
     'ติดตาม ประกันวินาศภัย': 'Follow up Non-Life Insurance',
     'ติดตาม อสังหาริมทรัพย์': 'Follow up Real Estate',
+    'ต่อใบอนุญาต': 'License Renewal',
+    'แจ้งเตือน CPD': 'CPD Notification',
+    'แจ้งเตือนผลงาน MOC': 'MOC Notification',
     'อื่นๆ': 'Others',
     sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
     month01: 'January', month02: 'February', month03: 'March', month04: 'April', month05: 'May', month06: 'June', month07: 'July', month08: 'August', month09: 'September', month10: 'October', month11: 'November', month12: 'December',
@@ -188,10 +206,16 @@ const translations = {
     dashboard: 'ダッシュボード', deleteTask: 'タスク削除', confirmDelete: '削除しますか？', cancel: 'キャンセル', deletePermanent: '永久削除',
     'พิจารณาปีแรก ประกันรายเดี่ยว': '初年度 - 個人生命保険',
     'พิจารณาปีแรก ประกันกลุ่ม': '初年度 - グループ生命保険',
+    'พิจารณาปีต่อประกันรายเดี่ยว': '更新 - 個人生命保険',
+    'พิจารณาปีต่อประกันกลุ่ม': '更新 - グループ生命保険',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': '請求 - グループ / 個人',
     'ติดตามเอกสาร AIA': 'AIA書類フォローアップ',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': '書類フォローアップ',
     'ติดตาม ประกันวินาศภัย': '損害保険フォローアップ',
     'ติดตาม อสังหาริมทรัพย์': '不動産フォローアップ',
+    'ต่อใบอนุญาต': 'ライセンス更新',
+    'แจ้งเตือน CPD': 'CPD通知',
+    'แจ้งเตือนผลงาน MOC': 'MOC通知',
     'อื่นๆ': 'その他',
     sun: '日', mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土',
     month01: '1月', month02: '2月', month03: '3月', month04: '4月', month05: '5月', month06: '6月', month07: '7月', month08: '8月', month09: '9月', month10: '10月', month11: '11月', month12: '12月',
@@ -232,6 +256,9 @@ export default function App() {
   const [frontFormMode, setFrontFormMode] = useState("backend"); 
   const [frontListMode, setFrontListMode] = useState("backend");
 
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+  const [isUploadingDmFile, setIsUploadingDmFile] = useState(false);
+  const prevDmCountRef = useRef(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signingIn, setSigningIn] = useState(false);
@@ -253,7 +280,6 @@ export default function App() {
 
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedDateStr, setSelectedDateStr] = useState("");
-  // 🗓️ กำหนดเวลาเริ่มต้น - สิ้นสุด สำหรับปฏิทินบริษัท/ส่วนตัว
   const [eventForm, setEventForm] = useState({ title: "", type: "personal", color: "blue", startTime: "", endTime: "" });
 
   const [actionLoading, setActionLoading] = useState({});
@@ -281,7 +307,6 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // 📢 ฟังก์ชันส่งสัญญาณเรียกแจ้งเตือน LINE Webhook
   const notifyLine = async (type, data, targetFaUid) => {
     try {
       await fetch(LINE_WEBHOOK_URL, {
@@ -294,7 +319,6 @@ export default function App() {
     }
   };
 
-  // 📱 ตั้งค่าระบบผูกบัญชี LINE (LIFF)
   useEffect(() => {
     if (!LIFF_ID || LIFF_ID === "วางรหัส LIFF ID ของคุณตรงนี้") return;
 
@@ -381,8 +405,12 @@ export default function App() {
       setTasks(taskList);
       if (selectedTaskModal) {
         const updated = taskList.find(t => t.id === selectedTaskModal.id);
+        const isNewMessage = updated?.messages?.length !== selectedTaskModal?.messages?.length;
         setSelectedTaskModal(updated || null);
-        setTimeout(() => taskChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        
+        if (isNewMessage) {
+          setTimeout(() => taskChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        }
       }
       if (pdfTask) {
         const updated = taskList.find(t => t.id === pdfTask.id);
@@ -405,7 +433,12 @@ export default function App() {
     const unSubDm = onSnapshot(qMsg, (snap) => {
       let list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() }));
       setDmMessages(list);
-      setTimeout(() => dmChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      
+      if (list.length !== prevDmCountRef.current) {
+        setTimeout(() => dmChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        prevDmCountRef.current = list.length;
+      }
+
       if (isDmOpen && dmView === 'chat') {
         list.forEach(m => {
           if (m.senderId !== user.uid && !m.isRead) updateDoc(doc(db, `chats/${chatId}/messages`, m.id), { isRead: true });
@@ -494,7 +527,6 @@ export default function App() {
       setClientName(""); setPolicyNumber(""); setNotes(""); setDueDate(""); setFilesToUpload([]); setUploadProgress(0); 
       showToast("ยื่นงานสำเร็จเรียบร้อย!");
 
-      // 🔔 1. แจ้งเตือนเมื่อมีการยื่นงานส่งหลังบ้าน (ส่งหาแอดมินหรือผู้เกี่ยวข้อง)
       if (frontFormMode === 'backend') {
         notifyLine('ASSIGN_TASK', taskData, 'ALL');
       }
@@ -502,7 +534,6 @@ export default function App() {
     finally { setSubmittingTask(false); }
   };
 
-  // 🔔 1. แจ้งเตือนเมื่อมีมอบหมายงานใหม่ (จากฝั่งแอดมิน/ผู้บริหาร)
   const handleAssignSubmit = async (e) => {
     e.preventDefault();
     if (!assignForm.clientName || !assignForm.faUid) return showToast("กรุณากรอกข้อมูลให้ครบ", "error");
@@ -527,7 +558,6 @@ export default function App() {
       };
       await addDoc(collection(db, 'tasks'), taskData);
 
-      // 🔔 ส่งสัญญาณแจ้งเตือนไปยังผู้รับผิดชอบงาน
       notifyLine('ASSIGN_TASK', taskData, targetFa.uid);
 
       setAssignForm({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); 
@@ -537,13 +567,11 @@ export default function App() {
     finally { setAssigningTask(false); }
   };
 
-  // 🔔 2. แจ้งเตือนเมื่อมีการเปลี่ยนสถานะงาน
   const handleUpdateStatus = async (taskId, newStatus) => {
     setActionLoading(p => ({ ...p, [`status-${taskId}`]: true }));
     try { 
       await updateDoc(doc(db, 'tasks', taskId), { status: newStatus, updatedAt: new Date().toISOString() }); 
       
-      // 🔔 ส่งสัญญาณแจ้งเตือนไปยังผู้รับผิดชอบงานตัวจริง
       notifyLine('UPDATE_STATUS', {
         clientName: selectedTaskModal.clientName,
         newStatus: newStatus
@@ -552,7 +580,6 @@ export default function App() {
     } finally { setActionLoading(p => ({ ...p, [`status-${taskId}`]: false })); }
   };
 
-  // 🔔 4. แจ้งเตือนเมื่อส่งข้อความในแชทของงานแต่ละงาน
   const handleSendMessage = async (taskId) => {
     const text = chatInputs[taskId] || "";
     if (!text.trim()) return;
@@ -562,7 +589,6 @@ export default function App() {
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
       setChatInputs(p => ({ ...p, [taskId]: "" }));
 
-      // 🔔 ส่งแจ้งเตือนหาคู่สนทนาที่รับผิดชอบงาน
       if (user.uid !== selectedTaskModal.faUid) {
         notifyLine('TASK_CHAT', {
           taskName: selectedTaskModal.clientName,
@@ -574,7 +600,7 @@ export default function App() {
           taskName: selectedTaskModal.clientName,
           senderName: userProfile.name,
           text: text.trim()
-        }, 'ALL'); // แจ้งแอดมินหรือหัวหน้า
+        }, 'ALL');
       }
     } finally { setActionLoading(p => ({ ...p, [`chat-${taskId}`]: false })); }
   };
@@ -591,7 +617,6 @@ export default function App() {
       const msg = { text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type, senderName: userProfile?.name, senderRole: userProfile?.role, timestamp: new Date().toISOString() };
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
       
-      // 🔔 แจ้งเตือนไฟล์แนบในช่องแชทงาน
       notifyLine('TASK_CHAT', {
         taskName: selectedTaskModal.clientName,
         senderName: userProfile.name,
@@ -601,7 +626,6 @@ export default function App() {
     finally { setIsUploadingChatFile(false); e.target.value = null; }
   };
 
-  // 🔔 3. แจ้งเตือนเมื่อส่งข้อความในแชทส่วนตัว (DM)
   const handleSendDM = async (e) => {
     e.preventDefault();
     if (!dmInput.trim() || !activeChatUser) return;
@@ -609,7 +633,6 @@ export default function App() {
       const chatId = getChatId(user.uid, activeChatUser.uid);
       await addDoc(collection(db, `chats/${chatId}/messages`), { text: dmInput.trim(), senderId: user.uid, senderName: userProfile?.name, timestamp: new Date().toISOString(), isRead: false });
       
-      // 🔔 ส่งสัญญาณแจ้งเตือน DM
       notifyLine('DM_CHAT', {
         senderName: userProfile.name,
         text: dmInput.trim()
@@ -619,7 +642,25 @@ export default function App() {
     } catch (e) { showToast("ส่งข้อความไม่สำเร็จ", "error"); }
   };
 
-  // 🔔 5. แจ้งเตือนเมื่อมีการบันทึกปฏิทินของบริษัท (และปฏิทินส่วนตัวแบบระบุเวลาได้)
+  const handleUploadDmFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !activeChatUser) return;
+    if (file.size > 5 * 1024 * 1024) return showToast("ไฟล์มีขนาดใหญ่เกิน 5MB", "error");
+    setIsUploadingDmFile(true);
+    try {
+      const chatId = getChatId(user.uid, activeChatUser.uid);
+      const refName = `chat_attachments/${Date.now()}_${file.name}`;
+      const uploadTask = uploadBytesResumable(ref(storage, refName), file);
+      const url = await new Promise((res, rej) => { uploadTask.on('state_changed', null, rej, async () => res(await getDownloadURL(uploadTask.snapshot.ref))); });
+      
+      await addDoc(collection(db, `chats/${chatId}/messages`), { 
+         text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type,
+         senderId: user.uid, senderName: userProfile?.name, timestamp: new Date().toISOString(), isRead: false 
+      });
+    } catch (err) { showToast("อัปโหลดไฟล์ไม่สำเร็จ", "error"); } 
+    finally { setIsUploadingDmFile(false); e.target.value = null; }
+  };
+
   const handleAddEventSubmit = async (e) => {
     e.preventDefault();
     if (!eventForm.title || !selectedDateStr) return;
@@ -629,13 +670,12 @@ export default function App() {
         date: selectedDateStr, 
         type: eventForm.type, 
         color: eventForm.color,
-        startTime: eventForm.startTime || "", // ⏰ เวลาเริ่ม
-        endTime: eventForm.endTime || "",     // ⏰ เวลาสิ้นสุด
+        startTime: eventForm.startTime || "", 
+        endTime: eventForm.endTime || "",     
         createdBy: user.uid, 
         createdAt: new Date().toISOString() 
       });
 
-      // 🔔 ส่งสัญญาณแจ้งเตือนทุกคน (ALL) เมื่อสร้างกิจกรรมบริษัท
       if (eventForm.type === 'company') {
         notifyLine('COMPANY_EVENT', {
           title: eventForm.title,
@@ -905,7 +945,6 @@ export default function App() {
                <form onSubmit={handleAddEventSubmit} className="space-y-4">
                  <input type="text" required placeholder={t('eventNameInput')} value={eventForm.title} onChange={e=>setEventForm({...eventForm, title:e.target.value})} className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-light outline-none focus:border-[#DEFF00]" />
                  
-                 {/* ⏰ ส่วนระบุเวลาเริ่ม - สิ้นสุด */}
                  <div className="grid grid-cols-2 gap-3">
                    <div>
                      <label className="text-[10px] text-gray-500 mb-1 block">{t('startTime')}</label>
@@ -978,7 +1017,19 @@ export default function App() {
                   const isMe = msg.senderId === user.uid;
                   return (
                     <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] font-light max-w-[85%] ${isMe ? 'bg-[#DEFF00] text-[#161A22] rounded-tr-sm shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm shadow-sm'}`}>{msg.text}</div>
+                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] font-light max-w-[85%] ${isMe ? 'bg-[#DEFF00] text-[#161A22] rounded-tr-sm shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm shadow-sm'}`}>
+                        {msg.text}
+                        {msg.attachmentUrl && (
+                          <div className="mt-2 block pb-1">
+                            {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
+                              <div className="cursor-pointer inline-block" onClick={() => setFullscreenImage(msg.attachmentUrl)}>
+                                <img src={msg.attachmentUrl} alt="attachment" className="max-h-[150px] w-auto object-contain rounded-lg shadow-sm border border-black/5 hover:opacity-90 transition-opacity" />
+                              </div> :
+                              <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white/40"><Paperclip className="w-3.5 h-3.5"/> {msg.attachmentName || t('downloadAttach')}</a>
+                            }
+                          </div>
+                        )}
+                      </div>
                       <span className="text-[9px] text-gray-400 mt-1 mx-1 font-light">{new Date(msg.timestamp).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                   );
@@ -986,9 +1037,13 @@ export default function App() {
               }
               <div ref={dmChatEndRef} />
             </div>
-            <form onSubmit={handleSendDM} className="p-3 bg-white border-t border-gray-100 flex gap-2">
-              <input type="text" value={dmInput} onChange={e=>setDmInput(e.target.value)} placeholder={t('typeMessage')} className="flex-1 bg-gray-50 px-4 py-2.5 text-sm font-light rounded-full outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200" />
-              <button type="submit" disabled={!dmInput.trim()} className="w-10 h-10 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50"><Send className="w-4 h-4 ml-0.5 stroke-[1.5]"/></button>
+            <form onSubmit={handleSendDM} className="p-2.5 bg-white border-t border-gray-100 flex gap-2 items-center">
+              <label className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full cursor-pointer transition-colors shrink-0" title={t('attachFileText')}>
+                 {isUploadingDmFile ? <Loader2 className="w-4 h-4 animate-spin"/> : <ImageIcon className="w-4 h-4 stroke-[1.5]" />}
+                 <input type="file" className="hidden" accept="image/*,application/pdf" onChange={handleUploadDmFile} disabled={isUploadingDmFile} />
+              </label>
+              <input type="text" value={dmInput} onChange={e=>setDmInput(e.target.value)} placeholder={t('typeMessage')} className="flex-1 bg-gray-50 px-4 py-2 text-sm font-light rounded-full outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200" />
+              <button type="submit" disabled={!dmInput.trim()} className="w-9 h-9 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50"><Send className="w-3.5 h-3.5 ml-0.5 stroke-[1.5]"/></button>
             </form>
           </>
         )}
@@ -1396,7 +1451,7 @@ export default function App() {
       {renderDMWidget()}
 
       {selectedTaskModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
           <div className="relative w-full h-full sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
             
             <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 sm:bg-white z-10 sticky top-0 shrink-0">
@@ -1416,8 +1471,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 custom-scrollbar">
-               <div className="flex flex-col space-y-6">
+            <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 sm:p-8 flex flex-col md:flex-row gap-6 sm:gap-8 custom-scrollbar">
+               <div className="w-full md:w-1/2 flex flex-col space-y-6 md:overflow-y-auto custom-scrollbar md:pr-4 pb-2 md:pb-0">
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
                     <div className="space-y-4 text-sm font-light">
@@ -1437,7 +1492,7 @@ export default function App() {
                         {selectedTaskModal.attachments.map((file, idx) => {
                           const isImg = file.url.match(/\.(jpeg|jpg|gif|png|webp)/i) || file.url.includes('images%2F') || file.type?.startsWith('image/');
                           return (
-                            <a key={idx} href={file.url} target="_blank" rel="noopener noreferrer" className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden">
+                            <div key={idx} className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden cursor-pointer" onClick={() => isImg ? setFullscreenImage(file.url) : window.open(file.url, '_blank')}>
                               {isImg ? (
                                 <img src={file.url} alt="attachment" className="w-full h-24 object-cover rounded-lg mb-2" />
                               ) : (
@@ -1446,7 +1501,7 @@ export default function App() {
                                 </div>
                               )}
                               <span className="text-[9px] text-gray-500 text-center truncate w-full font-light px-1">{file.name}</span>
-                            </a>
+                            </div>
                           );
                         })}
                       </div>
@@ -1481,7 +1536,7 @@ export default function App() {
                   )}
                </div>
 
-               <div className="flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[400px] sm:h-full min-h-[400px]">
+               <div className="w-full md:w-1/2 flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[500px] md:h-full shrink-0">
                   <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('chatHistory')}</h4>
                   <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {(!selectedTaskModal.messages || selectedTaskModal.messages.length===0) ? <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-60"><MessageSquare className="w-8 h-8 mb-2 stroke-[1.5]"/><span className="text-xs font-light">{t('noChatHistory')}</span></div> : 
@@ -1496,7 +1551,7 @@ export default function App() {
                                 <div className="mt-3 block pb-1">
                                   {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
                                     <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3">
-                                        <img src={msg.attachmentUrl} alt="attachment" className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm" />
+                                        <img src={msg.attachmentUrl} alt="attachment" onClick={() => setFullscreenImage(msg.attachmentUrl)} className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm cursor-pointer hover:opacity-90 transition-opacity" />
                                     </div> :
                                     <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white"><Paperclip className="w-3.5 h-3.5"/> {msg.attachmentName || t('downloadAttach')}</a>
                                   }
@@ -1525,7 +1580,7 @@ export default function App() {
       )}
 
       {showAssignModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#161A22]/20 backdrop-blur-sm" onClick={() => setShowAssignModal(false)}></div>
           <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-[0_10px_50px_rgba(0,0,0,0.1)] overflow-hidden animate-[fadeIn_0.2s_ease-out]">
              <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center">
@@ -1554,8 +1609,27 @@ export default function App() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
-                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('typeMessage')}></textarea>
+                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('orderDetails')}></textarea>
                 </div>
+                
+                {/* แนบไฟล์ตอนมอบหมายงาน */}
+                <div>
+                  <label className="flex flex-col items-center justify-center w-full border border-dashed border-gray-200 bg-gray-50/50 hover:bg-gray-50 rounded-[2rem] p-5 cursor-pointer transition-colors">
+                    <Camera className="w-5 h-5 text-gray-400 mb-2 stroke-[1.5]"/><span className="text-[11px] text-gray-500 font-light">{t('attach')}</span>
+                    <input type="file" multiple className="hidden" accept="image/*,.pdf" onChange={(e) => handleFileChange(e, true)} />
+                  </label>
+                  {assignFilesToUpload.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      {assignFilesToUpload.map((f,i) => (
+                        <div key={i} className="flex justify-between items-center bg-gray-50 p-2.5 rounded-xl text-[11px] font-light border border-gray-100 text-gray-600">
+                          <span className="truncate pr-2">{f.name}</span>
+                          <button type="button" onClick={()=>removeFile(i, true)} className="text-gray-400 hover:text-red-500"><X className="w-3.5 h-3.5"/></button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <button type="submit" disabled={assigningTask} className="w-full bg-[#161A22] text-[#DEFF00] py-4 rounded-full font-medium text-sm hover:bg-black transition-colors mt-2 flex justify-center items-center gap-2">
                   {assigningTask ? <><Loader2 className="w-4 h-4 animate-spin"/> กำลังดำเนินการ...</> : t('confirmAssign')}
                 </button>
@@ -1579,7 +1653,6 @@ export default function App() {
           
           <div className="flex gap-3 w-full sm:w-auto justify-center">
             
-            {/* 🟢 ปุ่ม "เชื่อมต่อ LINE" สีเขียวพรีเมียม สไตล์ LINE OA */}
             {userProfile && (
               <button 
                 onClick={handleLinkLine} 
@@ -1770,7 +1843,7 @@ export default function App() {
                                   <p className="font-medium text-gray-800 text-[13px] mb-1">{task.clientName}</p>
                                   <p className="text-[10px] text-gray-500 font-light truncate">{t(task.serviceType)}</p>
                                   <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                                     <span className="text-[9px] bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1.5"><Users className="w-3 h-3 text-gray-400"/> {task.faName?.split(' ')[0]}</span>
+                                     <span className="text-[9px] bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-gray-400"/> {task.faName?.split(' ')[0]}</span>
                                   </div>
                                 </div>
                               ))
@@ -1838,6 +1911,16 @@ export default function App() {
         )}
 
       </div>
+
+      {/* เพิ่มหน้าต่าง Modal สำหรับดูรูปภาพขนาดใหญ่ */}
+      {fullscreenImage && (
+        <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setFullscreenImage(null)}>
+          <button onClick={() => setFullscreenImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"><X className="w-6 h-6"/></button>
+          <img src={fullscreenImage} alt="fullscreen" className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)]" onClick={(e) => e.stopPropagation()} />
+          <a href={fullscreenImage} target="_blank" rel="noopener noreferrer" className="absolute bottom-8 bg-white text-gray-900 px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-gray-100 transition-colors shadow-lg" onClick={e=>e.stopPropagation()}><Download className="w-4 h-4"/> เปิดรูปต้นฉบับ / บันทึกภาพ</a>
+        </div>
+      )}
+
     </div>
   );
 }
