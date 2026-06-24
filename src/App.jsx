@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -26,10 +27,7 @@ const firebaseConfig = {
   measurementId: "G-421DEJT06S"
 };
 
-// ลิงก์ Webhook สำหรับส่งเข้า LINE
 const LINE_WEBHOOK_URL = "https://asia-southeast1-mcdjwatrackflow.cloudfunctions.net/sendLineNotification";
-
-// กลับมาใช้รหัส LIFF ID ที่ทำงานได้ปกติ
 const LIFF_ID = "2010475900-0hTYAPSL"; 
 
 const app = initializeApp(firebaseConfig);
@@ -40,16 +38,10 @@ const storage = getStorage(app);
 const TASK_TYPES = [
   'พิจารณาปีแรก ประกันรายเดี่ยว',
   'พิจารณาปีแรก ประกันกลุ่ม',
-  'พิจารณาปีต่อประกันรายเดี่ยว',
-  'พิจารณาปีต่อประกันกลุ่ม',
   'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
   'ติดตามเอกสาร AIA',
-  'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
   'ติดตาม ประกันวินาศภัย',
   'ติดตาม อสังหาริมทรัพย์',
-  'ต่อใบอนุญาต',
-  'แจ้งเตือน CPD',
-  'แจ้งเตือนผลงาน MOC',
   'อื่นๆ'
 ];
 
@@ -120,16 +112,10 @@ const translations = {
     dashboard: 'แดชบอร์ด', deleteTask: 'ลบงานนี้', confirmDelete: 'ยืนยันการลบ?', cancel: 'ยกเลิก', deletePermanent: 'ลบถาวร',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'พิจารณาปีแรก ประกันรายเดี่ยว',
     'พิจารณาปีแรก ประกันกลุ่ม': 'พิจารณาปีแรก ประกันกลุ่ม',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'พิจารณาปีต่อประกันรายเดี่ยว',
-    'พิจารณาปีต่อประกันกลุ่ม': 'พิจารณาปีต่อประกันกลุ่ม',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
     'ติดตามเอกสาร AIA': 'ติดตามเอกสาร AIA',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
     'ติดตาม ประกันวินาศภัย': 'ติดตาม ประกันวินาศภัย',
     'ติดตาม อสังหาริมทรัพย์': 'ติดตาม อสังหาริมทรัพย์',
-    'ต่อใบอนุญาต': 'ต่อใบอนุญาต',
-    'แจ้งเตือน CPD': 'แจ้งเตือน CPD',
-    'แจ้งเตือนผลงาน MOC': 'แจ้งเตือนผลงาน MOC',
     'อื่นๆ': 'อื่นๆ',
     sun: 'อา', mon: 'จ', tue: 'อ', wed: 'พ', thu: 'พฤ', fri: 'ศ', sat: 'ส',
     month01: 'มกราคม', month02: 'กุมภาพันธ์', month03: 'มีนาคม', month04: 'เมษายน', month05: 'พฤษภาคม', month06: 'มิถุนายน', month07: 'กรกฎาคม', month08: 'สิงหาคม', month09: 'กันยายน', month10: 'ตุลาคม', month11: 'พฤศจิกายน', month12: 'ธันวาคม',
@@ -163,16 +149,10 @@ const translations = {
     dashboard: 'Dashboard', deleteTask: 'Delete Task', confirmDelete: 'Confirm Delete?', cancel: 'Cancel', deletePermanent: 'Delete Permanent',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'First Year - Individual Life',
     'พิจารณาปีแรก ประกันกลุ่ม': 'First Year - Group Life',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'Renewal - Individual Life',
-    'พิจารณาปีต่อประกันกลุ่ม': 'Renewal - Group Life',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'Claim - Group / Individual',
     'ติดตามเอกสาร AIA': 'Follow up AIA Docs',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'Follow up Docs - Indv/Group',
     'ติดตาม ประกันวินาศภัย': 'Follow up Non-Life Insurance',
     'ติดตาม อสังหาริมทรัพย์': 'Follow up Real Estate',
-    'ต่อใบอนุญาต': 'License Renewal',
-    'แจ้งเตือน CPD': 'CPD Notification',
-    'แจ้งเตือนผลงาน MOC': 'MOC Notification',
     'อื่นๆ': 'Others',
     sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
     month01: 'January', month02: 'February', month03: 'March', month04: 'April', month05: 'May', month06: 'June', month07: 'July', month08: 'August', month09: 'September', month10: 'October', month11: 'November', month12: 'December',
@@ -206,16 +186,10 @@ const translations = {
     dashboard: 'ダッシュボード', deleteTask: 'タスク削除', confirmDelete: '削除しますか？', cancel: 'キャンセル', deletePermanent: '永久削除',
     'พิจารณาปีแรก ประกันรายเดี่ยว': '初年度 - 個人生命保険',
     'พิจารณาปีแรก ประกันกลุ่ม': '初年度 - グループ生命保険',
-    'พิจารณาปีต่อประกันรายเดี่ยว': '更新 - 個人生命保険',
-    'พิจารณาปีต่อประกันกลุ่ม': '更新 - グループ生命保険',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': '請求 - グループ / 個人',
     'ติดตามเอกสาร AIA': 'AIA書類フォローアップ',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': '書類フォローアップ',
     'ติดตาม ประกันวินาศภัย': '損害保険フォローアップ',
     'ติดตาม อสังหาริมทรัพย์': '不動産フォローアップ',
-    'ต่อใบอนุญาต': 'ライセンス更新',
-    'แจ้งเตือน CPD': 'CPD通知',
-    'แจ้งเตือนผลงาน MOC': 'MOC通知',
     'อื่นๆ': 'その他',
     sun: '日', mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土',
     month01: '1月', month02: '2月', month03: '3月', month04: '4月', month05: '5月', month06: '6月', month07: '7月', month08: '8月', month09: '9月', month10: '10月', month11: '11月', month12: '12月',
@@ -252,14 +226,11 @@ export default function App() {
   const [showFilesModal, setShowFilesModal] = useState(false); 
   const [hideImagesForPdf, setHideImagesForPdf] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
-  const [deleteEventConfirmId, setDeleteEventConfirmId] = useState(null);
   
   const [frontFormMode, setFrontFormMode] = useState("backend"); 
   const [frontListMode, setFrontListMode] = useState("backend");
 
   const [fullscreenImage, setFullscreenImage] = useState(null);
-  const [isUploadingDmFile, setIsUploadingDmFile] = useState(false);
-  const prevDmCountRef = useRef(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signingIn, setSigningIn] = useState(false);
@@ -297,10 +268,12 @@ export default function App() {
   const [activeChatUser, setActiveChatUser] = useState(null);
   const [dmMessages, setDmMessages] = useState([]);
   const [dmInput, setDmInput] = useState("");
+  const [isUploadingDmFile, setIsUploadingDmFile] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
 
   const dmChatEndRef = useRef(null);
   const taskChatEndRef = useRef(null);
+  const prevDmCountRef = useRef(0);
   const [isLiffReady, setIsLiffReady] = useState(false);
 
   const showToast = (message, type = 'success') => {
@@ -581,6 +554,45 @@ export default function App() {
     } finally { setActionLoading(p => ({ ...p, [`status-${taskId}`]: false })); }
   };
 
+  // 🔄 ฟังก์ชันใหม่: สำหรับเปลี่ยนผู้รับผิดชอบงาน
+  const handleChangeAssignee = async (taskId, newFaUid) => {
+    if (!newFaUid) return;
+    const targetFa = allAvailableFAs.find(f => f.uid === newFaUid);
+    if (!targetFa) return;
+
+    setActionLoading(p => ({ ...p, [`assignee-${taskId}`]: true }));
+    try {
+      const msg = {
+        text: `[ระบบ] ผู้บริหาร/แอดมิน ได้โอนย้ายงานนี้ให้: ${targetFa.name} เป็นผู้รับผิดชอบต่อ`,
+        senderName: userProfile?.name || 'System',
+        senderRole: userProfile?.role || 'Admin',
+        timestamp: new Date().toISOString()
+      };
+
+      await updateDoc(doc(db, 'tasks', taskId), {
+        faUid: targetFa.uid,
+        faName: targetFa.name,
+        messages: arrayUnion(msg),
+        updatedAt: new Date().toISOString()
+      });
+
+      // แจ้งเตือน FA คนใหม่ที่ได้รับงาน
+      notifyLine('ASSIGN_TASK', {
+        clientName: selectedTaskModal.clientName,
+        serviceType: selectedTaskModal.serviceType,
+        urgency: selectedTaskModal.urgency,
+        dueDate: selectedTaskModal.dueDate,
+        notes: `[โอนย้ายงาน] งานนี้ถูกส่งต่อให้คุณดูแล โดย ${userProfile?.name}`
+      }, targetFa.uid);
+
+      showToast(`โอนย้ายงานให้ ${targetFa.name} สำเร็จแล้ว`);
+    } catch (e) {
+      showToast("เกิดข้อผิดพลาดในการเปลี่ยนผู้รับผิดชอบ", "error");
+    } finally {
+      setActionLoading(p => ({ ...p, [`assignee-${taskId}`]: false }));
+    }
+  };
+
   const handleSendMessage = async (taskId) => {
     const text = chatInputs[taskId] || "";
     if (!text.trim()) return;
@@ -690,14 +702,6 @@ export default function App() {
       setEventForm({ title: "", type: "personal", color: "blue", startTime: "", endTime: "" }); 
       showToast("เพิ่มกิจกรรมเรียบร้อย");
     } catch (error) { showToast("เกิดข้อผิดพลาด", "error"); }
-  };
-
-  const handleDeleteEvent = async (eventId) => {
-    try {
-      await deleteDoc(doc(db, 'events', eventId));
-      setDeleteEventConfirmId(null);
-      showToast("ลบกิจกรรมเรียบร้อยแล้ว");
-    } catch (error) { showToast("เกิดข้อผิดพลาดในการลบกิจกรรม", "error"); }
   };
 
   const handleDeleteTask = async (taskId) => {
@@ -932,28 +936,9 @@ export default function App() {
                        </div>
                    ))}
                    {dayEvents.map(ev => (
-                       <div key={`ev-${ev.id}`} onClick={(e) => e.stopPropagation()} className={`relative group text-[9px] px-2 py-1.5 rounded-md font-light flex flex-col ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>
-                          {deleteEventConfirmId === ev.id ? (
-                            <div className="flex items-center justify-between w-full bg-white/60 p-0.5 rounded">
-                               <span className="text-[8px] font-medium text-red-600 truncate mr-1">ลบ?</span>
-                               <div className="flex gap-1 shrink-0">
-                                 <button onClick={(e) => { e.stopPropagation(); handleDeleteEvent(ev.id); }} className="p-0.5 bg-red-500 text-white rounded-sm hover:bg-red-600"><CheckCircle className="w-2.5 h-2.5"/></button>
-                                 <button onClick={(e) => { e.stopPropagation(); setDeleteEventConfirmId(null); }} className="p-0.5 bg-gray-200 text-gray-700 rounded-sm hover:bg-gray-300"><X className="w-2.5 h-2.5"/></button>
-                               </div>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="flex justify-between items-start gap-1">
-                                <span className="font-medium truncate">{ev.title}</span>
-                                {(ev.createdBy === user.uid || userProfile?.role === 'Admin' || userProfile?.role === 'Executive') && (
-                                  <button onClick={(e) => { e.stopPropagation(); setDeleteEventConfirmId(ev.id); }} className="opacity-0 group-hover:opacity-100 hover:text-red-600 transition-opacity shrink-0 bg-white/50 rounded-full p-0.5">
-                                    <Trash2 className="w-2.5 h-2.5" />
-                                  </button>
-                                )}
-                              </div>
-                              {(ev.startTime || ev.endTime) && <span className="text-[8px] opacity-80 mt-0.5">{ev.startTime || '...'} - {ev.endTime || '...'}</span>}
-                            </>
-                          )}
+                       <div key={`ev-${ev.id}`} className={`text-[9px] px-2 py-1 rounded-md truncate font-light flex flex-col ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>
+                          <span className="font-medium truncate">{ev.title}</span>
+                          {(ev.startTime || ev.endTime) && <span className="text-[8px] opacity-80 mt-0.5">{ev.startTime || '...'} - {ev.endTime || '...'}</span>}
                        </div>
                    ))}
                  </div>
@@ -1479,7 +1464,7 @@ export default function App() {
       {renderDMWidget()}
 
       {selectedTaskModal && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
           <div className="relative w-full h-full sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
             
             <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 sm:bg-white z-10 sticky top-0 shrink-0">
@@ -1499,8 +1484,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 sm:p-8 flex flex-col md:flex-row gap-6 sm:gap-8 custom-scrollbar">
-               <div className="w-full md:w-1/2 flex flex-col space-y-6 md:overflow-y-auto custom-scrollbar md:pr-4 pb-2 md:pb-0">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 custom-scrollbar">
+               <div className="flex flex-col space-y-6">
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
                     <div className="space-y-4 text-sm font-light">
@@ -1542,6 +1527,23 @@ export default function App() {
                       <div className="grid grid-cols-2 gap-2">
                         {KANBAN_COLUMNS.map(c => <button key={c.id} disabled={actionLoading[`status-${selectedTaskModal.id}`]} onClick={()=>handleUpdateStatus(selectedTaskModal.id, c.id)} className={`py-2.5 px-2 text-[11px] font-medium rounded-xl transition-all border ${selectedTaskModal.status===c.id ? 'bg-[#DEFF00] text-gray-800 border-[#DEFF00] shadow-sm' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300'}`}>{t(c.tKey)}</button>)}
                       </div>
+                      
+                      {/* เมนูเปลี่ยนผู้รับผิดชอบ (สำหรับแอดมินและผู้บริหาร) */}
+                      <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-3 mt-5">โอนย้ายงาน / เปลี่ยนผู้รับผิดชอบ</h4>
+                      <select
+                        disabled={actionLoading[`assignee-${selectedTaskModal.id}`]}
+                        value={selectedTaskModal.faUid}
+                        onChange={(e) => {
+                          if(window.confirm('ยืนยันการโอนย้ายงานนี้ให้ผู้รับผิดชอบคนใหม่ใช่หรือไม่?')){
+                            handleChangeAssignee(selectedTaskModal.id, e.target.value);
+                          }
+                        }}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-light appearance-none outline-none focus:border-[#DEFF00] cursor-pointer hover:bg-gray-50 transition-colors"
+                      >
+                        {allAvailableFAs.map(fa => (
+                          <option key={fa.uid} value={fa.uid}>{fa.name} ({fa.role || 'FA'})</option>
+                        ))}
+                      </select>
                     </div>
                   )}
 
@@ -1564,12 +1566,24 @@ export default function App() {
                   )}
                </div>
 
-               <div className="w-full md:w-1/2 flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[500px] md:h-full shrink-0">
+               <div className="flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[400px] sm:h-full min-h-[400px]">
                   <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('chatHistory')}</h4>
                   <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {(!selectedTaskModal.messages || selectedTaskModal.messages.length===0) ? <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-60"><MessageSquare className="w-8 h-8 mb-2 stroke-[1.5]"/><span className="text-xs font-light">{t('noChatHistory')}</span></div> : 
                       selectedTaskModal.messages.map((msg, idx) => {
                         const isMe = msg.senderName === userProfile?.name;
+                        const isSystem = msg.senderName === 'System';
+                        
+                        if (isSystem) {
+                          return (
+                            <div key={idx} className="flex justify-center my-4">
+                              <span className="bg-gray-100/80 text-gray-500 text-[10px] font-medium px-4 py-1.5 rounded-full border border-gray-200">
+                                {msg.text}
+                              </span>
+                            </div>
+                          );
+                        }
+
                         return (
                           <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                             <span className="text-[10px] text-gray-400 font-light mb-1 ml-1 tracking-wider uppercase">{msg.senderName} ({msg.senderRole})</span>
@@ -1608,7 +1622,7 @@ export default function App() {
       )}
 
       {showAssignModal && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#161A22]/20 backdrop-blur-sm" onClick={() => setShowAssignModal(false)}></div>
           <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-[0_10px_50px_rgba(0,0,0,0.1)] overflow-hidden animate-[fadeIn_0.2s_ease-out]">
              <div className="px-8 py-6 border-b border-gray-50 flex justify-between items-center">
@@ -1637,27 +1651,8 @@ export default function App() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
-                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('orderDetails')}></textarea>
+                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('typeMessage')}></textarea>
                 </div>
-                
-                {/* แนบไฟล์ตอนมอบหมายงาน */}
-                <div>
-                  <label className="flex flex-col items-center justify-center w-full border border-dashed border-gray-200 bg-gray-50/50 hover:bg-gray-50 rounded-[2rem] p-5 cursor-pointer transition-colors">
-                    <Camera className="w-5 h-5 text-gray-400 mb-2 stroke-[1.5]"/><span className="text-[11px] text-gray-500 font-light">{t('attach')}</span>
-                    <input type="file" multiple className="hidden" accept="image/*,.pdf" onChange={(e) => handleFileChange(e, true)} />
-                  </label>
-                  {assignFilesToUpload.length > 0 && (
-                    <div className="mt-2 space-y-2">
-                      {assignFilesToUpload.map((f,i) => (
-                        <div key={i} className="flex justify-between items-center bg-gray-50 p-2.5 rounded-xl text-[11px] font-light border border-gray-100 text-gray-600">
-                          <span className="truncate pr-2">{f.name}</span>
-                          <button type="button" onClick={()=>removeFile(i, true)} className="text-gray-400 hover:text-red-500"><X className="w-3.5 h-3.5"/></button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
                 <button type="submit" disabled={assigningTask} className="w-full bg-[#161A22] text-[#DEFF00] py-4 rounded-full font-medium text-sm hover:bg-black transition-colors mt-2 flex justify-center items-center gap-2">
                   {assigningTask ? <><Loader2 className="w-4 h-4 animate-spin"/> กำลังดำเนินการ...</> : t('confirmAssign')}
                 </button>
@@ -1940,7 +1935,6 @@ export default function App() {
 
       </div>
 
-      {/* เพิ่มหน้าต่าง Modal สำหรับดูรูปภาพขนาดใหญ่ */}
       {fullscreenImage && (
         <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setFullscreenImage(null)}>
           <button onClick={() => setFullscreenImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"><X className="w-6 h-6"/></button>
