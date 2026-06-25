@@ -500,8 +500,9 @@ export default function App() {
       setClientName(""); setPolicyNumber(""); setNotes(""); setDueDate(""); setFilesToUpload([]); setUploadProgress(0); 
       showToast("ยื่นงานสำเร็จเรียบร้อย!");
 
+      // 🔔 ยื่นงานส่งหลังบ้าน (ให้แจ้งเตือนแอดมินและผู้บริหารทุกคน)
       if (frontFormMode === 'backend') {
-        notifyLine('ASSIGN_TASK', taskData, 'ALL');
+        notifyLine('ASSIGN_TASK', taskData, 'ADMIN_OR_ALL');
       }
     } catch (e) { showToast("เกิดข้อผิดพลาดในการยื่นงาน", "error"); }
     finally { setSubmittingTask(false); }
@@ -601,19 +602,15 @@ export default function App() {
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
       setChatInputs(p => ({ ...p, [taskId]: "" }));
 
-      if (user.uid !== selectedTaskModal.faUid) {
-        notifyLine('TASK_CHAT', {
-          taskName: selectedTaskModal.clientName,
-          senderName: userProfile.name,
-          text: text.trim()
-        }, selectedTaskModal.faUid);
-      } else {
-        notifyLine('TASK_CHAT', {
-          taskName: selectedTaskModal.clientName,
-          senderName: userProfile.name,
-          text: text.trim()
-        }, 'ALL');
-      }
+      // ส่งแจ้งเตือนแชทงาน พร้อมแนบ taskId และ senderUid ให้หลังบ้านไปกวาดรายชื่อผู้เกี่ยวข้อง
+      notifyLine('TASK_CHAT', {
+        taskId: taskId,                     // เพิ่มรหัสอ้างอิงงาน
+        taskName: selectedTaskModal.clientName,
+        senderName: userProfile.name,
+        senderUid: user.uid,                // เพิ่มรหัสของคนพิมพ์
+        text: text.trim()
+      }, 'ALL'); // ส่ง ALL ไปเพื่อให้หลังบ้านทำงานในโหมดกวาดรายชื่อ
+
     } finally { setActionLoading(p => ({ ...p, [`chat-${taskId}`]: false })); }
   };
 
@@ -629,11 +626,15 @@ export default function App() {
       const msg = { text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type, senderName: userProfile?.name, senderRole: userProfile?.role, timestamp: new Date().toISOString() };
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
       
+      // ส่งแจ้งเตือนแชทงาน (แนบไฟล์) พร้อมแนบ taskId และ senderUid ให้หลังบ้านไปกวาดรายชื่อผู้เกี่ยวข้อง
       notifyLine('TASK_CHAT', {
+        taskId: taskId,                     // เพิ่มรหัสอ้างอิงงาน
         taskName: selectedTaskModal.clientName,
         senderName: userProfile.name,
+        senderUid: user.uid,                // เพิ่มรหัสของคนพิมพ์
         text: "[ส่งรูปภาพ/ไฟล์แนบ]"
-      }, selectedTaskModal.faUid);
+      }, 'ALL'); // ส่ง ALL ไปเพื่อให้หลังบ้านทำงานในโหมดกวาดรายชื่อ
+      
     } catch (err) { showToast("อัปโหลดไฟล์ไม่สำเร็จ", "error"); } 
     finally { setIsUploadingChatFile(false); e.target.value = null; }
   };
