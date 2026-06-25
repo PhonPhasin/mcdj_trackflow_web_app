@@ -13,7 +13,7 @@ import {
   Lock, Mail, LogOut, CheckCircle, AlertTriangle, 
   Send, Loader2, Search, FileText, Camera, Paperclip, MessageSquare,
   LayoutDashboard, Users, X, Plus, Calendar as CalendarIcon, Trash2, Globe, MessageCircle, ChevronLeft, Download, Image as ImageIcon,
-  Clock
+  Link as LinkIcon, Clock
 } from 'lucide-react';
 
 const firebaseConfig = {
@@ -27,6 +27,8 @@ const firebaseConfig = {
 };
 
 const LINE_WEBHOOK_URL = "https://asia-southeast1-mcdjwatrackflow.cloudfunctions.net/sendLineNotification";
+
+// กลับมาใช้รหัส LIFF ID ตัวเดิมที่ทำงานได้ปกติเพื่อแก้ปัญหา "Not Found"
 const LIFF_ID = "2010475900-0hTYAPSL"; 
 
 const app = initializeApp(firebaseConfig);
@@ -37,10 +39,16 @@ const storage = getStorage(app);
 const TASK_TYPES = [
   'พิจารณาปีแรก ประกันรายเดี่ยว',
   'พิจารณาปีแรก ประกันกลุ่ม',
+  'พิจารณาปีต่อประกันรายเดี่ยว',
+  'พิจารณาปีต่อประกันกลุ่ม',
   'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
   'ติดตามเอกสาร AIA',
+  'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
   'ติดตาม ประกันวินาศภัย',
   'ติดตาม อสังหาริมทรัพย์',
+  'ต่อใบอนุญาต',
+  'แจ้งเตือน CPD',
+  'แจ้งเตือนผลงาน MOC',
   'อื่นๆ'
 ];
 
@@ -111,10 +119,16 @@ const translations = {
     dashboard: 'แดชบอร์ด', deleteTask: 'ลบงานนี้', confirmDelete: 'ยืนยันการลบ?', cancel: 'ยกเลิก', deletePermanent: 'ลบถาวร',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'พิจารณาปีแรก ประกันรายเดี่ยว',
     'พิจารณาปีแรก ประกันกลุ่ม': 'พิจารณาปีแรก ประกันกลุ่ม',
+    'พิจารณาปีต่อประกันรายเดี่ยว': 'พิจารณาปีต่อประกันรายเดี่ยว',
+    'พิจารณาปีต่อประกันกลุ่ม': 'พิจารณาปีต่อประกันกลุ่ม',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
     'ติดตามเอกสาร AIA': 'ติดตามเอกสาร AIA',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
     'ติดตาม ประกันวินาศภัย': 'ติดตาม ประกันวินาศภัย',
     'ติดตาม อสังหาริมทรัพย์': 'ติดตาม อสังหาริมทรัพย์',
+    'ต่อใบอนุญาต': 'ต่อใบอนุญาต',
+    'แจ้งเตือน CPD': 'แจ้งเตือน CPD',
+    'แจ้งเตือนผลงาน MOC': 'แจ้งเตือนผลงาน MOC',
     'อื่นๆ': 'อื่นๆ',
     sun: 'อา', mon: 'จ', tue: 'อ', wed: 'พ', thu: 'พฤ', fri: 'ศ', sat: 'ส',
     month01: 'มกราคม', month02: 'กุมภาพันธ์', month03: 'มีนาคม', month04: 'เมษายน', month05: 'พฤษภาคม', month06: 'มิถุนายน', month07: 'กรกฎาคม', month08: 'สิงหาคม', month09: 'กันยายน', month10: 'ตุลาคม', month11: 'พฤศจิกายน', month12: 'ธันวาคม',
@@ -148,10 +162,16 @@ const translations = {
     dashboard: 'Dashboard', deleteTask: 'Delete Task', confirmDelete: 'Confirm Delete?', cancel: 'Cancel', deletePermanent: 'Delete Permanent',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'First Year - Individual Life',
     'พิจารณาปีแรก ประกันกลุ่ม': 'First Year - Group Life',
+    'พิจารณาปีต่อประกันรายเดี่ยว': 'Renewal - Individual Life',
+    'พิจารณาปีต่อประกันกลุ่ม': 'Renewal - Group Life',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'Claim - Group / Individual',
     'ติดตามเอกสาร AIA': 'Follow up AIA Docs',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'Follow up Docs - Indv/Group',
     'ติดตาม ประกันวินาศภัย': 'Follow up Non-Life Insurance',
     'ติดตาม อสังหาริมทรัพย์': 'Follow up Real Estate',
+    'ต่อใบอนุญาต': 'License Renewal',
+    'แจ้งเตือน CPD': 'CPD Notification',
+    'แจ้งเตือนผลงาน MOC': 'MOC Notification',
     'อื่นๆ': 'Others',
     sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
     month01: 'January', month02: 'February', month03: 'March', month04: 'April', month05: 'May', month06: 'June', month07: 'July', month08: 'August', month09: 'September', month10: 'October', month11: 'November', month12: 'December',
@@ -185,10 +205,16 @@ const translations = {
     dashboard: 'ダッシュボード', deleteTask: 'タスク削除', confirmDelete: '削除しますか？', cancel: 'キャンセル', deletePermanent: '永久削除',
     'พิจารณาปีแรก ประกันรายเดี่ยว': '初年度 - 個人生命保険',
     'พิจารณาปีแรก ประกันกลุ่ม': '初年度 - グループ生命保険',
+    'พิจารณาปีต่อประกันรายเดี่ยว': '更新 - 個人生命保険',
+    'พิจารณาปีต่อประกันกลุ่ม': '更新 - グループ生命保険',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': '請求 - グループ / 個人',
     'ติดตามเอกสาร AIA': 'AIA書類フォローアップ',
+    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': '書類フォローアップ',
     'ติดตาม ประกันวินาศภัย': '損害保険フォローアップ',
     'ติดตาม อสังหาริมทรัพย์': '不動産フォローアップ',
+    'ต่อใบอนุญาต': 'ライセンス更新',
+    'แจ้งเตือน CPD': 'CPD通知',
+    'แจ้งเตือนผลงาน MOC': 'MOC通知',
     'อื่นๆ': 'その他',
     sun: '日', mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土',
     month01: '1月', month02: '2月', month03: '3月', month04: '4月', month05: '5月', month06: '6月', month07: '7月', month08: '8月', month09: '9月', month10: '10月', month11: '11月', month12: '12月',
@@ -230,6 +256,8 @@ export default function App() {
   const [frontListMode, setFrontListMode] = useState("backend");
 
   const [fullscreenImage, setFullscreenImage] = useState(null);
+  const [isUploadingDmFile, setIsUploadingDmFile] = useState(false);
+  const prevDmCountRef = useRef(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signingIn, setSigningIn] = useState(false);
@@ -267,12 +295,10 @@ export default function App() {
   const [activeChatUser, setActiveChatUser] = useState(null);
   const [dmMessages, setDmMessages] = useState([]);
   const [dmInput, setDmInput] = useState("");
-  const [isUploadingDmFile, setIsUploadingDmFile] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
 
   const dmChatEndRef = useRef(null);
   const taskChatEndRef = useRef(null);
-  const prevDmCountRef = useRef(0);
   const [isLiffReady, setIsLiffReady] = useState(false);
 
   const showToast = (message, type = 'success') => {
@@ -500,9 +526,8 @@ export default function App() {
       setClientName(""); setPolicyNumber(""); setNotes(""); setDueDate(""); setFilesToUpload([]); setUploadProgress(0); 
       showToast("ยื่นงานสำเร็จเรียบร้อย!");
 
-      // 🔔 ยื่นงานส่งหลังบ้าน (ให้แจ้งเตือนแอดมินและผู้บริหารทุกคน)
       if (frontFormMode === 'backend') {
-        notifyLine('ASSIGN_TASK', taskData, 'ADMIN_OR_ALL');
+        notifyLine('ASSIGN_TASK', { ...taskData, senderUid: user.uid }, 'ADMINS_AND_OWNER');
       }
     } catch (e) { showToast("เกิดข้อผิดพลาดในการยื่นงาน", "error"); }
     finally { setSubmittingTask(false); }
@@ -532,7 +557,7 @@ export default function App() {
       };
       await addDoc(collection(db, 'tasks'), taskData);
 
-      notifyLine('ASSIGN_TASK', taskData, targetFa.uid);
+      notifyLine('ASSIGN_TASK', { ...taskData, senderUid: user.uid }, targetFa.uid);
 
       setAssignForm({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); 
       setAssignFilesToUpload([]); setShowAssignModal(false); setUploadProgress(0);
@@ -554,43 +579,38 @@ export default function App() {
     } finally { setActionLoading(p => ({ ...p, [`status-${taskId}`]: false })); }
   };
 
-  // 🔄 ฟังก์ชันใหม่: สำหรับเปลี่ยนผู้รับผิดชอบงาน
   const handleChangeAssignee = async (taskId, newFaUid) => {
     if (!newFaUid) return;
     const targetFa = allAvailableFAs.find(f => f.uid === newFaUid);
     if (!targetFa) return;
-
-    setActionLoading(p => ({ ...p, [`assignee-${taskId}`]: true }));
+    
+    setActionLoading(p => ({ ...p, [`assign-${taskId}`]: true }));
     try {
-      const msg = {
-        text: `[ระบบ] ผู้บริหาร/แอดมิน ได้โอนย้ายงานนี้ให้: ${targetFa.name} เป็นผู้รับผิดชอบต่อ`,
-        senderName: userProfile?.name || 'System',
-        senderRole: userProfile?.role || 'Admin',
-        timestamp: new Date().toISOString()
+      const msg = { 
+        text: `[อัปเดตระบบ]: ผู้บริหารเปลี่ยนผู้รับผิดชอบงาน มอบหมายงานให้ ${targetFa.name}`, 
+        senderName: "System", 
+        senderRole: "ระบบ", 
+        timestamp: new Date().toISOString() 
       };
-
-      await updateDoc(doc(db, 'tasks', taskId), {
-        faUid: targetFa.uid,
+      await updateDoc(doc(db, 'tasks', taskId), { 
+        faUid: targetFa.uid, 
         faName: targetFa.name,
         messages: arrayUnion(msg),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString() 
       });
+      showToast("เปลี่ยนผู้รับผิดชอบเรียบร้อยแล้ว");
 
-      // แจ้งเตือน FA คนใหม่ที่ได้รับงาน
       notifyLine('ASSIGN_TASK', {
         clientName: selectedTaskModal.clientName,
         serviceType: selectedTaskModal.serviceType,
         urgency: selectedTaskModal.urgency,
         dueDate: selectedTaskModal.dueDate,
-        notes: `[โอนย้ายงาน] งานนี้ถูกส่งต่อให้คุณดูแล โดย ${userProfile?.name}`
+        notes: "ผู้บริหารโอนย้ายงานนี้ให้คุณดูแล",
+        senderUid: user.uid
       }, targetFa.uid);
 
-      showToast(`โอนย้ายงานให้ ${targetFa.name} สำเร็จแล้ว`);
-    } catch (e) {
-      showToast("เกิดข้อผิดพลาดในการเปลี่ยนผู้รับผิดชอบ", "error");
-    } finally {
-      setActionLoading(p => ({ ...p, [`assignee-${taskId}`]: false }));
-    }
+    } catch (e) { showToast("เกิดข้อผิดพลาดในการเปลี่ยนชื่อ", "error"); } 
+    finally { setActionLoading(p => ({ ...p, [`assign-${taskId}`]: false })); }
   };
 
   const handleSendMessage = async (taskId) => {
@@ -602,14 +622,13 @@ export default function App() {
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
       setChatInputs(p => ({ ...p, [taskId]: "" }));
 
-      // ส่งแจ้งเตือนแชทงาน พร้อมแนบ taskId และ senderUid ให้หลังบ้านไปกวาดรายชื่อผู้เกี่ยวข้อง
       notifyLine('TASK_CHAT', {
-        taskId: taskId,                     // เพิ่มรหัสอ้างอิงงาน
+        taskId: selectedTaskModal.id,
         taskName: selectedTaskModal.clientName,
         senderName: userProfile.name,
-        senderUid: user.uid,                // เพิ่มรหัสของคนพิมพ์
+        senderUid: user.uid,
         text: text.trim()
-      }, 'ALL'); // ส่ง ALL ไปเพื่อให้หลังบ้านทำงานในโหมดกวาดรายชื่อ
+      }, 'SMART_MODE');
 
     } finally { setActionLoading(p => ({ ...p, [`chat-${taskId}`]: false })); }
   };
@@ -626,15 +645,14 @@ export default function App() {
       const msg = { text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type, senderName: userProfile?.name, senderRole: userProfile?.role, timestamp: new Date().toISOString() };
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
       
-      // ส่งแจ้งเตือนแชทงาน (แนบไฟล์) พร้อมแนบ taskId และ senderUid ให้หลังบ้านไปกวาดรายชื่อผู้เกี่ยวข้อง
       notifyLine('TASK_CHAT', {
-        taskId: taskId,                     // เพิ่มรหัสอ้างอิงงาน
+        taskId: selectedTaskModal.id,
         taskName: selectedTaskModal.clientName,
         senderName: userProfile.name,
-        senderUid: user.uid,                // เพิ่มรหัสของคนพิมพ์
+        senderUid: user.uid,
         text: "[ส่งรูปภาพ/ไฟล์แนบ]"
-      }, 'ALL'); // ส่ง ALL ไปเพื่อให้หลังบ้านทำงานในโหมดกวาดรายชื่อ
-      
+      }, 'SMART_MODE');
+
     } catch (err) { showToast("อัปโหลดไฟล์ไม่สำเร็จ", "error"); } 
     finally { setIsUploadingChatFile(false); e.target.value = null; }
   };
@@ -670,6 +688,12 @@ export default function App() {
          text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type,
          senderId: user.uid, senderName: userProfile?.name, timestamp: new Date().toISOString(), isRead: false 
       });
+
+      notifyLine('DM_CHAT', {
+        senderName: userProfile.name,
+        text: "[ส่งรูปภาพ/ไฟล์แนบ]"
+      }, activeChatUser.uid);
+
     } catch (err) { showToast("อัปโหลดไฟล์ไม่สำเร็จ", "error"); } 
     finally { setIsUploadingDmFile(false); e.target.value = null; }
   };
@@ -694,7 +718,8 @@ export default function App() {
           title: eventForm.title,
           date: selectedDateStr,
           startTime: eventForm.startTime,
-          endTime: eventForm.endTime
+          endTime: eventForm.endTime,
+          senderUid: user.uid
         }, 'ALL');
       }
 
@@ -715,12 +740,27 @@ export default function App() {
     finally { setActionLoading(prev => ({ ...prev, [`delete-${taskId}`]: false })); }
   };
 
+  const handleDeleteEvent = async (eventId, e) => {
+    if (e) e.stopPropagation();
+    if (window.confirm("คุณต้องการลบกิจกรรมนี้ใช่หรือไม่?")) {
+      try {
+        await deleteDoc(doc(db, 'events', eventId));
+        showToast("ลบกิจกรรมเรียบร้อยแล้ว");
+      } catch (error) {
+        showToast("เกิดข้อผิดพลาดในการลบกิจกรรม", "error");
+      }
+    }
+  };
+
   const allAvailableFAs = useMemo(() => {
     const map = new Map();
     tasks.forEach(t => map.set(t.faUid, { uid: t.faUid, name: t.faName, role: 'FA' }));
     dbUsers.forEach(u => { if(u.role === 'FA' || u.role === 'Admin' || u.role === 'Executive' || !u.role) map.set(u.uid, u); });
+    if (user && userProfile) {
+      map.set(user.uid, { uid: user.uid, name: `${userProfile.name} (ฉัน)`, role: userProfile.role || 'Admin' });
+    }
     return Array.from(map.values());
-  }, [tasks, dbUsers]);
+  }, [tasks, dbUsers, user, userProfile]);
 
   const filteredTasks = useMemo(() => {
     let list = tasks;
@@ -935,12 +975,20 @@ export default function App() {
                            {task.urgency === 'ด่วน' && <span className="ml-auto text-[8px] shrink-0">🔥</span>}
                        </div>
                    ))}
-                   {dayEvents.map(ev => (
-                       <div key={`ev-${ev.id}`} className={`text-[9px] px-2 py-1 rounded-md truncate font-light flex flex-col ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>
-                          <span className="font-medium truncate">{ev.title}</span>
+                   {dayEvents.map(ev => {
+                     const canDelete = userProfile?.role === 'Admin' || userProfile?.role === 'Executive' || ev.createdBy === user.uid;
+                     return (
+                       <div key={`ev-${ev.id}`} className={`relative text-[9px] px-2 py-1 rounded-md truncate font-light flex flex-col group/event ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>
+                          <span className="font-medium truncate pr-4">{ev.title}</span>
                           {(ev.startTime || ev.endTime) && <span className="text-[8px] opacity-80 mt-0.5">{ev.startTime || '...'} - {ev.endTime || '...'}</span>}
+                          {canDelete && (
+                            <button onClick={(e) => handleDeleteEvent(ev.id, e)} className="absolute right-1 top-1 opacity-0 group-hover/event:opacity-100 hover:text-red-500 transition-opacity bg-white/80 rounded-full p-0.5" title="ลบกิจกรรม">
+                              <Trash2 className="w-2.5 h-2.5" />
+                            </button>
+                          )}
                        </div>
-                   ))}
+                     )
+                   })}
                  </div>
               </div>
             )
@@ -1038,7 +1086,7 @@ export default function App() {
                               <div className="cursor-pointer inline-block" onClick={() => setFullscreenImage(msg.attachmentUrl)}>
                                 <img src={msg.attachmentUrl} alt="attachment" className="max-h-[150px] w-auto object-contain rounded-lg shadow-sm border border-black/5 hover:opacity-90 transition-opacity" />
                               </div> :
-                              <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white/40"><Paperclip className="w-3.5 h-3.5"/> {msg.attachmentName || t('downloadAttach')}</a>
+                              <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white/40"><Paperclip className="w-3 h-3"/> {msg.attachmentName || t('downloadAttach')}</a>
                             }
                           </div>
                         )}
@@ -1484,8 +1532,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 custom-scrollbar">
-               <div className="flex flex-col space-y-6">
+            <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 sm:p-8 flex flex-col md:flex-row gap-6 sm:gap-8 custom-scrollbar">
+               <div className="w-full md:w-1/2 flex flex-col space-y-6 md:overflow-y-auto custom-scrollbar md:pr-4 pb-2 md:pb-0">
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
                     <div className="space-y-4 text-sm font-light">
@@ -1493,7 +1541,28 @@ export default function App() {
                          <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('policyNumber')}</span><span className="text-gray-800">{selectedTaskModal.policyNumber}</span></div>
                        )}
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('serviceType')}</span><span className="text-gray-800">{t(selectedTaskModal.serviceType)}</span></div>
-                       <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('colFa')}</span><span className="text-gray-800">{selectedTaskModal.faName}</span></div>
+                       
+                       <div>
+                         <span className="text-gray-400 block text-[11px] mb-1">{t('colFa')}</span>
+                         {(userProfile?.role === 'Admin' || userProfile?.role === 'Executive') ? (
+                            <div className="relative">
+                              <select 
+                                value={selectedTaskModal.faUid} 
+                                onChange={(e) => handleChangeAssignee(selectedTaskModal.id, e.target.value)}
+                                disabled={actionLoading[`assign-${selectedTaskModal.id}`]}
+                                className="w-full bg-white border border-gray-200 text-gray-800 text-sm rounded-xl px-3 py-2 outline-none focus:border-[#DEFF00] appearance-none cursor-pointer hover:bg-gray-50 transition-colors"
+                              >
+                                {allAvailableFAs.map(fa => <option key={fa.uid} value={fa.uid}>{fa.name}</option>)}
+                              </select>
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                {actionLoading[`assign-${selectedTaskModal.id}`] ? <Loader2 className="w-3 h-3 animate-spin text-gray-400"/> : <span className="text-xs text-gray-400">▼</span>}
+                              </div>
+                            </div>
+                         ) : (
+                            <span className="text-gray-800">{selectedTaskModal.faName}</span>
+                         )}
+                       </div>
+
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('dueDate')}</span><span className="text-orange-600">{selectedTaskModal.dueDate ? new Date(selectedTaskModal.dueDate).toLocaleDateString('th-TH') : '-'}</span></div>
                     </div>
                   </div>
@@ -1505,7 +1574,7 @@ export default function App() {
                         {selectedTaskModal.attachments.map((file, idx) => {
                           const isImg = file.url.match(/\.(jpeg|jpg|gif|png|webp)/i) || file.url.includes('images%2F') || file.type?.startsWith('image/');
                           return (
-                            <div key={idx} className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden cursor-pointer" onClick={() => isImg ? setFullscreenImage(file.url) : window.open(file.url, '_blank')}>
+                            <a key={idx} href={file.url} target="_blank" rel="noopener noreferrer" onClick={(e) => { if(isImg) { e.preventDefault(); setFullscreenImage(file.url); } }} className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden cursor-pointer">
                               {isImg ? (
                                 <img src={file.url} alt="attachment" className="w-full h-24 object-cover rounded-lg mb-2" />
                               ) : (
@@ -1514,7 +1583,7 @@ export default function App() {
                                 </div>
                               )}
                               <span className="text-[9px] text-gray-500 text-center truncate w-full font-light px-1">{file.name}</span>
-                            </div>
+                            </a>
                           );
                         })}
                       </div>
@@ -1527,23 +1596,6 @@ export default function App() {
                       <div className="grid grid-cols-2 gap-2">
                         {KANBAN_COLUMNS.map(c => <button key={c.id} disabled={actionLoading[`status-${selectedTaskModal.id}`]} onClick={()=>handleUpdateStatus(selectedTaskModal.id, c.id)} className={`py-2.5 px-2 text-[11px] font-medium rounded-xl transition-all border ${selectedTaskModal.status===c.id ? 'bg-[#DEFF00] text-gray-800 border-[#DEFF00] shadow-sm' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300'}`}>{t(c.tKey)}</button>)}
                       </div>
-                      
-                      {/* เมนูเปลี่ยนผู้รับผิดชอบ (สำหรับแอดมินและผู้บริหาร) */}
-                      <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-3 mt-5">โอนย้ายงาน / เปลี่ยนผู้รับผิดชอบ</h4>
-                      <select
-                        disabled={actionLoading[`assignee-${selectedTaskModal.id}`]}
-                        value={selectedTaskModal.faUid}
-                        onChange={(e) => {
-                          if(window.confirm('ยืนยันการโอนย้ายงานนี้ให้ผู้รับผิดชอบคนใหม่ใช่หรือไม่?')){
-                            handleChangeAssignee(selectedTaskModal.id, e.target.value);
-                          }
-                        }}
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-light appearance-none outline-none focus:border-[#DEFF00] cursor-pointer hover:bg-gray-50 transition-colors"
-                      >
-                        {allAvailableFAs.map(fa => (
-                          <option key={fa.uid} value={fa.uid}>{fa.name} ({fa.role || 'FA'})</option>
-                        ))}
-                      </select>
                     </div>
                   )}
 
@@ -1566,7 +1618,7 @@ export default function App() {
                   )}
                </div>
 
-               <div className="flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[400px] sm:h-full min-h-[400px]">
+               <div className="w-full md:w-1/2 flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[500px] md:h-full shrink-0">
                   <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('chatHistory')}</h4>
                   <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {(!selectedTaskModal.messages || selectedTaskModal.messages.length===0) ? <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-60"><MessageSquare className="w-8 h-8 mb-2 stroke-[1.5]"/><span className="text-xs font-light">{t('noChatHistory')}</span></div> : 
@@ -1592,8 +1644,8 @@ export default function App() {
                               {msg.attachmentUrl && (
                                 <div className="mt-3 block pb-1">
                                   {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
-                                    <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3">
-                                        <img src={msg.attachmentUrl} alt="attachment" onClick={() => setFullscreenImage(msg.attachmentUrl)} className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm cursor-pointer hover:opacity-90 transition-opacity" />
+                                    <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3 cursor-pointer hover:bg-black/10 transition-colors" onClick={() => setFullscreenImage(msg.attachmentUrl)}>
+                                        <img src={msg.attachmentUrl} alt="attachment" className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm" />
                                     </div> :
                                     <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white"><Paperclip className="w-3.5 h-3.5"/> {msg.attachmentName || t('downloadAttach')}</a>
                                   }
@@ -1653,6 +1705,25 @@ export default function App() {
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
                   <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('typeMessage')}></textarea>
                 </div>
+                
+                {/* แนบไฟล์ตอนมอบหมายงาน */}
+                <div>
+                  <label className="flex flex-col items-center justify-center w-full border border-dashed border-gray-200 bg-gray-50/50 hover:bg-gray-50 rounded-[2rem] p-5 cursor-pointer transition-colors">
+                    <Camera className="w-5 h-5 text-gray-400 mb-2 stroke-[1.5]"/><span className="text-[11px] text-gray-500 font-light">{t('attach')}</span>
+                    <input type="file" multiple className="hidden" accept="image/*,.pdf" onChange={(e) => handleFileChange(e, true)} />
+                  </label>
+                  {assignFilesToUpload.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      {assignFilesToUpload.map((f,i) => (
+                        <div key={i} className="flex justify-between items-center bg-gray-50 p-2.5 rounded-xl text-[11px] font-light border border-gray-100 text-gray-600">
+                          <span className="truncate pr-2">{f.name}</span>
+                          <button type="button" onClick={()=>removeFile(i, true)} className="text-gray-400 hover:text-red-500"><X className="w-3.5 h-3.5"/></button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <button type="submit" disabled={assigningTask} className="w-full bg-[#161A22] text-[#DEFF00] py-4 rounded-full font-medium text-sm hover:bg-black transition-colors mt-2 flex justify-center items-center gap-2">
                   {assigningTask ? <><Loader2 className="w-4 h-4 animate-spin"/> กำลังดำเนินการ...</> : t('confirmAssign')}
                 </button>
@@ -1676,6 +1747,7 @@ export default function App() {
           
           <div className="flex gap-3 w-full sm:w-auto justify-center">
             
+            {/* 🟢 ปุ่ม "เชื่อมต่อ LINE" สีเขียวพรีเมียม สไตล์ LINE OA */}
             {userProfile && (
               <button 
                 onClick={handleLinkLine} 
@@ -1713,6 +1785,15 @@ export default function App() {
           </div>
         </div>
       </nav>
+
+      {/* เพิ่มปุ่มเชื่อมต่อ LINE สำหรับมือถือ (ถ้าจอมือถือจะมาอยู่ใต้เมนูบน) */}
+      {!userProfile?.lineUserId && (
+        <div className="sm:hidden px-4 mb-4 flex justify-center">
+          <button onClick={handleLinkLine} className="bg-[#06C755] w-full max-w-sm px-4 py-3 rounded-full text-xs font-medium text-white shadow-sm flex items-center justify-center gap-2 hover:bg-[#05b34c] transition-colors">
+            <LinkIcon className="w-4 h-4"/> {t('linkLine')}
+          </button>
+        </div>
+      )}
 
       <div className="max-w-[1500px] mx-auto px-4 sm:px-10 mt-2 relative z-10">
         
@@ -1935,6 +2016,7 @@ export default function App() {
 
       </div>
 
+      {/* เพิ่มหน้าต่าง Modal สำหรับดูรูปภาพขนาดใหญ่ */}
       {fullscreenImage && (
         <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setFullscreenImage(null)}>
           <button onClick={() => setFullscreenImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"><X className="w-6 h-6"/></button>
