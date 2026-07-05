@@ -225,6 +225,7 @@ export default function App() {
   const [showFilesModal, setShowFilesModal] = useState(false); 
   const [hideImagesForPdf, setHideImagesForPdf] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [mobileModalTab, setMobileModalTab] = useState("details");
   
   const [frontFormMode, setFrontFormMode] = useState("backend"); 
   const [frontListMode, setFrontListMode] = useState("backend");
@@ -373,15 +374,7 @@ export default function App() {
       if (selectedTaskModal) {
         const updated = taskList.find(t => t.id === selectedTaskModal.id);
         if (updated) {
-           const oldLen = selectedTaskModal.messages?.length || 0;
-           const newLen = updated.messages?.length || 0;
            setSelectedTaskModal(updated);
-           if (newLen > oldLen) {
-               setTimeout(() => {
-                   const container = document.getElementById(`chat-container-${updated.id}`);
-                   if (container) container.scrollTop = container.scrollHeight;
-               }, 100);
-           }
         } else {
            setSelectedTaskModal(null);
         }
@@ -406,14 +399,7 @@ export default function App() {
     const qMsg = query(collection(db, `chats/${chatId}/messages`), orderBy('timestamp', 'asc'));
     const unSubDm = onSnapshot(qMsg, (snap) => {
       let list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-      const oldLen = dmMessages.length;
       setDmMessages(list);
-      if (list.length > oldLen) {
-          setTimeout(() => {
-             const container = document.getElementById('dm-chat-container');
-             if (container) container.scrollTop = container.scrollHeight;
-          }, 100);
-      }
       if (isDmOpen && dmView === 'chat') {
         list.forEach(m => {
           if (m.senderId !== user.uid && !m.isRead) updateDoc(doc(db, `chats/${chatId}/messages`, m.id), { isRead: true });
@@ -421,7 +407,7 @@ export default function App() {
       }
     });
     return () => unSubDm();
-  }, [activeChatUser, user, isDmOpen, dmView, dmMessages.length]);
+  }, [activeChatUser, user, isDmOpen, dmView]);
 
   useEffect(() => {
     if (!user || dbUsers.length === 0) return;
@@ -439,21 +425,22 @@ export default function App() {
     return () => unsubs.forEach(fn => fn());
   }, [user, dbUsers]);
 
-  // เพิ่ม useEffect ตัวนี้เพื่อจัดการตัวเลขแจ้งเตือนบนไอคอนแอป (App Badging)
+  /* App Badging API: แสดงตัวเลขแจ้งเตือนบนไอคอนมือถือ */
   useEffect(() => {
     const totalUnread = Object.values(unreadCounts).filter(Boolean).length;
-    
-    // เช็คว่าเบราว์เซอร์/มือถือ รองรับฟีเจอร์ App Badge หรือไม่
     if ('setAppBadge' in navigator && 'clearAppBadge' in navigator) {
       if (totalUnread > 0) {
-        // ถ้ามีข้อความใหม่ ให้โชว์ตัวเลข
-        navigator.setAppBadge(totalUnread).catch(error => console.error("App Badge Error:", error));
+        navigator.setAppBadge(totalUnread).catch(console.error);
       } else {
-        // ถ้าอ่านหมดแล้ว ให้เคลียร์ตัวเลขออก
-        navigator.clearAppBadge().catch(error => console.error("Clear Badge Error:", error));
+        navigator.clearAppBadge().catch(console.error);
       }
     }
   }, [unreadCounts]);
+
+  /* Set default tab to details when opening modal on mobile */
+  useEffect(() => {
+     if (selectedTaskModal) setMobileModalTab('details');
+  }, [selectedTaskModal?.id]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -571,7 +558,6 @@ export default function App() {
     } finally { setActionLoading(p => ({ ...p, [`status-${taskId}`]: false })); }
   };
 
-  // ✅ ฟังก์ชันสำหรับเปลี่ยนผู้รับผิดชอบงาน
   const handleChangeAssignee = async (taskId, newFaUid) => {
     setActionLoading(p => ({ ...p, [`assign-${taskId}`]: true }));
     try {
@@ -586,7 +572,6 @@ export default function App() {
 
       showToast(`เปลี่ยนผู้รับผิดชอบเป็น ${targetFa.name} เรียบร้อยแล้ว`);
 
-      // ส่ง LINE แจ้งเตือนคนใหม่ที่ได้รับงาน
       notifyLine('ASSIGN_TASK', {
         clientName: selectedTaskModal.clientName,
         serviceType: selectedTaskModal.serviceType,
@@ -1258,8 +1243,8 @@ export default function App() {
     if (!pdfTask) return null;
     const task = pdfTask;
     return (
-      <div className="min-h-screen bg-[#F5F7F0] font-['Kanit',sans-serif]">
-        <div className="no-print bg-[#161A22] w-full p-3 sm:p-4 flex justify-between items-center sticky top-0 z-[999] shadow-md font-sans">
+      <div className="min-h-[100dvh] bg-[#F5F7F0] font-['Kanit',sans-serif] flex flex-col">
+        <div className="no-print bg-[#161A22] w-full p-3 sm:p-4 flex justify-between items-center sticky top-0 z-[999] shadow-md font-sans shrink-0">
            <button onClick={() => { setPdfTask(null); setActiveTab('front'); }} className="text-gray-300 hover:text-white flex items-center gap-2 text-xs sm:text-sm font-light transition-colors"><ChevronLeft className="w-4 h-4"/> <span className="hidden sm:inline">{t('back')}</span></button>
            <span className="text-gray-300 text-[10px] sm:text-xs font-light hidden sm:flex items-center gap-2"><FileText className="w-4 h-4 text-gray-500"/> {t('pdfReport')}</span>
            <div className="flex gap-2 sm:gap-3">
@@ -1313,124 +1298,126 @@ export default function App() {
           </div>
         )}
 
-        <div id="pdf-content" className="bg-white mx-auto relative text-gray-800 font-sans sm:my-8" style={{ width: '800px', padding: '40px', boxSizing: 'border-box' }}>
-           
-           <div className="border-b-2 border-[#161A22] pb-5 mb-8 flex justify-between items-end break-inside-avoid w-full">
-              <div>
-                <h1 className="text-[28px] font-semibold text-[#161A22] tracking-tight mb-1">MCDJ Wealth Advisor</h1>
-                <span className="inline-block bg-gray-100 text-gray-600 text-[10px] px-2.5 py-1 rounded-md font-medium tracking-widest uppercase">{t('pdfReport')}</span>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] text-gray-400 block mb-0.5 font-medium tracking-widest uppercase">{t('refCode')}</span>
-                <span className="text-xl font-bold text-[#161A22]">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-              </div>
-           </div>
-
-           <div className="mb-8 w-full break-inside-avoid">
-              <h2 className="text-sm font-semibold text-[#161A22] mb-3 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-md bg-[#DEFF00] text-[#161A22] flex items-center justify-center text-xs shadow-sm">1</span> 
-                  {t('taskInfo')}
-              </h2>
-              <div className="bg-gray-50 border border-gray-200 rounded-[1rem] p-4 w-full">
-                  <div className="w-full bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm mb-3">
-                      <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('clientName')}</p>
-                      <p className="text-[15px] font-semibold text-gray-800 break-words leading-relaxed">{task.clientName}</p>
+        <div className="flex-1 w-full overflow-x-auto custom-scrollbar bg-[#F5F7F0]">
+            <div id="pdf-content" className="bg-white mx-auto relative text-gray-800 font-sans sm:my-8" style={{ width: '800px', minWidth: '800px', padding: '40px', boxSizing: 'border-box' }}>
+               
+               <div className="border-b-2 border-[#161A22] pb-5 mb-8 flex justify-between items-end break-inside-avoid w-full">
+                  <div>
+                    <h1 className="text-[28px] font-semibold text-[#161A22] tracking-tight mb-1">MCDJ Wealth Advisor</h1>
+                    <span className="inline-block bg-gray-100 text-gray-600 text-[10px] px-2.5 py-1 rounded-md font-medium tracking-widest uppercase">{t('pdfReport')}</span>
                   </div>
-                  {task.policyNumber && (
-                    <div className="w-full bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm mb-3">
-                        <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('policyNumber')}</p>
-                        <p className="text-[15px] font-semibold text-gray-800 break-words leading-relaxed">{task.policyNumber}</p>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-2 gap-3 w-full">
-                      <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
-                          <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('currentStatus')}</p>
-                          <p className="text-sm font-semibold text-blue-600 leading-relaxed">{t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}</p>
-                      </div>
-                      <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
-                          <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('serviceType')}</p>
-                          <p className="text-sm font-medium text-gray-800 break-words leading-relaxed">{t(task.serviceType)}</p>
-                      </div>
-                      <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
-                          <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('colFa')}</p>
-                          <p className="text-sm font-medium text-gray-800 break-words leading-relaxed">{task.faName}</p>
-                      </div>
-                      <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
-                          <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('dueDate')}</p>
-                          <p className="text-sm font-semibold text-orange-600 leading-relaxed">{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</p>
-                      </div>
-                      <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
-                          <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('urgency')}</p>
-                          <p className="text-sm font-medium text-gray-800 leading-relaxed">{t(task.urgency === 'ด่วน' ? 'urgent' : 'normal')}</p>
-                      </div>
-                      <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
-                          <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('createDate')}</p>
-                          <p className="text-sm font-medium text-gray-800 leading-relaxed">{new Date(task.createdAt).toLocaleString('th-TH')}</p>
-                      </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-gray-400 block mb-0.5 font-medium tracking-widest uppercase">{t('refCode')}</span>
+                    <span className="text-xl font-bold text-[#161A22]">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
                   </div>
-              </div>
-           </div>
+               </div>
 
-           {task.attachments && task.attachments.length > 0 && (
-             <div className="mb-8 w-full break-inside-avoid">
-                 <h2 className="text-sm font-semibold text-[#161A22] mb-3 flex items-center gap-2">
-                     <span className="w-6 h-6 rounded-md bg-[#DEFF00] text-[#161A22] flex items-center justify-center text-xs shadow-sm">2</span> 
-                     {t('attachFiles')}
-                 </h2>
-                 {hideImagesForPdf ? (
-                   <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-4 text-center text-[11px] text-gray-500 font-medium">
-                     [ มีไฟล์แนบจำนวน {task.attachments.length} ไฟล์ - สามารถกดปุ่มโหลดไฟล์แนบแยกต่างหากได้ ]
-                   </div>
-                 ) : (
-                   <div className="flex flex-wrap gap-4 w-full">
-                       {task.attachments.map((file, idx) => {
-                           const isImg = file.url.match(/\.(jpeg|jpg|gif|png|webp)/i) || file.url.includes('images%2F') || file.type?.startsWith('image/');
-                           return (
-                               <div key={idx} className="w-[calc(50%-0.5rem)] border border-gray-200 rounded-2xl p-3 flex flex-col items-center bg-gray-50 overflow-hidden max-w-full">
-                                   {isImg ? <img src={file.url} alt="attachment" className="max-h-48 max-w-full object-contain mb-3 rounded-xl border border-gray-200" /> : <div className="h-24 flex items-center justify-center text-gray-400"><FileText className="w-8 h-8"/></div>}
-                                   <span className="text-[10px] text-gray-500 text-center truncate w-full font-medium bg-white px-2 py-1 rounded-md border border-gray-100 block">{file.name}</span>
-                               </div>
-                           );
-                       })}
-                   </div>
-                 )}
-             </div>
-           )}
-
-           <div className="w-full">
-              <h2 className="text-sm font-semibold text-[#161A22] mb-4 flex items-center gap-2 break-inside-avoid">
-                  <span className="w-6 h-6 rounded-md bg-[#DEFF00] text-[#161A22] flex items-center justify-center text-xs shadow-sm">{task.attachments && task.attachments.length > 0 ? '3' : '2'}</span> 
-                  {t('chatHistory')}
-              </h2>
-              <div className="space-y-4 w-full">
-                  {(!task.messages || task.messages.length===0) ? <div className="bg-gray-50 rounded-xl p-4 text-center text-xs text-gray-400 font-medium break-inside-avoid">{t('noChatHistory')}</div> : 
-                      task.messages.map((m, i) => {
-                         return (
-                          <div key={i} className="break-inside-avoid bg-white border border-gray-100 shadow-sm p-4 rounded-2xl flex flex-col w-full max-w-full">
-                              <div className="flex justify-between items-start mb-2 w-full">
-                                  <span className="text-[11px] font-semibold text-gray-800">{m.senderName} <span className="text-[9px] text-gray-400 font-medium ml-1 px-1.5 py-0.5 bg-gray-100 rounded-md uppercase">{m.senderRole}</span></span>
-                                  <span className="text-[10px] text-gray-400 font-medium">{new Date(m.timestamp).toLocaleString('th-TH')}</span>
-                              </div>
-                              <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-xl w-full break-words whitespace-pre-wrap">{m.text}</p>
-                              {m.attachmentUrl && (
-                                  <div className="mt-3 w-full">
-                                      {hideImagesForPdf ? (
-                                        <div className="text-[10px] text-gray-500 font-medium bg-gray-100 px-3 py-1.5 rounded-lg w-fit border border-gray-200">
-                                          [ มีรูปภาพ/ไฟล์แนบในแชท - สามารถกดปุ่มโหลดไฟล์แนบแยกต่างหากได้ ]
-                                        </div>
-                                      ) : (
-                                        (m.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || m.attachmentType?.startsWith('image/')) ? 
-                                            <img src={m.attachmentUrl} alt="chat-attachment" className="max-h-48 max-w-full rounded-xl border border-gray-200 shadow-sm object-contain" /> :
-                                            <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 font-medium bg-blue-50 px-3 py-2 rounded-lg inline-flex items-center gap-1.5 border border-blue-100 w-fit"><Paperclip className="w-3.5 h-3.5"/> {m.attachmentName || t('downloadAttach')}</a>
-                                      )}
-                                  </div>
-                              )}
+               <div className="mb-8 w-full break-inside-avoid">
+                  <h2 className="text-sm font-semibold text-[#161A22] mb-3 flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-md bg-[#DEFF00] text-[#161A22] flex items-center justify-center text-xs shadow-sm">1</span> 
+                      {t('taskInfo')}
+                  </h2>
+                  <div className="bg-gray-50 border border-gray-200 rounded-[1rem] p-4 w-full">
+                      <div className="w-full bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm mb-3">
+                          <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('clientName')}</p>
+                          <p className="text-[15px] font-semibold text-gray-800 break-words leading-relaxed">{task.clientName}</p>
+                      </div>
+                      {task.policyNumber && (
+                        <div className="w-full bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm mb-3">
+                            <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('policyNumber')}</p>
+                            <p className="text-[15px] font-semibold text-gray-800 break-words leading-relaxed">{task.policyNumber}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3 w-full">
+                          <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                              <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('currentStatus')}</p>
+                              <p className="text-sm font-semibold text-blue-600 leading-relaxed">{t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}</p>
                           </div>
-                        )
-                      })
-                  }
-              </div>
-           </div>
+                          <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                              <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('serviceType')}</p>
+                              <p className="text-sm font-medium text-gray-800 break-words leading-relaxed">{t(task.serviceType)}</p>
+                          </div>
+                          <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                              <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('colFa')}</p>
+                              <p className="text-sm font-medium text-gray-800 break-words leading-relaxed">{task.faName}</p>
+                          </div>
+                          <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                              <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('dueDate')}</p>
+                              <p className="text-sm font-semibold text-orange-600 leading-relaxed">{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</p>
+                          </div>
+                          <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                              <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('urgency')}</p>
+                              <p className="text-sm font-medium text-gray-800 leading-relaxed">{t(task.urgency === 'ด่วน' ? 'urgent' : 'normal')}</p>
+                          </div>
+                          <div className="bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                              <p className="text-[10px] text-gray-400 font-medium mb-1.5 uppercase tracking-wide">{t('createDate')}</p>
+                              <p className="text-sm font-medium text-gray-800 leading-relaxed">{new Date(task.createdAt).toLocaleString('th-TH')}</p>
+                          </div>
+                      </div>
+                  </div>
+               </div>
+
+               {task.attachments && task.attachments.length > 0 && (
+                 <div className="mb-8 w-full break-inside-avoid">
+                     <h2 className="text-sm font-semibold text-[#161A22] mb-3 flex items-center gap-2">
+                         <span className="w-6 h-6 rounded-md bg-[#DEFF00] text-[#161A22] flex items-center justify-center text-xs shadow-sm">2</span> 
+                         {t('attachFiles')}
+                     </h2>
+                     {hideImagesForPdf ? (
+                       <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-4 text-center text-[11px] text-gray-500 font-medium">
+                         [ มีไฟล์แนบจำนวน {task.attachments.length} ไฟล์ - สามารถกดปุ่มโหลดไฟล์แนบแยกต่างหากได้ ]
+                       </div>
+                     ) : (
+                       <div className="flex flex-wrap gap-4 w-full">
+                           {task.attachments.map((file, idx) => {
+                               const isImg = file.url.match(/\.(jpeg|jpg|gif|png|webp)/i) || file.url.includes('images%2F') || file.type?.startsWith('image/');
+                               return (
+                                   <div key={idx} className="w-[calc(50%-0.5rem)] border border-gray-200 rounded-2xl p-3 flex flex-col items-center bg-gray-50 overflow-hidden max-w-full">
+                                       {isImg ? <img src={file.url} alt="attachment" className="max-h-48 max-w-full object-contain mb-3 rounded-xl border border-gray-200" /> : <div className="h-24 flex items-center justify-center text-gray-400"><FileText className="w-8 h-8"/></div>}
+                                       <span className="text-[10px] text-gray-500 text-center truncate w-full font-medium bg-white px-2 py-1 rounded-md border border-gray-100 block">{file.name}</span>
+                                   </div>
+                               );
+                           })}
+                       </div>
+                     )}
+                 </div>
+               )}
+
+               <div className="w-full">
+                  <h2 className="text-sm font-semibold text-[#161A22] mb-4 flex items-center gap-2 break-inside-avoid">
+                      <span className="w-6 h-6 rounded-md bg-[#DEFF00] text-[#161A22] flex items-center justify-center text-xs shadow-sm">{task.attachments && task.attachments.length > 0 ? '3' : '2'}</span> 
+                      {t('chatHistory')}
+                  </h2>
+                  <div className="space-y-4 w-full">
+                      {(!task.messages || task.messages.length===0) ? <div className="bg-gray-50 rounded-xl p-4 text-center text-xs text-gray-400 font-medium break-inside-avoid">{t('noChatHistory')}</div> : 
+                          task.messages.map((m, i) => {
+                             return (
+                              <div key={i} className="break-inside-avoid bg-white border border-gray-100 shadow-sm p-4 rounded-2xl flex flex-col w-full max-w-full">
+                                  <div className="flex justify-between items-start mb-2 w-full">
+                                      <span className="text-[11px] font-semibold text-gray-800">{m.senderName} <span className="text-[9px] text-gray-400 font-medium ml-1 px-1.5 py-0.5 bg-gray-100 rounded-md uppercase">{m.senderRole}</span></span>
+                                      <span className="text-[10px] text-gray-400 font-medium">{new Date(m.timestamp).toLocaleString('th-TH')}</span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-xl w-full break-words whitespace-pre-wrap">{m.text}</p>
+                                  {m.attachmentUrl && (
+                                      <div className="mt-3 w-full">
+                                          {hideImagesForPdf ? (
+                                            <div className="text-[10px] text-gray-500 font-medium bg-gray-100 px-3 py-1.5 rounded-lg w-fit border border-gray-200">
+                                              [ มีรูปภาพ/ไฟล์แนบในแชท - สามารถกดปุ่มโหลดไฟล์แนบแยกต่างหากได้ ]
+                                            </div>
+                                          ) : (
+                                            (m.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || m.attachmentType?.startsWith('image/')) ? 
+                                                <img src={m.attachmentUrl} alt="chat-attachment" className="max-h-48 max-w-full rounded-xl border border-gray-200 shadow-sm object-contain" /> :
+                                                <a href={m.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 font-medium bg-blue-50 px-3 py-2 rounded-lg inline-flex items-center gap-1.5 border border-blue-100 w-fit"><Paperclip className="w-3.5 h-3.5"/> {m.attachmentName || t('downloadAttach')}</a>
+                                          )}
+                                      </div>
+                                  )}
+                              </div>
+                            )
+                          })
+                      }
+                  </div>
+               </div>
+            </div>
         </div>
       </div>
     );
@@ -1523,8 +1510,22 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 custom-scrollbar">
-               <div className="flex flex-col space-y-6">
+            <div className="flex md:hidden bg-gray-50 p-1 mx-4 mt-4 rounded-full shrink-0 border border-gray-100">
+               <button onClick={() => setMobileModalTab('details')} className={`flex-1 py-2.5 text-[11px] font-medium rounded-full transition-colors ${mobileModalTab === 'details' ? 'bg-white shadow-sm text-[#161A22]' : 'text-gray-400'}`}>รายละเอียดคำขอ</button>
+               <button onClick={() => {
+                   setMobileModalTab('chat');
+                   setTimeout(() => {
+                       const container = document.getElementById(`chat-container-${selectedTaskModal.id}`);
+                       if (container) container.scrollTop = container.scrollHeight;
+                   }, 100);
+               }} className={`flex-1 py-2.5 text-[11px] font-medium rounded-full transition-colors flex items-center justify-center gap-1.5 ${mobileModalTab === 'chat' ? 'bg-[#161A22] text-[#DEFF00] shadow-sm' : 'text-gray-400'}`}>
+                  การสนทนา 
+                  {selectedTaskModal.messages?.length > 0 && <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full">{selectedTaskModal.messages.length}</span>}
+               </button>
+            </div>
+
+            <div className="flex-1 overflow-hidden flex flex-col md:grid md:grid-cols-2 gap-0 md:gap-8 p-0 sm:p-8">
+               <div className={`${mobileModalTab === 'details' ? 'flex' : 'hidden'} md:flex flex-col space-y-6 overflow-y-auto p-4 sm:p-0 custom-scrollbar h-full pb-10 sm:pb-0`}>
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
                     <div className="space-y-4 text-sm font-light">
@@ -1532,8 +1533,6 @@ export default function App() {
                          <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('policyNumber')}</span><span className="text-gray-800">{selectedTaskModal.policyNumber}</span></div>
                        )}
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('serviceType')}</span><span className="text-gray-800">{t(selectedTaskModal.serviceType)}</span></div>
-                       
-                       {/* Dropdown เปลี่ยนคนรับผิดชอบ */}
                        <div>
                          <span className="text-gray-400 block text-[11px] mb-1">{t('colFa')}</span>
                          {(userProfile?.role === 'Admin' || userProfile?.role === 'Executive') ? (
@@ -1551,7 +1550,6 @@ export default function App() {
                            <span className="text-gray-800">{selectedTaskModal.faName}</span>
                          )}
                        </div>
-
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('dueDate')}</span><span className="text-orange-600">{selectedTaskModal.dueDate ? new Date(selectedTaskModal.dueDate).toLocaleDateString('th-TH') : '-'}</span></div>
                        <div>
                          <span className="text-gray-400 block text-[11px] mb-0.5">{t('urgency')}</span>
@@ -1614,7 +1612,7 @@ export default function App() {
                   )}
                </div>
 
-               <div className="flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[60vh] sm:h-full min-h-[400px]">
+               <div className={`${mobileModalTab === 'chat' ? 'flex' : 'hidden'} md:flex flex-col bg-white sm:bg-gray-50/50 sm:rounded-[2rem] p-4 sm:p-6 border-t sm:border border-gray-100 h-full overflow-hidden`}>
                   <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4 shrink-0">{t('chatHistory')}</h4>
                   <div id={`chat-container-${selectedTaskModal.id}`} className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {(!selectedTaskModal.messages || selectedTaskModal.messages.length===0) ? <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-60"><MessageSquare className="w-8 h-8 mb-2 stroke-[1.5]"/><span className="text-xs font-light">{t('noChatHistory')}</span></div> : 
