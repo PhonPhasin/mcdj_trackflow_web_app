@@ -555,6 +555,36 @@ export default function App() {
     } finally { setActionLoading(p => ({ ...p, [`status-${taskId}`]: false })); }
   };
 
+  // ✅ ฟังก์ชันสำหรับเปลี่ยนผู้รับผิดชอบงาน
+  const handleChangeAssignee = async (taskId, newFaUid) => {
+    setActionLoading(p => ({ ...p, [`assign-${taskId}`]: true }));
+    try {
+      const targetFa = allAvailableFAs.find(f => f.uid === newFaUid);
+      if (!targetFa) return;
+
+      await updateDoc(doc(db, 'tasks', taskId), {
+        faUid: targetFa.uid,
+        faName: targetFa.name,
+        updatedAt: new Date().toISOString()
+      });
+
+      showToast(`เปลี่ยนผู้รับผิดชอบเป็น ${targetFa.name} เรียบร้อยแล้ว`);
+
+      // ส่ง LINE แจ้งเตือนคนใหม่ที่ได้รับงาน
+      notifyLine('ASSIGN_TASK', {
+        clientName: selectedTaskModal.clientName,
+        serviceType: selectedTaskModal.serviceType,
+        urgency: selectedTaskModal.urgency,
+        dueDate: selectedTaskModal.dueDate
+      }, targetFa.uid);
+
+    } catch(e) {
+      showToast("เกิดข้อผิดพลาดในการเปลี่ยนผู้รับผิดชอบ", "error");
+    } finally {
+      setActionLoading(p => ({ ...p, [`assign-${taskId}`]: false }));
+    }
+  };
+
   const handleSendMessage = async (taskId) => {
     const text = chatInputs[taskId] || "";
     if (!text.trim()) return;
@@ -1486,7 +1516,26 @@ export default function App() {
                          <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('policyNumber')}</span><span className="text-gray-800">{selectedTaskModal.policyNumber}</span></div>
                        )}
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('serviceType')}</span><span className="text-gray-800">{t(selectedTaskModal.serviceType)}</span></div>
-                       <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('colFa')}</span><span className="text-gray-800">{selectedTaskModal.faName}</span></div>
+                       
+                       {/* Dropdown เปลี่ยนคนรับผิดชอบ */}
+                       <div>
+                         <span className="text-gray-400 block text-[11px] mb-1">{t('colFa')}</span>
+                         {(userProfile?.role === 'Admin' || userProfile?.role === 'Executive') ? (
+                           <select 
+                             value={selectedTaskModal.faUid}
+                             onChange={(e) => handleChangeAssignee(selectedTaskModal.id, e.target.value)}
+                             disabled={actionLoading[`assign-${selectedTaskModal.id}`]}
+                             className="w-full bg-white border border-gray-200 px-3 py-2 rounded-xl text-sm font-medium text-gray-800 outline-none focus:border-[#DEFF00] hover:border-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+                           >
+                             {allAvailableFAs.map(fa => (
+                               <option key={fa.uid} value={fa.uid}>{fa.name} ({fa.role || 'FA'})</option>
+                             ))}
+                           </select>
+                         ) : (
+                           <span className="text-gray-800">{selectedTaskModal.faName}</span>
+                         )}
+                       </div>
+
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('dueDate')}</span><span className="text-orange-600">{selectedTaskModal.dueDate ? new Date(selectedTaskModal.dueDate).toLocaleDateString('th-TH') : '-'}</span></div>
                        <div>
                          <span className="text-gray-400 block text-[11px] mb-0.5">{t('urgency')}</span>
