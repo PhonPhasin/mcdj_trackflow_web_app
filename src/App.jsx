@@ -439,6 +439,22 @@ export default function App() {
     return () => unsubs.forEach(fn => fn());
   }, [user, dbUsers]);
 
+  // เพิ่ม useEffect ตัวนี้เพื่อจัดการตัวเลขแจ้งเตือนบนไอคอนแอป (App Badging)
+  useEffect(() => {
+    const totalUnread = Object.values(unreadCounts).filter(Boolean).length;
+    
+    // เช็คว่าเบราว์เซอร์/มือถือ รองรับฟีเจอร์ App Badge หรือไม่
+    if ('setAppBadge' in navigator && 'clearAppBadge' in navigator) {
+      if (totalUnread > 0) {
+        // ถ้ามีข้อความใหม่ ให้โชว์ตัวเลข
+        navigator.setAppBadge(totalUnread).catch(error => console.error("App Badge Error:", error));
+      } else {
+        // ถ้าอ่านหมดแล้ว ให้เคลียร์ตัวเลขออก
+        navigator.clearAppBadge().catch(error => console.error("Clear Badge Error:", error));
+      }
+    }
+  }, [unreadCounts]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!email || !password) return;
