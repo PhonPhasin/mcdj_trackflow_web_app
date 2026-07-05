@@ -13,7 +13,7 @@ import {
   Lock, Mail, LogOut, CheckCircle, AlertTriangle, 
   Send, Loader2, Search, FileText, Camera, Paperclip, MessageSquare,
   LayoutDashboard, Users, X, Plus, Calendar as CalendarIcon, Trash2, Globe, MessageCircle, ChevronLeft, Download, Image as ImageIcon,
-  Link as LinkIcon, Clock
+  Clock
 } from 'lucide-react';
 
 const firebaseConfig = {
@@ -27,8 +27,6 @@ const firebaseConfig = {
 };
 
 const LINE_WEBHOOK_URL = "https://asia-southeast1-mcdjwatrackflow.cloudfunctions.net/sendLineNotification";
-
-// กลับมาใช้รหัส LIFF ID ตัวเดิมที่ทำงานได้ปกติเพื่อแก้ปัญหา "Not Found"
 const LIFF_ID = "2010475900-0hTYAPSL"; 
 
 const app = initializeApp(firebaseConfig);
@@ -39,16 +37,10 @@ const storage = getStorage(app);
 const TASK_TYPES = [
   'พิจารณาปีแรก ประกันรายเดี่ยว',
   'พิจารณาปีแรก ประกันกลุ่ม',
-  'พิจารณาปีต่อประกันรายเดี่ยว',
-  'พิจารณาปีต่อประกันกลุ่ม',
   'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
   'ติดตามเอกสาร AIA',
-  'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
   'ติดตาม ประกันวินาศภัย',
   'ติดตาม อสังหาริมทรัพย์',
-  'ต่อใบอนุญาต',
-  'แจ้งเตือน CPD',
-  'แจ้งเตือนผลงาน MOC',
   'อื่นๆ'
 ];
 
@@ -119,16 +111,10 @@ const translations = {
     dashboard: 'แดชบอร์ด', deleteTask: 'ลบงานนี้', confirmDelete: 'ยืนยันการลบ?', cancel: 'ยกเลิก', deletePermanent: 'ลบถาวร',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'พิจารณาปีแรก ประกันรายเดี่ยว',
     'พิจารณาปีแรก ประกันกลุ่ม': 'พิจารณาปีแรก ประกันกลุ่ม',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'พิจารณาปีต่อประกันรายเดี่ยว',
-    'พิจารณาปีต่อประกันกลุ่ม': 'พิจารณาปีต่อประกันกลุ่ม',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
     'ติดตามเอกสาร AIA': 'ติดตามเอกสาร AIA',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม',
     'ติดตาม ประกันวินาศภัย': 'ติดตาม ประกันวินาศภัย',
     'ติดตาม อสังหาริมทรัพย์': 'ติดตาม อสังหาริมทรัพย์',
-    'ต่อใบอนุญาต': 'ต่อใบอนุญาต',
-    'แจ้งเตือน CPD': 'แจ้งเตือน CPD',
-    'แจ้งเตือนผลงาน MOC': 'แจ้งเตือนผลงาน MOC',
     'อื่นๆ': 'อื่นๆ',
     sun: 'อา', mon: 'จ', tue: 'อ', wed: 'พ', thu: 'พฤ', fri: 'ศ', sat: 'ส',
     month01: 'มกราคม', month02: 'กุมภาพันธ์', month03: 'มีนาคม', month04: 'เมษายน', month05: 'พฤษภาคม', month06: 'มิถุนายน', month07: 'กรกฎาคม', month08: 'สิงหาคม', month09: 'กันยายน', month10: 'ตุลาคม', month11: 'พฤศจิกายน', month12: 'ธันวาคม',
@@ -162,16 +148,10 @@ const translations = {
     dashboard: 'Dashboard', deleteTask: 'Delete Task', confirmDelete: 'Confirm Delete?', cancel: 'Cancel', deletePermanent: 'Delete Permanent',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'First Year - Individual Life',
     'พิจารณาปีแรก ประกันกลุ่ม': 'First Year - Group Life',
-    'พิจารณาปีต่อประกันรายเดี่ยว': 'Renewal - Individual Life',
-    'พิจารณาปีต่อประกันกลุ่ม': 'Renewal - Group Life',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'Claim - Group / Individual',
     'ติดตามเอกสาร AIA': 'Follow up AIA Docs',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': 'Follow up Docs - Indv/Group',
     'ติดตาม ประกันวินาศภัย': 'Follow up Non-Life Insurance',
     'ติดตาม อสังหาริมทรัพย์': 'Follow up Real Estate',
-    'ต่อใบอนุญาต': 'License Renewal',
-    'แจ้งเตือน CPD': 'CPD Notification',
-    'แจ้งเตือนผลงาน MOC': 'MOC Notification',
     'อื่นๆ': 'Others',
     sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
     month01: 'January', month02: 'February', month03: 'March', month04: 'April', month05: 'May', month06: 'June', month07: 'July', month08: 'August', month09: 'September', month10: 'October', month11: 'November', month12: 'December',
@@ -205,16 +185,10 @@ const translations = {
     dashboard: 'ダッシュボード', deleteTask: 'タスク削除', confirmDelete: '削除しますか？', cancel: 'キャンセル', deletePermanent: '永久削除',
     'พิจารณาปีแรก ประกันรายเดี่ยว': '初年度 - 個人生命保険',
     'พิจารณาปีแรก ประกันกลุ่ม': '初年度 - グループ生命保険',
-    'พิจารณาปีต่อประกันรายเดี่ยว': '更新 - 個人生命保険',
-    'พิจารณาปีต่อประกันกลุ่ม': '更新 - グループ生命保険',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': '請求 - グループ / 個人',
     'ติดตามเอกสาร AIA': 'AIA書類フォローアップ',
-    'ติดตามเอกสารประกันรายเดี่ยว/ประกันกลุ่ม': '書類フォローアップ',
     'ติดตาม ประกันวินาศภัย': '損害保険フォローアップ',
     'ติดตาม อสังหาริมทรัพย์': '不動産フォローアップ',
-    'ต่อใบอนุญาต': 'ライセンス更新',
-    'แจ้งเตือน CPD': 'CPD通知',
-    'แจ้งเตือนผลงาน MOC': 'MOC通知',
     'อื่นๆ': 'その他',
     sun: '日', mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土',
     month01: '1月', month02: '2月', month03: '3月', month04: '4月', month05: '5月', month06: '6月', month07: '7月', month08: '8月', month09: '9月', month10: '10月', month11: '11月', month12: '12月',
@@ -255,9 +229,6 @@ export default function App() {
   const [frontFormMode, setFrontFormMode] = useState("backend"); 
   const [frontListMode, setFrontListMode] = useState("backend");
 
-  const [fullscreenImage, setFullscreenImage] = useState(null);
-  const [isUploadingDmFile, setIsUploadingDmFile] = useState(false);
-  const prevDmCountRef = useRef(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signingIn, setSigningIn] = useState(false);
@@ -296,9 +267,6 @@ export default function App() {
   const [dmMessages, setDmMessages] = useState([]);
   const [dmInput, setDmInput] = useState("");
   const [unreadCounts, setUnreadCounts] = useState({});
-
-  const dmChatEndRef = useRef(null);
-  const taskChatEndRef = useRef(null);
   const [isLiffReady, setIsLiffReady] = useState(false);
 
   const showToast = (message, type = 'success') => {
@@ -404,11 +372,18 @@ export default function App() {
       setTasks(taskList);
       if (selectedTaskModal) {
         const updated = taskList.find(t => t.id === selectedTaskModal.id);
-        const isNewMessage = updated?.messages?.length !== selectedTaskModal?.messages?.length;
-        setSelectedTaskModal(updated || null);
-        
-        if (isNewMessage) {
-          setTimeout(() => taskChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        if (updated) {
+           const oldLen = selectedTaskModal.messages?.length || 0;
+           const newLen = updated.messages?.length || 0;
+           setSelectedTaskModal(updated);
+           if (newLen > oldLen) {
+               setTimeout(() => {
+                   const container = document.getElementById(`chat-container-${updated.id}`);
+                   if (container) container.scrollTop = container.scrollHeight;
+               }, 100);
+           }
+        } else {
+           setSelectedTaskModal(null);
         }
       }
       if (pdfTask) {
@@ -431,13 +406,14 @@ export default function App() {
     const qMsg = query(collection(db, `chats/${chatId}/messages`), orderBy('timestamp', 'asc'));
     const unSubDm = onSnapshot(qMsg, (snap) => {
       let list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      const oldLen = dmMessages.length;
       setDmMessages(list);
-      
-      if (list.length !== prevDmCountRef.current) {
-        setTimeout(() => dmChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-        prevDmCountRef.current = list.length;
+      if (list.length > oldLen) {
+          setTimeout(() => {
+             const container = document.getElementById('dm-chat-container');
+             if (container) container.scrollTop = container.scrollHeight;
+          }, 100);
       }
-
       if (isDmOpen && dmView === 'chat') {
         list.forEach(m => {
           if (m.senderId !== user.uid && !m.isRead) updateDoc(doc(db, `chats/${chatId}/messages`, m.id), { isRead: true });
@@ -445,7 +421,7 @@ export default function App() {
       }
     });
     return () => unSubDm();
-  }, [activeChatUser, user, isDmOpen, dmView]);
+  }, [activeChatUser, user, isDmOpen, dmView, dmMessages.length]);
 
   useEffect(() => {
     if (!user || dbUsers.length === 0) return;
@@ -527,7 +503,7 @@ export default function App() {
       showToast("ยื่นงานสำเร็จเรียบร้อย!");
 
       if (frontFormMode === 'backend') {
-        notifyLine('ASSIGN_TASK', { ...taskData, senderUid: user.uid }, 'ADMINS_AND_OWNER');
+        notifyLine('ASSIGN_TASK', taskData, 'ADMINS_AND_OWNER');
       }
     } catch (e) { showToast("เกิดข้อผิดพลาดในการยื่นงาน", "error"); }
     finally { setSubmittingTask(false); }
@@ -557,7 +533,7 @@ export default function App() {
       };
       await addDoc(collection(db, 'tasks'), taskData);
 
-      notifyLine('ASSIGN_TASK', { ...taskData, senderUid: user.uid }, targetFa.uid);
+      notifyLine('ASSIGN_TASK', taskData, targetFa.uid);
 
       setAssignForm({ faUid: "", clientName: "", policyNumber: "", serviceType: TASK_TYPES[0], urgency: "ปกติ", notes: "", dueDate: "" }); 
       setAssignFilesToUpload([]); setShowAssignModal(false); setUploadProgress(0);
@@ -579,40 +555,6 @@ export default function App() {
     } finally { setActionLoading(p => ({ ...p, [`status-${taskId}`]: false })); }
   };
 
-  const handleChangeAssignee = async (taskId, newFaUid) => {
-    if (!newFaUid) return;
-    const targetFa = allAvailableFAs.find(f => f.uid === newFaUid);
-    if (!targetFa) return;
-    
-    setActionLoading(p => ({ ...p, [`assign-${taskId}`]: true }));
-    try {
-      const msg = { 
-        text: `[อัปเดตระบบ]: ผู้บริหารเปลี่ยนผู้รับผิดชอบงาน มอบหมายงานให้ ${targetFa.name}`, 
-        senderName: "System", 
-        senderRole: "ระบบ", 
-        timestamp: new Date().toISOString() 
-      };
-      await updateDoc(doc(db, 'tasks', taskId), { 
-        faUid: targetFa.uid, 
-        faName: targetFa.name,
-        messages: arrayUnion(msg),
-        updatedAt: new Date().toISOString() 
-      });
-      showToast("เปลี่ยนผู้รับผิดชอบเรียบร้อยแล้ว");
-
-      notifyLine('ASSIGN_TASK', {
-        clientName: selectedTaskModal.clientName,
-        serviceType: selectedTaskModal.serviceType,
-        urgency: selectedTaskModal.urgency,
-        dueDate: selectedTaskModal.dueDate,
-        notes: "ผู้บริหารโอนย้ายงานนี้ให้คุณดูแล",
-        senderUid: user.uid
-      }, targetFa.uid);
-
-    } catch (e) { showToast("เกิดข้อผิดพลาดในการเปลี่ยนชื่อ", "error"); } 
-    finally { setActionLoading(p => ({ ...p, [`assign-${taskId}`]: false })); }
-  };
-
   const handleSendMessage = async (taskId) => {
     const text = chatInputs[taskId] || "";
     if (!text.trim()) return;
@@ -621,15 +563,23 @@ export default function App() {
       const msg = { text: text.trim(), senderName: userProfile?.name, senderRole: userProfile?.role, timestamp: new Date().toISOString() };
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
       setChatInputs(p => ({ ...p, [taskId]: "" }));
+      
+      const ta = document.getElementById(`chat-textarea-${taskId}`);
+      if (ta) ta.style.height = 'auto';
+
+      setTimeout(() => {
+          const container = document.getElementById(`chat-container-${taskId}`);
+          if (container) container.scrollTop = container.scrollHeight;
+      }, 100);
 
       notifyLine('TASK_CHAT', {
-        taskId: selectedTaskModal.id,
+        taskId: taskId,
         taskName: selectedTaskModal.clientName,
         senderName: userProfile.name,
         senderUid: user.uid,
         text: text.trim()
-      }, 'SMART_MODE');
-
+      }, 'SMART_MODE'); 
+      
     } finally { setActionLoading(p => ({ ...p, [`chat-${taskId}`]: false })); }
   };
 
@@ -645,14 +595,18 @@ export default function App() {
       const msg = { text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type, senderName: userProfile?.name, senderRole: userProfile?.role, timestamp: new Date().toISOString() };
       await updateDoc(doc(db, 'tasks', taskId), { messages: arrayUnion(msg), updatedAt: new Date().toISOString() });
       
+      setTimeout(() => {
+          const container = document.getElementById(`chat-container-${taskId}`);
+          if (container) container.scrollTop = container.scrollHeight;
+      }, 100);
+
       notifyLine('TASK_CHAT', {
-        taskId: selectedTaskModal.id,
+        taskId: taskId,
         taskName: selectedTaskModal.clientName,
         senderName: userProfile.name,
         senderUid: user.uid,
         text: "[ส่งรูปภาพ/ไฟล์แนบ]"
       }, 'SMART_MODE');
-
     } catch (err) { showToast("อัปโหลดไฟล์ไม่สำเร็จ", "error"); } 
     finally { setIsUploadingChatFile(false); e.target.value = null; }
   };
@@ -664,6 +618,14 @@ export default function App() {
       const chatId = getChatId(user.uid, activeChatUser.uid);
       await addDoc(collection(db, `chats/${chatId}/messages`), { text: dmInput.trim(), senderId: user.uid, senderName: userProfile?.name, timestamp: new Date().toISOString(), isRead: false });
       
+      const ta = document.getElementById('dm-textarea');
+      if (ta) ta.style.height = 'auto';
+
+      setTimeout(() => {
+         const container = document.getElementById('dm-chat-container');
+         if (container) container.scrollTop = container.scrollHeight;
+      }, 100);
+
       notifyLine('DM_CHAT', {
         senderName: userProfile.name,
         text: dmInput.trim()
@@ -671,31 +633,6 @@ export default function App() {
 
       setDmInput("");
     } catch (e) { showToast("ส่งข้อความไม่สำเร็จ", "error"); }
-  };
-
-  const handleUploadDmFile = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !activeChatUser) return;
-    if (file.size > 5 * 1024 * 1024) return showToast("ไฟล์มีขนาดใหญ่เกิน 5MB", "error");
-    setIsUploadingDmFile(true);
-    try {
-      const chatId = getChatId(user.uid, activeChatUser.uid);
-      const refName = `chat_attachments/${Date.now()}_${file.name}`;
-      const uploadTask = uploadBytesResumable(ref(storage, refName), file);
-      const url = await new Promise((res, rej) => { uploadTask.on('state_changed', null, rej, async () => res(await getDownloadURL(uploadTask.snapshot.ref))); });
-      
-      await addDoc(collection(db, `chats/${chatId}/messages`), { 
-         text: "ส่งไฟล์แนบ", attachmentUrl: url, attachmentName: file.name, attachmentType: file.type,
-         senderId: user.uid, senderName: userProfile?.name, timestamp: new Date().toISOString(), isRead: false 
-      });
-
-      notifyLine('DM_CHAT', {
-        senderName: userProfile.name,
-        text: "[ส่งรูปภาพ/ไฟล์แนบ]"
-      }, activeChatUser.uid);
-
-    } catch (err) { showToast("อัปโหลดไฟล์ไม่สำเร็จ", "error"); } 
-    finally { setIsUploadingDmFile(false); e.target.value = null; }
   };
 
   const handleAddEventSubmit = async (e) => {
@@ -718,8 +655,7 @@ export default function App() {
           title: eventForm.title,
           date: selectedDateStr,
           startTime: eventForm.startTime,
-          endTime: eventForm.endTime,
-          senderUid: user.uid
+          endTime: eventForm.endTime
         }, 'ALL');
       }
 
@@ -740,27 +676,12 @@ export default function App() {
     finally { setActionLoading(prev => ({ ...prev, [`delete-${taskId}`]: false })); }
   };
 
-  const handleDeleteEvent = async (eventId, e) => {
-    if (e) e.stopPropagation();
-    if (window.confirm("คุณต้องการลบกิจกรรมนี้ใช่หรือไม่?")) {
-      try {
-        await deleteDoc(doc(db, 'events', eventId));
-        showToast("ลบกิจกรรมเรียบร้อยแล้ว");
-      } catch (error) {
-        showToast("เกิดข้อผิดพลาดในการลบกิจกรรม", "error");
-      }
-    }
-  };
-
   const allAvailableFAs = useMemo(() => {
     const map = new Map();
     tasks.forEach(t => map.set(t.faUid, { uid: t.faUid, name: t.faName, role: 'FA' }));
     dbUsers.forEach(u => { if(u.role === 'FA' || u.role === 'Admin' || u.role === 'Executive' || !u.role) map.set(u.uid, u); });
-    if (user && userProfile) {
-      map.set(user.uid, { uid: user.uid, name: `${userProfile.name} (ฉัน)`, role: userProfile.role || 'Admin' });
-    }
     return Array.from(map.values());
-  }, [tasks, dbUsers, user, userProfile]);
+  }, [tasks, dbUsers]);
 
   const filteredTasks = useMemo(() => {
     let list = tasks;
@@ -771,7 +692,7 @@ export default function App() {
       list = list.filter(t => t.formMode !== 'private' || t.faUid === user?.uid);
     }
 
-    return list.filter(t => {
+    list = list.filter(t => {
       const matchSearch = (t.clientName||'').toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (t.policyNumber||'').toLowerCase().includes(searchQuery.toLowerCase()) || 
                           (t.faName||'').toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -782,6 +703,23 @@ export default function App() {
       const matchYear = selectedYear === "all" || d.getFullYear().toString() === selectedYear;
       return matchSearch && matchFa && matchMonth && matchYear;
     });
+
+    list.sort((a, b) => {
+      const getScore = (task) => {
+          if (task.status === 'Approved') return 100;
+          if (task.urgency === 'ด่วน') return 10;
+          if (task.status === 'In Progress') return 20;
+          if (task.status === 'Pending') return 30;
+          if (task.status === 'Rejected') return 40;
+          return 50;
+      };
+      const scoreA = getScore(a);
+      const scoreB = getScore(b);
+      if (scoreA !== scoreB) return scoreA - scoreB;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    return list;
   }, [tasks, activeTab, user, frontListMode, searchQuery, selectedFaFilter, selectedMonth, selectedYear]);
 
   const getStatusStyle = (status) => {
@@ -840,56 +778,55 @@ export default function App() {
   );
 
   const renderTaskTable = (tasksList) => (
-    <div className="bg-white rounded-[2rem] p-4 sm:p-6 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-gray-50 mt-6 overflow-hidden">
-      <div className="overflow-x-auto custom-scrollbar">
-        <table className="w-full text-left whitespace-nowrap">
-          <thead>
-            <tr className="text-[10px] text-gray-400 font-medium uppercase tracking-widest border-b border-gray-50">
-              <th className="py-4 px-4 font-medium">{t('colClient')}</th>
-              <th className="py-4 px-4 font-medium text-center">{t('colType')}</th>
-              <th className="py-4 px-4 font-medium text-center">{t('colDue')}</th>
-              <th className="py-4 px-4 font-medium text-center">{t('colFa')}</th>
-              <th className="py-4 px-4 font-medium text-center">{t('colManage')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50/50">
-            {tasksList.map(task => {
-              const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
-              return (
-                <tr key={task.id} className="hover:bg-gray-50/50 transition-colors group">
-                  <td className="py-4 px-4 cursor-pointer" onClick={() => setSelectedTaskModal(task)}>
-                    <span className="text-[10px] text-gray-400 font-light block tracking-widest mb-0.5 uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                    <p className="font-light text-gray-800 flex items-center gap-1.5 text-sm">
-                      {task.clientName}
-                      {task.urgency === 'ด่วน' && <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-sm" title={t('urgent')}></span>}
-                    </p>
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-500 font-light text-xs">{t(task.serviceType)}</td>
-                  <td className="py-4 px-4 text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-gray-600 text-xs font-light">{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
-                      {renderCountdownBadge(task.dueDate, task.status)}
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-600 font-light text-xs">{task.faName}</td>
-                  <td className="py-4 px-4 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <span className={`inline-block text-[11px] px-3 py-1 rounded-full font-medium ${getStatusStyle(task.status)}`}>
-                        {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
-                      </span>
-                      <button onClick={() => setSelectedTaskModal(task)} className="relative text-gray-500 hover:text-gray-800 text-[10px] font-light border border-gray-200 px-3 py-1 rounded-full hover:bg-gray-50 transition-colors">
-                        {t('viewData')}
-                        {hasUnread && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white animate-pulse"></span>}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-            {tasksList.length === 0 && <tr><td colSpan="5" className="text-center py-12 text-gray-400 font-light text-sm">{t('empty')}</td></tr>}
-          </tbody>
-        </table>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4 sm:mt-6 animate-[fadeIn_0.3s_ease-out]">
+      {tasksList.map(task => {
+        const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
+        return (
+          <div key={task.id} onClick={() => {
+              setSelectedTaskModal(task);
+              setTimeout(() => {
+                  const container = document.getElementById(`chat-container-${task.id}`);
+                  if (container) container.scrollTop = container.scrollHeight;
+              }, 100);
+          }} className="bg-white rounded-[1.5rem] p-5 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-gray-100 hover:border-[#DEFF00] hover:shadow-md transition-all cursor-pointer relative group flex flex-col h-full">
+             {hasUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse z-10"></span>}
+             <div className="flex justify-between items-start mb-4 gap-2">
+               <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-medium text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                  {task.urgency === 'ด่วน' ? 
+                    <span className="text-[10px] font-medium text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-md">{t('urgent')}</span> : 
+                    <span className="text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-md">{t('normal')}</span>
+                  }
+               </div>
+               <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-medium ${getStatusStyle(task.status)}`}>
+                 {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
+               </span>
+             </div>
+             <div className="flex-1 mb-5">
+               <h4 className="font-medium text-gray-800 text-[15px] mb-1.5 line-clamp-2">{task.clientName}</h4>
+               <p className="text-[11px] text-gray-500 font-light line-clamp-1">{t(task.serviceType)}</p>
+             </div>
+             <div className="pt-4 border-t border-gray-50 flex justify-between items-end mt-auto">
+               <div className="flex items-center gap-1.5 text-gray-500 text-[11px] font-light">
+                 <Users className="w-3.5 h-3.5"/>
+                 <span className="truncate max-w-[120px]">{task.faName}</span>
+               </div>
+               <div className="flex flex-col items-end gap-1">
+                 <div className="flex items-center gap-1.5 text-gray-500 text-[11px] font-light">
+                   <Clock className="w-3.5 h-3.5"/>
+                   <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
+                 </div>
+                 {renderCountdownBadge(task.dueDate, task.status)}
+               </div>
+             </div>
+          </div>
+        );
+      })}
+      {tasksList.length === 0 && (
+        <div className="col-span-full text-center py-16 bg-white rounded-[1.5rem] border border-dashed border-gray-200">
+           <p className="text-gray-400 font-light text-sm">{t('empty')}</p>
+        </div>
+      )}
     </div>
   );
 
@@ -959,7 +896,14 @@ export default function App() {
                  {d && <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"><Plus className="w-3 h-3 text-gray-300"/></div>}
                  <div className="space-y-1">
                    {dayTasks.map(task => (
-                       <div key={`task-${task.id}`} onClick={(e) => { e.stopPropagation(); setSelectedTaskModal(task); }} className={`text-[9px] px-2 py-1.5 rounded-md truncate font-medium flex items-center gap-1.5 shadow-sm border cursor-pointer hover:scale-[1.02] transition-transform ${
+                       <div key={`task-${task.id}`} onClick={(e) => { 
+                           e.stopPropagation(); 
+                           setSelectedTaskModal(task);
+                           setTimeout(() => {
+                               const container = document.getElementById(`chat-container-${task.id}`);
+                               if (container) container.scrollTop = container.scrollHeight;
+                           }, 100);
+                       }} className={`text-[9px] px-2 py-1.5 rounded-md truncate font-medium flex items-center gap-1.5 shadow-sm border cursor-pointer hover:scale-[1.02] transition-transform ${
                            task.status === 'Approved' ? 'bg-green-50 text-green-700 border-green-100' :
                            task.status === 'In Progress' ? 'bg-sky-50 text-sky-700 border-sky-100' :
                            task.status === 'Rejected' ? 'bg-red-50 text-red-700 border-red-100' :
@@ -975,20 +919,12 @@ export default function App() {
                            {task.urgency === 'ด่วน' && <span className="ml-auto text-[8px] shrink-0">🔥</span>}
                        </div>
                    ))}
-                   {dayEvents.map(ev => {
-                     const canDelete = userProfile?.role === 'Admin' || userProfile?.role === 'Executive' || ev.createdBy === user.uid;
-                     return (
-                       <div key={`ev-${ev.id}`} className={`relative text-[9px] px-2 py-1 rounded-md truncate font-light flex flex-col group/event ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>
-                          <span className="font-medium truncate pr-4">{ev.title}</span>
+                   {dayEvents.map(ev => (
+                       <div key={`ev-${ev.id}`} className={`text-[9px] px-2 py-1 rounded-md truncate font-light flex flex-col ${ev.color === 'blue' ? 'bg-blue-50 text-blue-600' : ev.color === 'yellow' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-600'}`}>
+                          <span className="font-medium truncate">{ev.title}</span>
                           {(ev.startTime || ev.endTime) && <span className="text-[8px] opacity-80 mt-0.5">{ev.startTime || '...'} - {ev.endTime || '...'}</span>}
-                          {canDelete && (
-                            <button onClick={(e) => handleDeleteEvent(ev.id, e)} className="absolute right-1 top-1 opacity-0 group-hover/event:opacity-100 hover:text-red-500 transition-opacity bg-white/80 rounded-full p-0.5" title="ลบกิจกรรม">
-                              <Trash2 className="w-2.5 h-2.5" />
-                            </button>
-                          )}
                        </div>
-                     )
-                   })}
+                   ))}
                  </div>
               </div>
             )
@@ -1054,7 +990,14 @@ export default function App() {
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar bg-gray-50/30">
               <div className="px-4 py-3 text-[9px] font-medium text-gray-400 uppercase tracking-widest">{t('staffList')}</div>
               {dbUsers.map(u => (
-                <button key={u.uid} onClick={()=>{setActiveChatUser(u); setDmView('chat');}} className="w-full flex items-center gap-3 p-3 hover:bg-white rounded-2xl transition-colors border border-transparent hover:border-gray-100 hover:shadow-sm relative">
+                <button key={u.uid} onClick={()=>{
+                    setActiveChatUser(u); 
+                    setDmView('chat');
+                    setTimeout(() => {
+                        const container = document.getElementById('dm-chat-container');
+                        if (container) container.scrollTop = container.scrollHeight;
+                    }, 100);
+                }} className="w-full flex items-center gap-3 p-3 hover:bg-white rounded-2xl transition-colors border border-transparent hover:border-gray-100 hover:shadow-sm relative">
                   <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-light border border-gray-200">
                     {u.name?.charAt(0)}
                     {unreadCounts[u.uid] && <span className="absolute top-2 left-10 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>}
@@ -1072,39 +1015,39 @@ export default function App() {
               <div className="flex-1"><h3 className="font-light text-sm">{activeChatUser?.name}</h3><p className="text-[9px] text-gray-400 tracking-widest uppercase">{activeChatUser?.role}</p></div>
               <button onClick={() => setIsDmOpen(false)} className="text-gray-400 hover:text-white transition-colors"><X className="w-4 h-4"/></button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 custom-scrollbar">
+            <div id="dm-chat-container" className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 custom-scrollbar">
               {dmMessages.length === 0 ? <div className="h-full flex items-center justify-center text-gray-400 text-xs font-light">{t('startChat')}</div> : 
                 dmMessages.map((msg, idx) => {
                   const isMe = msg.senderId === user.uid;
                   return (
                     <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] font-light max-w-[85%] ${isMe ? 'bg-[#DEFF00] text-[#161A22] rounded-tr-sm shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm shadow-sm'}`}>
-                        {msg.text}
-                        {msg.attachmentUrl && (
-                          <div className="mt-2 block pb-1">
-                            {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
-                              <div className="cursor-pointer inline-block" onClick={() => setFullscreenImage(msg.attachmentUrl)}>
-                                <img src={msg.attachmentUrl} alt="attachment" className="max-h-[150px] w-auto object-contain rounded-lg shadow-sm border border-black/5 hover:opacity-90 transition-opacity" />
-                              </div> :
-                              <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white/40"><Paperclip className="w-3 h-3"/> {msg.attachmentName || t('downloadAttach')}</a>
-                            }
-                          </div>
-                        )}
-                      </div>
+                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] font-light max-w-[85%] ${isMe ? 'bg-[#DEFF00] text-[#161A22] rounded-tr-sm shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-sm shadow-sm'}`}>{msg.text}</div>
                       <span className="text-[9px] text-gray-400 mt-1 mx-1 font-light">{new Date(msg.timestamp).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                   );
                 })
               }
-              <div ref={dmChatEndRef} />
             </div>
-            <form onSubmit={handleSendDM} className="p-2.5 bg-white border-t border-gray-100 flex gap-2 items-center">
-              <label className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full cursor-pointer transition-colors shrink-0" title={t('attachFileText')}>
-                 {isUploadingDmFile ? <Loader2 className="w-4 h-4 animate-spin"/> : <ImageIcon className="w-4 h-4 stroke-[1.5]" />}
-                 <input type="file" className="hidden" accept="image/*,application/pdf" onChange={handleUploadDmFile} disabled={isUploadingDmFile} />
-              </label>
-              <input type="text" value={dmInput} onChange={e=>setDmInput(e.target.value)} placeholder={t('typeMessage')} className="flex-1 bg-gray-50 px-4 py-2 text-sm font-light rounded-full outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200" />
-              <button type="submit" disabled={!dmInput.trim()} className="w-9 h-9 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50"><Send className="w-3.5 h-3.5 ml-0.5 stroke-[1.5]"/></button>
+            <form onSubmit={handleSendDM} className="p-3 bg-white border-t border-gray-100 flex gap-2 items-end">
+              <textarea 
+                id="dm-textarea"
+                rows="1"
+                value={dmInput} 
+                onChange={e=>{
+                    setDmInput(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = (e.target.scrollHeight) + 'px';
+                }} 
+                onKeyDown={e=>{
+                    if(e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendDM(e);
+                    }
+                }}
+                placeholder={t('typeMessage')} 
+                className="flex-1 bg-gray-50 px-4 py-2.5 text-sm font-light rounded-2xl outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200 resize-none overflow-hidden max-h-24" 
+              />
+              <button type="submit" disabled={!dmInput.trim()} className="w-10 h-10 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50 mb-0.5"><Send className="w-4 h-4 ml-0.5 stroke-[1.5]"/></button>
             </form>
           </>
         )}
@@ -1496,14 +1439,16 @@ export default function App() {
   if (activeTab === "pdf") return renderPdfView();
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] text-gray-800 font-['Kanit',sans-serif] pb-24 selection:bg-[#DEFF00] selection:text-black relative z-0">
+    <div className="min-h-[100dvh] bg-[#FDFDFD] text-gray-800 font-['Kanit',sans-serif] pb-24 selection:bg-[#DEFF00] selection:text-black relative z-0">
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@100;200;300;400;500;600&display=swap');
         * { font-family: 'Kanit', sans-serif !important; }
+        input, textarea, select { font-size: 16px !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
         @media print { body { background: white !important; } .no-print { display: none !important; } #pdf-content { box-shadow: none !important; padding: 0 !important; width: 100% !important; margin: 0 !important; border:none !important; } }
+        ${selectedTaskModal || showAssignModal || showEventModal || isDmOpen ? 'body { overflow: hidden; }' : ''}
       `}} />
 
       <div className="fixed inset-0 bg-gradient-to-br from-[#FDFDFD] via-[#FDFDFD] to-[#F7F9F2] -z-10"></div>
@@ -1513,7 +1458,7 @@ export default function App() {
 
       {selectedTaskModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
-          <div className="relative w-full h-full sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
+          <div className="relative w-full h-[100dvh] sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
             
             <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 sm:bg-white z-10 sticky top-0 shrink-0">
               <div>
@@ -1532,8 +1477,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto md:overflow-hidden p-4 sm:p-8 flex flex-col md:flex-row gap-6 sm:gap-8 custom-scrollbar">
-               <div className="w-full md:w-1/2 flex flex-col space-y-6 md:overflow-y-auto custom-scrollbar md:pr-4 pb-2 md:pb-0">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 custom-scrollbar">
+               <div className="flex flex-col space-y-6">
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
                     <div className="space-y-4 text-sm font-light">
@@ -1541,29 +1486,15 @@ export default function App() {
                          <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('policyNumber')}</span><span className="text-gray-800">{selectedTaskModal.policyNumber}</span></div>
                        )}
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('serviceType')}</span><span className="text-gray-800">{t(selectedTaskModal.serviceType)}</span></div>
-                       
-                       <div>
-                         <span className="text-gray-400 block text-[11px] mb-1">{t('colFa')}</span>
-                         {(userProfile?.role === 'Admin' || userProfile?.role === 'Executive') ? (
-                            <div className="relative">
-                              <select 
-                                value={selectedTaskModal.faUid} 
-                                onChange={(e) => handleChangeAssignee(selectedTaskModal.id, e.target.value)}
-                                disabled={actionLoading[`assign-${selectedTaskModal.id}`]}
-                                className="w-full bg-white border border-gray-200 text-gray-800 text-sm rounded-xl px-3 py-2 outline-none focus:border-[#DEFF00] appearance-none cursor-pointer hover:bg-gray-50 transition-colors"
-                              >
-                                {allAvailableFAs.map(fa => <option key={fa.uid} value={fa.uid}>{fa.name}</option>)}
-                              </select>
-                              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                {actionLoading[`assign-${selectedTaskModal.id}`] ? <Loader2 className="w-3 h-3 animate-spin text-gray-400"/> : <span className="text-xs text-gray-400">▼</span>}
-                              </div>
-                            </div>
-                         ) : (
-                            <span className="text-gray-800">{selectedTaskModal.faName}</span>
-                         )}
-                       </div>
-
+                       <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('colFa')}</span><span className="text-gray-800">{selectedTaskModal.faName}</span></div>
                        <div><span className="text-gray-400 block text-[11px] mb-0.5">{t('dueDate')}</span><span className="text-orange-600">{selectedTaskModal.dueDate ? new Date(selectedTaskModal.dueDate).toLocaleDateString('th-TH') : '-'}</span></div>
+                       <div>
+                         <span className="text-gray-400 block text-[11px] mb-0.5">{t('urgency')}</span>
+                         {selectedTaskModal.urgency === 'ด่วน' ? 
+                            <span className="inline-block bg-red-50 text-red-600 border border-red-100 px-3 py-1 rounded-full text-[11px] font-medium">{t('urgent')}</span> : 
+                            <span className="inline-block bg-gray-50 text-gray-600 border border-gray-100 px-3 py-1 rounded-full text-[11px] font-medium">{t('normal')}</span>
+                         }
+                       </div>
                     </div>
                   </div>
 
@@ -1574,7 +1505,7 @@ export default function App() {
                         {selectedTaskModal.attachments.map((file, idx) => {
                           const isImg = file.url.match(/\.(jpeg|jpg|gif|png|webp)/i) || file.url.includes('images%2F') || file.type?.startsWith('image/');
                           return (
-                            <a key={idx} href={file.url} target="_blank" rel="noopener noreferrer" onClick={(e) => { if(isImg) { e.preventDefault(); setFullscreenImage(file.url); } }} className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden cursor-pointer">
+                            <a key={idx} href={file.url} target="_blank" rel="noopener noreferrer" className="border border-gray-200 rounded-xl p-2 flex flex-col items-center bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all group overflow-hidden">
                               {isImg ? (
                                 <img src={file.url} alt="attachment" className="w-full h-24 object-cover rounded-lg mb-2" />
                               ) : (
@@ -1618,24 +1549,12 @@ export default function App() {
                   )}
                </div>
 
-               <div className="w-full md:w-1/2 flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[500px] md:h-full shrink-0">
-                  <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('chatHistory')}</h4>
-                  <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+               <div className="flex flex-col bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100 h-[60vh] sm:h-full min-h-[400px]">
+                  <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4 shrink-0">{t('chatHistory')}</h4>
+                  <div id={`chat-container-${selectedTaskModal.id}`} className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                     {(!selectedTaskModal.messages || selectedTaskModal.messages.length===0) ? <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-60"><MessageSquare className="w-8 h-8 mb-2 stroke-[1.5]"/><span className="text-xs font-light">{t('noChatHistory')}</span></div> : 
                       selectedTaskModal.messages.map((msg, idx) => {
                         const isMe = msg.senderName === userProfile?.name;
-                        const isSystem = msg.senderName === 'System';
-                        
-                        if (isSystem) {
-                          return (
-                            <div key={idx} className="flex justify-center my-4">
-                              <span className="bg-gray-100/80 text-gray-500 text-[10px] font-medium px-4 py-1.5 rounded-full border border-gray-200">
-                                {msg.text}
-                              </span>
-                            </div>
-                          );
-                        }
-
                         return (
                           <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                             <span className="text-[10px] text-gray-400 font-light mb-1 ml-1 tracking-wider uppercase">{msg.senderName} ({msg.senderRole})</span>
@@ -1644,7 +1563,7 @@ export default function App() {
                               {msg.attachmentUrl && (
                                 <div className="mt-3 block pb-1">
                                   {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
-                                    <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3 cursor-pointer hover:bg-black/10 transition-colors" onClick={() => setFullscreenImage(msg.attachmentUrl)}>
+                                    <div className="rounded-xl overflow-hidden border border-black/5 bg-black/5 flex justify-center items-center p-3">
                                         <img src={msg.attachmentUrl} alt="attachment" className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm" />
                                     </div> :
                                     <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white"><Paperclip className="w-3.5 h-3.5"/> {msg.attachmentName || t('downloadAttach')}</a>
@@ -1656,16 +1575,32 @@ export default function App() {
                         )
                       })
                     }
-                    <div ref={taskChatEndRef} />
                   </div>
                   
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2 items-center bg-white p-1.5 rounded-full shadow-sm border border-gray-50 shrink-0">
-                    <label className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full cursor-pointer transition-colors shrink-0" title={t('attachFileText')}>
+                  <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2 items-end bg-white p-1.5 rounded-3xl shadow-sm border border-gray-50 shrink-0">
+                    <label className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-full cursor-pointer transition-colors shrink-0 mb-0.5" title={t('attachFileText')}>
                        {isUploadingChatFile ? <Loader2 className="w-4 h-4 animate-spin"/> : <ImageIcon className="w-4 h-4 stroke-[1.5]" />}
                        <input type="file" className="hidden" accept="image/*,application/pdf" onChange={(e) => handleUploadChatFile(selectedTaskModal.id, e)} disabled={isUploadingChatFile} />
                     </label>
-                    <input type="text" value={chatInputs[selectedTaskModal.id]||''} onChange={e=>setChatInputs(p=>({...p, [selectedTaskModal.id]:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&handleSendMessage(selectedTaskModal.id)} placeholder={t('typeMessage')} className="flex-1 bg-transparent px-2 text-sm font-light outline-none text-gray-800"/>
-                    <button disabled={actionLoading[`chat-${selectedTaskModal.id}`] || !chatInputs[selectedTaskModal.id]?.trim()} onClick={()=>handleSendMessage(selectedTaskModal.id)} className="w-10 h-10 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50"><Send className="w-4 h-4 ml-0.5 stroke-[1.5]"/></button>
+                    <textarea 
+                        id={`chat-textarea-${selectedTaskModal.id}`}
+                        rows="1"
+                        value={chatInputs[selectedTaskModal.id]||''} 
+                        onChange={e=>{
+                            setChatInputs(p=>({...p, [selectedTaskModal.id]:e.target.value}));
+                            e.target.style.height = 'auto';
+                            e.target.style.height = (e.target.scrollHeight) + 'px';
+                        }} 
+                        onKeyDown={e=>{
+                            if(e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage(selectedTaskModal.id);
+                            }
+                        }}
+                        placeholder={t('typeMessage')} 
+                        className="flex-1 bg-transparent px-2 py-2.5 text-sm font-light outline-none text-gray-800 resize-none overflow-hidden max-h-24"
+                    />
+                    <button disabled={actionLoading[`chat-${selectedTaskModal.id}`] || !chatInputs[selectedTaskModal.id]?.trim()} onClick={()=>handleSendMessage(selectedTaskModal.id)} className="w-10 h-10 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50 mb-0.5"><Send className="w-4 h-4 ml-0.5 stroke-[1.5]"/></button>
                   </div>
                </div>
             </div>
@@ -1701,29 +1636,23 @@ export default function App() {
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('serviceType')}</label>
                   <select value={assignForm.serviceType} onChange={e=>setAssignForm({...assignForm, serviceType:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light appearance-none outline-none">{TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}</select>
                 </div>
+                
+                <div>
+                  <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('dueDate')}</label>
+                  <input type="date" value={assignForm.dueDate} onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('urgency')}</label>
+                  <div className="flex bg-gray-50 border border-gray-100 p-1.5 rounded-full">
+                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency:'ปกติ'})} className={`flex-1 py-2 rounded-full text-[11px] font-medium transition-colors ${assignForm.urgency==='ปกติ'?'bg-white shadow-sm text-gray-800':'bg-transparent text-gray-400'}`}>{t('normal')}</button>
+                    <button type="button" onClick={()=>setAssignForm({...assignForm, urgency:'ด่วน'})} className={`flex-1 py-2 rounded-full text-[11px] font-medium transition-colors ${assignForm.urgency==='ด่วน'?'bg-red-50 text-red-600 border border-red-100':'bg-transparent text-gray-400'}`}>{t('urgent')}</button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
                   <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('typeMessage')}></textarea>
                 </div>
-                
-                {/* แนบไฟล์ตอนมอบหมายงาน */}
-                <div>
-                  <label className="flex flex-col items-center justify-center w-full border border-dashed border-gray-200 bg-gray-50/50 hover:bg-gray-50 rounded-[2rem] p-5 cursor-pointer transition-colors">
-                    <Camera className="w-5 h-5 text-gray-400 mb-2 stroke-[1.5]"/><span className="text-[11px] text-gray-500 font-light">{t('attach')}</span>
-                    <input type="file" multiple className="hidden" accept="image/*,.pdf" onChange={(e) => handleFileChange(e, true)} />
-                  </label>
-                  {assignFilesToUpload.length > 0 && (
-                    <div className="mt-2 space-y-2">
-                      {assignFilesToUpload.map((f,i) => (
-                        <div key={i} className="flex justify-between items-center bg-gray-50 p-2.5 rounded-xl text-[11px] font-light border border-gray-100 text-gray-600">
-                          <span className="truncate pr-2">{f.name}</span>
-                          <button type="button" onClick={()=>removeFile(i, true)} className="text-gray-400 hover:text-red-500"><X className="w-3.5 h-3.5"/></button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
                 <button type="submit" disabled={assigningTask} className="w-full bg-[#161A22] text-[#DEFF00] py-4 rounded-full font-medium text-sm hover:bg-black transition-colors mt-2 flex justify-center items-center gap-2">
                   {assigningTask ? <><Loader2 className="w-4 h-4 animate-spin"/> กำลังดำเนินการ...</> : t('confirmAssign')}
                 </button>
@@ -1747,7 +1676,6 @@ export default function App() {
           
           <div className="flex gap-3 w-full sm:w-auto justify-center">
             
-            {/* 🟢 ปุ่ม "เชื่อมต่อ LINE" สีเขียวพรีเมียม สไตล์ LINE OA */}
             {userProfile && (
               <button 
                 onClick={handleLinkLine} 
@@ -1786,15 +1714,6 @@ export default function App() {
         </div>
       </nav>
 
-      {/* เพิ่มปุ่มเชื่อมต่อ LINE สำหรับมือถือ (ถ้าจอมือถือจะมาอยู่ใต้เมนูบน) */}
-      {!userProfile?.lineUserId && (
-        <div className="sm:hidden px-4 mb-4 flex justify-center">
-          <button onClick={handleLinkLine} className="bg-[#06C755] w-full max-w-sm px-4 py-3 rounded-full text-xs font-medium text-white shadow-sm flex items-center justify-center gap-2 hover:bg-[#05b34c] transition-colors">
-            <LinkIcon className="w-4 h-4"/> {t('linkLine')}
-          </button>
-        </div>
-      )}
-
       <div className="max-w-[1500px] mx-auto px-4 sm:px-10 mt-2 relative z-10">
         
         {activeTab === "front" && (
@@ -1816,8 +1735,12 @@ export default function App() {
                       {TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}
                     </select>
                   </div>
-                  <div><input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} value={dueDate} onChange={e=>setDueDate(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 outline-none focus:border-[#DEFF00] transition-colors" placeholder={t('dueDate')} /></div>
                   <div>
+                    <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('dueDate')}</label>
+                    <input type="date" value={dueDate} onChange={e=>setDueDate(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 outline-none focus:border-[#DEFF00] transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('urgency')}</label>
                     <div className="flex bg-white border border-gray-100 p-1.5 rounded-full">
                       <button type="button" onClick={()=>setUrgency('ปกติ')} className={`flex-1 py-2 rounded-full text-[11px] font-medium transition-colors ${urgency==='ปกติ'?'bg-gray-50 text-gray-800':'bg-transparent text-gray-400'}`}>{t('normal')}</button>
                       <button type="button" onClick={()=>setUrgency('ด่วน')} className={`flex-1 py-2 rounded-full text-[11px] font-medium transition-colors ${urgency==='ด่วน'?'bg-red-50 text-red-600':'bg-transparent text-gray-400'}`}>{t('urgent')}</button>
@@ -1880,7 +1803,13 @@ export default function App() {
                             <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
                               {colTasks.length === 0 ? <div className="text-center py-8 text-gray-300 text-[11px] font-light border border-dashed border-gray-100 rounded-2xl">{t('empty')}</div> :
                                 colTasks.map(task => (
-                                  <div key={task.id} onClick={() => setSelectedTaskModal(task)} className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all">
+                                  <div key={task.id} onClick={() => {
+                                      setSelectedTaskModal(task);
+                                      setTimeout(() => {
+                                          const container = document.getElementById(`chat-container-${task.id}`);
+                                          if (container) container.scrollTop = container.scrollHeight;
+                                      }, 100);
+                                  }} className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all">
                                     <div className="flex justify-between items-start mb-2">
                                       <span className="text-[9px] text-gray-400 font-medium tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
                                       {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium">{t('urgent')}</span>}
@@ -1939,7 +1868,13 @@ export default function App() {
                           <div className="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar">
                             {colTasks.length === 0 ? <div className="text-center py-8 text-gray-300 text-[11px] font-light border border-dashed border-gray-100 rounded-2xl">{t('empty')}</div> :
                               colTasks.map(task => (
-                                <div key={task.id} onClick={() => setSelectedTaskModal(task)} className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all">
+                                <div key={task.id} onClick={() => {
+                                    setSelectedTaskModal(task);
+                                    setTimeout(() => {
+                                        const container = document.getElementById(`chat-container-${task.id}`);
+                                        if (container) container.scrollTop = container.scrollHeight;
+                                    }, 100);
+                                }} className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all">
                                   <div className="flex justify-between items-start mb-2">
                                     <span className="text-[9px] text-gray-400 font-medium tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
                                     {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium">{t('urgent')}</span>}
@@ -1947,7 +1882,7 @@ export default function App() {
                                   <p className="font-medium text-gray-800 text-[13px] mb-1">{task.clientName}</p>
                                   <p className="text-[10px] text-gray-500 font-light truncate">{t(task.serviceType)}</p>
                                   <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                                     <span className="text-[9px] bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-gray-400"/> {task.faName?.split(' ')[0]}</span>
+                                     <span className="text-[9px] bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1.5"><Users className="w-3 h-3 text-gray-400"/> {task.faName?.split(' ')[0]}</span>
                                   </div>
                                 </div>
                               ))
@@ -2015,16 +1950,6 @@ export default function App() {
         )}
 
       </div>
-
-      {/* เพิ่มหน้าต่าง Modal สำหรับดูรูปภาพขนาดใหญ่ */}
-      {fullscreenImage && (
-        <div className="fixed inset-0 z-[3000] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setFullscreenImage(null)}>
-          <button onClick={() => setFullscreenImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"><X className="w-6 h-6"/></button>
-          <img src={fullscreenImage} alt="fullscreen" className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)]" onClick={(e) => e.stopPropagation()} />
-          <a href={fullscreenImage} target="_blank" rel="noopener noreferrer" className="absolute bottom-8 bg-white text-gray-900 px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-gray-100 transition-colors shadow-lg" onClick={e=>e.stopPropagation()}><Download className="w-4 h-4"/> เปิดรูปต้นฉบับ / บันทึกภาพ</a>
-        </div>
-      )}
-
     </div>
   );
 }
