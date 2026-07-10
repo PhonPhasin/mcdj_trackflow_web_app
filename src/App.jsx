@@ -229,6 +229,8 @@ export default function App() {
   const [execSubTab, setExecSubTab] = useState("dashboard"); 
   const [calendarFilter, setCalendarFilter] = useState("personal"); 
   const [tableServiceFilter, setTableServiceFilter] = useState("all"); 
+  const [tableStatusFilter, setTableStatusFilter] = useState("all");
+  const [tableSearchQuery, setTableSearchQuery] = useState("");
   
   const [language, setLanguage] = useState("TH");
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
@@ -797,17 +799,16 @@ export default function App() {
     }
   };
 
-  // 🎨 ฟังก์ชันใหม่: แบ่งสีพื้นหลังพาสเทลตามหมวดหมู่งาน
   const getServiceTypeBg = (type) => {
-    if (type.includes('พิจารณาปีแรก')) return 'bg-blue-50 border-blue-100';
-    if (type.includes('พิจารณาปีต่อ')) return 'bg-green-50 border-green-100';
-    if (type.includes('สินไหม')) return 'bg-orange-50 border-orange-100';
-    if (type.includes('AIA')) return 'bg-pink-50 border-pink-100';
-    if (type.includes('วินาศภัย')) return 'bg-purple-50 border-purple-100';
-    if (type.includes('อสังหา')) return 'bg-amber-50 border-amber-100';
-    if (type.includes('ใบอนุญาต')) return 'bg-yellow-50 border-yellow-100';
-    if (type.includes('MOC')) return 'bg-indigo-50 border-indigo-100';
-    return 'bg-gray-50 border-gray-100';
+    if (type.includes('พิจารณาปีแรก')) return 'bg-blue-50/80 border-blue-100 hover:border-blue-300';
+    if (type.includes('พิจารณาปีต่อ')) return 'bg-green-50/80 border-green-100 hover:border-green-300';
+    if (type.includes('สินไหม')) return 'bg-orange-50/80 border-orange-100 hover:border-orange-300';
+    if (type.includes('AIA')) return 'bg-pink-50/80 border-pink-100 hover:border-pink-300';
+    if (type.includes('วินาศภัย')) return 'bg-purple-50/80 border-purple-100 hover:border-purple-300';
+    if (type.includes('อสังหา')) return 'bg-amber-50/80 border-amber-100 hover:border-amber-300';
+    if (type.includes('ใบอนุญาต')) return 'bg-yellow-50/80 border-yellow-100 hover:border-yellow-300';
+    if (type.includes('MOC')) return 'bg-indigo-50/80 border-indigo-100 hover:border-indigo-300';
+    return 'bg-gray-50/80 border-gray-100 hover:border-gray-300';
   };
 
   const formatBadgeText = (type, diffDays) => {
@@ -857,83 +858,126 @@ export default function App() {
   );
 
   const renderTaskTable = (tasksList) => {
-    // กรองข้อมูลเฉพาะในตารางตามหมวดหมู่ที่เลือก
-    const displayedTasks = tableServiceFilter === 'all' 
-      ? tasksList 
-      : tasksList.filter(t => t.serviceType === tableServiceFilter);
+    const isActivelySearching = tableSearchQuery.trim() !== '' || tableStatusFilter !== 'all' || tableServiceFilter !== 'all';
+    let displayedTasks = [];
+
+    if (isActivelySearching) {
+      displayedTasks = tasksList;
+      if (tableServiceFilter !== 'all') displayedTasks = displayedTasks.filter(t => t.serviceType === tableServiceFilter);
+      if (tableStatusFilter !== 'all') displayedTasks = displayedTasks.filter(t => t.status === tableStatusFilter);
+      if (tableSearchQuery.trim()) {
+        const lowerQ = tableSearchQuery.toLowerCase();
+        displayedTasks = displayedTasks.filter(t => 
+          (t.clientName||'').toLowerCase().includes(lowerQ) ||
+          (t.trackingId||'').toLowerCase().includes(lowerQ)
+        );
+      }
+    }
 
     return (
       <div className="bg-white rounded-[2rem] p-4 sm:p-6 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-gray-50 mt-6 overflow-hidden">
         
-        {/* ส่วนหัวและตัวกรองขอบเหลือง */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-           <h4 className="font-medium text-gray-800 text-sm ml-1 flex items-center gap-2">
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
+           <h4 className="font-medium text-gray-800 text-sm ml-1 flex items-center gap-2 shrink-0">
              <LayoutDashboard className="w-4 h-4 text-gray-400 stroke-[1.5]"/> {t('allTasks')}
            </h4>
-           <select 
-             value={tableServiceFilter} 
-             onChange={e => setTableServiceFilter(e.target.value)}
-             className="bg-white border-2 border-[#DEFF00] px-5 py-2.5 rounded-full text-[12px] font-medium text-[#161A22] outline-none hover:shadow-sm cursor-pointer w-full sm:w-auto appearance-none pr-10"
-             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23161A22' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1em' }}
-           >
-             <option value="all">-- ทุกประเภทงาน (ทั้งหมด) --</option>
-             {TASK_TYPES.map(type => <option key={type} value={type}>{t(type)}</option>)}
-           </select>
-        </div>
-
-        {/* ตารางแสดงผลแบบกล่อง (Card Grid) พร้อมสีพาสเทล */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {displayedTasks.map(task => {
-            const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
-            return (
-              <div key={task.id} onClick={() => {
-                  setSelectedTaskModal(task);
-                  setTimeout(() => {
-                      const container = document.getElementById(`chat-container-${task.id}`);
-                      if (container) container.scrollTop = container.scrollHeight;
-                  }, 100);
-              }} className={`rounded-[1.5rem] p-5 shadow-sm border hover:shadow-md transition-all cursor-pointer relative group flex flex-col h-full ${getServiceTypeBg(task.serviceType)}`}>
-                 
-                 {hasUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse z-10"></span>}
-                 
-                 <div className="flex justify-between items-start mb-4 gap-2">
-                   <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] font-medium text-gray-500 bg-white/60 px-2.5 py-1 rounded-md tracking-widest uppercase shadow-sm">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                      {task.urgency === 'ด่วน' && <span className="text-[10px] font-medium text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-md shadow-sm">{t('urgent')}</span>}
-                   </div>
-                   <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-medium bg-white/90 shadow-sm border border-black/5 ${getStatusStyle(task.status)}`}>
-                     {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
-                   </span>
-                 </div>
-                 
-                 <div className="flex-1 mb-5">
-                   <h4 className="font-medium text-gray-800 text-[15px] mb-1.5 line-clamp-2">{task.clientName}</h4>
-                   <p className="text-[11px] text-gray-600 font-light line-clamp-1">{t(task.serviceType)}</p>
-                 </div>
-                 
-                 <div className="pt-4 border-t border-black/5 flex justify-between items-end mt-auto">
-                   <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium bg-white/50 px-2.5 py-1.5 rounded-lg border border-white/50 shadow-sm">
-                     <Users className="w-3.5 h-3.5"/>
-                     <span className="truncate max-w-[120px]">{task.faName?.split(' ')[0]}</span>
-                   </div>
-                   <div className="flex flex-col items-end gap-1">
-                     <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium bg-white/50 px-2.5 py-1.5 rounded-lg border border-white/50 shadow-sm">
-                       <Clock className="w-3.5 h-3.5"/>
-                       <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
-                     </div>
-                     {renderCountdownBadge(task.dueDate, task.status)}
-                   </div>
-                 </div>
-
+           
+           <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 w-full xl:w-auto">
+              <div className="relative w-full sm:w-auto flex-1 min-w-[200px]">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"/>
+                <input 
+                  type="text" 
+                  placeholder="ค้นหาชื่องาน, รหัส..." 
+                  value={tableSearchQuery}
+                  onChange={e => setTableSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 border border-gray-100 rounded-full text-[11px] font-light outline-none focus:border-[#DEFF00] focus:bg-white transition-colors text-gray-800"
+                />
               </div>
-            );
-          })}
-          {displayedTasks.length === 0 && (
-            <div className="col-span-full text-center py-16 bg-gray-50/50 rounded-[1.5rem] border border-dashed border-gray-200">
-               <p className="text-gray-400 font-light text-sm">{t('empty')}</p>
-            </div>
-          )}
+              
+              <select 
+                value={tableStatusFilter} 
+                onChange={e => setTableStatusFilter(e.target.value)}
+                className="bg-gray-50/50 border border-gray-100 px-5 py-2.5 rounded-full text-[11px] font-medium text-gray-700 outline-none hover:bg-gray-100 cursor-pointer w-full sm:w-auto flex-1 appearance-none pr-8 relative"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1em' }}
+              >
+                <option value="all">-- ทุกสถานะ --</option>
+                {KANBAN_COLUMNS.map(c => <option key={c.id} value={c.id}>{t(c.tKey)}</option>)}
+              </select>
+
+              <select 
+                value={tableServiceFilter} 
+                onChange={e => setTableServiceFilter(e.target.value)}
+                className="bg-white border-2 border-[#DEFF00] px-5 py-2.5 rounded-full text-[11px] font-medium text-[#161A22] outline-none hover:shadow-sm cursor-pointer w-full sm:w-auto flex-1 appearance-none pr-10"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23161A22' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1em' }}
+              >
+                <option value="all">-- ทุกประเภทงาน --</option>
+                {TASK_TYPES.map(type => <option key={type} value={type}>{t(type)}</option>)}
+              </select>
+           </div>
         </div>
+
+        {!isActivelySearching ? (
+           <div className="col-span-full text-center py-12 sm:py-16 bg-[#FDFDFD] rounded-[1.5rem] border border-dashed border-gray-200">
+             <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-gray-100 shadow-sm">
+               <Search className="w-5 h-5 text-gray-400" />
+             </div>
+             <p className="text-gray-700 font-medium text-sm">กรุณาพิมพ์ค้นหา หรือเลือกตัวกรอง</p>
+             <p className="text-gray-400 font-light text-[11px] mt-1.5 px-4">เพื่อป้องกันไม่ให้หน้าเว็บโหลดข้อมูลที่หนักเกินไป<br className="sm:hidden"/> ระบบจะแสดงผลเฉพาะงานที่คุณค้นหาเท่านั้น</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {displayedTasks.map(task => {
+              const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
+              return (
+                <div key={task.id} onClick={() => {
+                    setSelectedTaskModal(task);
+                    setTimeout(() => {
+                        const container = document.getElementById(`chat-container-${task.id}`);
+                        if (container) container.scrollTop = container.scrollHeight;
+                    }, 100);
+                }} className={`rounded-[1.5rem] p-5 shadow-sm border hover:shadow-md transition-all cursor-pointer relative group flex flex-col h-full ${getServiceTypeBg(task.serviceType)}`}>
+                   
+                   {hasUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse z-10"></span>}
+                   
+                   <div className="flex justify-between items-start mb-4 gap-2">
+                     <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-medium text-gray-500 bg-white/60 px-2.5 py-1 rounded-md tracking-widest uppercase shadow-sm">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                        {task.urgency === 'ด่วน' && <span className="text-[10px] font-medium text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-md shadow-sm">{t('urgent')}</span>}
+                     </div>
+                     <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-medium bg-white/90 shadow-sm border border-black/5 ${getStatusStyle(task.status)}`}>
+                       {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
+                     </span>
+                   </div>
+                   
+                   <div className="flex-1 mb-5">
+                     <h4 className="font-medium text-gray-800 text-[15px] mb-1.5 line-clamp-2">{task.clientName}</h4>
+                     <p className="text-[11px] text-gray-600 font-light line-clamp-1">{t(task.serviceType)}</p>
+                   </div>
+                   
+                   <div className="pt-4 border-t border-black/5 flex justify-between items-end mt-auto">
+                     <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium bg-white/50 px-2.5 py-1.5 rounded-lg border border-white/50 shadow-sm">
+                       <Users className="w-3.5 h-3.5"/>
+                       <span className="truncate max-w-[120px]">{task.faName?.split(' ')[0]}</span>
+                     </div>
+                     <div className="flex flex-col items-end gap-1">
+                       <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium bg-white/50 px-2.5 py-1.5 rounded-lg border border-white/50 shadow-sm">
+                         <Clock className="w-3.5 h-3.5"/>
+                         <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
+                       </div>
+                       {renderCountdownBadge(task.dueDate, task.status)}
+                     </div>
+                   </div>
+
+                </div>
+              );
+            })}
+            {displayedTasks.length === 0 && (
+              <div className="col-span-full text-center py-16 bg-gray-50/50 rounded-[1.5rem] border border-dashed border-gray-200">
+                 <p className="text-gray-400 font-light text-sm">{t('empty')} ไม่พบข้อมูลงานที่ค้นหา</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
@@ -1546,7 +1590,7 @@ export default function App() {
   return (
     <div className="min-h-[100dvh] bg-[#FDFDFD] text-gray-800 font-['Kanit',sans-serif] pb-24 selection:bg-[#DEFF00] selection:text-black relative z-0">
       
-      {/* 🖼️ โมดอลซูมรูปภาพ */}
+      {/* 🖼️ โมดอลซูมรูปภาพ (Zoom Image Modal) */}
       {zoomedImage && (
         <div className="fixed inset-0 z-[4000] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setZoomedImage(null)}>
           <button className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"><X className="w-6 h-6"/></button>
@@ -1570,7 +1614,6 @@ export default function App() {
       {renderToast()}
       {renderDMWidget()}
 
-      {}
       {selectedTaskModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
           <div className="relative w-full h-[100dvh] sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
@@ -1747,7 +1790,6 @@ export default function App() {
         </div>
       )}
 
-      {}
       {showAssignModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#161A22]/20 backdrop-blur-sm" onClick={() => setShowAssignModal(false)}></div>
@@ -1794,6 +1836,7 @@ export default function App() {
                   <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('typeMessage')}></textarea>
                 </div>
                 
+                {/* 📌 ช่องอัปโหลดไฟล์ของแอดมิน */}
                 <div>
                   <label className="flex flex-col items-center justify-center w-full border border-dashed border-gray-200 bg-gray-50/50 hover:bg-gray-50 rounded-[1.5rem] p-4 cursor-pointer transition-colors">
                     <Camera className="w-5 h-5 text-gray-400 mb-2 stroke-[1.5]"/><span className="text-[11px] text-gray-500 font-light">{t('attach')}</span>
@@ -1874,6 +1917,8 @@ export default function App() {
 
       {}
       <div className="max-w-[1500px] mx-auto px-4 sm:px-10 mt-2 relative z-10">
+        
+        {/* FA Front View */}
         {activeTab === "front" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
             <div className="lg:col-span-4">
@@ -1893,12 +1938,8 @@ export default function App() {
                       {TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}
                     </select>
                   </div>
+                  <div><input type="text" onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} value={dueDate} onChange={e=>setDueDate(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 outline-none focus:border-[#DEFF00] transition-colors" placeholder={t('dueDate')} /></div>
                   <div>
-                    <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('dueDate')}</label>
-                    <input type="date" value={dueDate} onChange={e=>setDueDate(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 outline-none focus:border-[#DEFF00] transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('urgency')}</label>
                     <div className="flex bg-white border border-gray-100 p-1.5 rounded-full">
                       <button type="button" onClick={()=>setUrgency('ปกติ')} className={`flex-1 py-2 rounded-full text-[11px] font-medium transition-colors ${urgency==='ปกติ'?'bg-gray-50 text-gray-800':'bg-transparent text-gray-400'}`}>{t('normal')}</button>
                       <button type="button" onClick={()=>setUrgency('ด่วน')} className={`flex-1 py-2 rounded-full text-[11px] font-medium transition-colors ${urgency==='ด่วน'?'bg-red-50 text-red-600':'bg-transparent text-gray-400'}`}>{t('urgent')}</button>
@@ -1969,8 +2010,8 @@ export default function App() {
                                       }, 100);
                                   }} className={`p-4 rounded-2xl border cursor-pointer hover:shadow-md transition-all ${getServiceTypeBg(task.serviceType)}`}>
                                     <div className="flex justify-between items-start mb-2">
-                                      <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                                      {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium">{t('urgent')}</span>}
+                                      <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded shadow-sm">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                                      {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-medium shadow-sm border border-red-100">{t('urgent')}</span>}
                                     </div>
                                     <p className="font-medium text-gray-800 text-[13px] mb-1">{task.clientName}</p>
                                     <p className="text-[10px] text-gray-600 font-light truncate">{t(task.serviceType)}</p>
@@ -1983,14 +2024,16 @@ export default function App() {
                       })}
                    </div>
 
-                   {renderTaskTable(filteredTasks)}
+                   <div className="mt-4 sm:mt-6">
+                     {renderTaskTable(filteredTasks)}
+                   </div>
                  </div>
                )}
             </div>
           </div>
         )}
 
-        {}
+        {/* Admin Back View */}
         {(activeTab === "back" && (userProfile?.role === "Admin" || userProfile?.role === "Executive")) && (
           <div className="space-y-6">
             <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[0_4px_30px_rgb(0,0,0,0.03)] border border-gray-50 flex flex-col lg:flex-row justify-between lg:items-center gap-6">
@@ -2051,13 +2094,13 @@ export default function App() {
                                     }, 100);
                                 }} className={`p-4 rounded-2xl border cursor-pointer hover:shadow-md transition-all ${getServiceTypeBg(task.serviceType)}`}>
                                   <div className="flex justify-between items-start mb-2">
-                                    <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                                    {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium">{t('urgent')}</span>}
+                                    <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded shadow-sm">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                                    {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-medium shadow-sm border border-red-100">{t('urgent')}</span>}
                                   </div>
                                   <p className="font-medium text-gray-800 text-[13px] mb-1">{task.clientName}</p>
                                   <p className="text-[10px] text-gray-600 font-light truncate">{t(task.serviceType)}</p>
                                   <div className="mt-3 pt-3 border-t border-black/5 flex justify-between items-center">
-                                     <span className="text-[9px] bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1.5"><Users className="w-3 h-3 text-gray-400"/> {task.faName?.split(' ')[0]}</span>
+                                     <span className="text-[9px] bg-white/50 border border-white/50 shadow-sm text-gray-600 px-2 py-1.5 rounded-lg flex items-center gap-1.5"><Users className="w-3 h-3 text-gray-500"/> {task.faName?.split(' ')[0]}</span>
                                   </div>
                                 </div>
                               ))
@@ -2073,7 +2116,7 @@ export default function App() {
           </div>
         )}
 
-        {}
+        {/* Executive Dashboard View */}
         {(activeTab === "dashboard" && userProfile?.role === "Executive") && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-6 mb-4 sm:mb-8">
@@ -2119,7 +2162,7 @@ export default function App() {
                      <span className="text-4xl sm:text-5xl font-light text-[#161A22]">{filteredTasks.filter(t=>t.status==='Approved').length}</span>
                    </div>
                 </div>
-                {renderTaskTable(filteredTasks)}
+                <div className="mt-6 sm:mt-8">{renderTaskTable(filteredTasks)}</div>
               </div>
             )}
           </div>
