@@ -37,10 +37,14 @@ const storage = getStorage(app);
 const TASK_TYPES = [
   'พิจารณาปีแรก ประกันรายเดี่ยว',
   'พิจารณาปีแรก ประกันกลุ่ม',
+  'พิจารณาปีต่อ ประกันรายเดี่ยว',
+  'พิจารณาปีต่อ ประกันกลุ่ม',
   'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
   'ติดตามเอกสาร AIA',
   'ติดตาม ประกันวินาศภัย',
   'ติดตาม อสังหาริมทรัพย์',
+  'ติดตาม ต่อใบอนุญาต',
+  'ติดตาม ผลงาน MOC',
   'อื่นๆ'
 ];
 
@@ -111,10 +115,14 @@ const translations = {
     dashboard: 'แดชบอร์ด', deleteTask: 'ลบงานนี้', confirmDelete: 'ยืนยันการลบ?', cancel: 'ยกเลิก', deletePermanent: 'ลบถาวร',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'พิจารณาปีแรก ประกันรายเดี่ยว',
     'พิจารณาปีแรก ประกันกลุ่ม': 'พิจารณาปีแรก ประกันกลุ่ม',
+    'พิจารณาปีต่อ ประกันรายเดี่ยว': 'พิจารณาปีต่อ ประกันรายเดี่ยว',
+    'พิจารณาปีต่อ ประกันกลุ่ม': 'พิจารณาปีต่อ ประกันกลุ่ม',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว',
     'ติดตามเอกสาร AIA': 'ติดตามเอกสาร AIA',
     'ติดตาม ประกันวินาศภัย': 'ติดตาม ประกันวินาศภัย',
     'ติดตาม อสังหาริมทรัพย์': 'ติดตาม อสังหาริมทรัพย์',
+    'ติดตาม ต่อใบอนุญาต': 'ติดตาม ต่อใบอนุญาต',
+    'ติดตาม ผลงาน MOC': 'ติดตาม ผลงาน MOC',
     'อื่นๆ': 'อื่นๆ',
     sun: 'อา', mon: 'จ', tue: 'อ', wed: 'พ', thu: 'พฤ', fri: 'ศ', sat: 'ส',
     month01: 'มกราคม', month02: 'กุมภาพันธ์', month03: 'มีนาคม', month04: 'เมษายน', month05: 'พฤษภาคม', month06: 'มิถุนายน', month07: 'กรกฎาคม', month08: 'สิงหาคม', month09: 'กันยายน', month10: 'ตุลาคม', month11: 'พฤศจิกายน', month12: 'ธันวาคม',
@@ -148,10 +156,14 @@ const translations = {
     dashboard: 'Dashboard', deleteTask: 'Delete Task', confirmDelete: 'Confirm Delete?', cancel: 'Cancel', deletePermanent: 'Delete Permanent',
     'พิจารณาปีแรก ประกันรายเดี่ยว': 'First Year - Individual Life',
     'พิจารณาปีแรก ประกันกลุ่ม': 'First Year - Group Life',
+    'พิจารณาปีต่อ ประกันรายเดี่ยว': 'Renewal - Individual Life',
+    'พิจารณาปีต่อ ประกันกลุ่ม': 'Renewal - Group Life',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'Claim - Group / Individual',
     'ติดตามเอกสาร AIA': 'Follow up AIA Docs',
     'ติดตาม ประกันวินาศภัย': 'Follow up Non-Life Insurance',
     'ติดตาม อสังหาริมทรัพย์': 'Follow up Real Estate',
+    'ติดตาม ต่อใบอนุญาต': 'Follow up License Renewal',
+    'ติดตาม ผลงาน MOC': 'Follow up MOC Performance',
     'อื่นๆ': 'Others',
     sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat',
     month01: 'January', month02: 'February', month03: 'March', month04: 'April', month05: 'May', month06: 'June', month07: 'July', month08: 'August', month09: 'September', month10: 'October', month11: 'November', month12: 'December',
@@ -185,10 +197,14 @@ const translations = {
     dashboard: 'ダッシュボード', deleteTask: 'タスク削除', confirmDelete: '削除しますか？', cancel: 'キャンセル', deletePermanent: '永久削除',
     'พิจารณาปีแรก ประกันรายเดี่ยว': '初年度 - 個人生命保険',
     'พิจารณาปีแรก ประกันกลุ่ม': '初年度 - グループ生命保険',
+    'พิจารณาปีต่อ ประกันรายเดี่ยว': '更新 - 個人生命保険',
+    'พิจารณาปีต่อ ประกันกลุ่ม': '更新 - グループ生命保険',
     'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': '請求 - グループ / 個人',
     'ติดตามเอกสาร AIA': 'AIA書類フォローアップ',
     'ติดตาม ประกันวินาศภัย': '損害保険フォローアップ',
     'ติดตาม อสังหาริมทรัพย์': '不動産フォローアップ',
+    'ติดตาม ต่อใบอนุญาต': 'ライセンス更新フォローアップ',
+    'ติดตาม ผลงาน MOC': 'MOCパフォーマンスフォローアップ',
     'อื่นๆ': 'その他',
     sun: '日', mon: '月', tue: '火', wed: '水', thu: '木', fri: '金', sat: '土',
     month01: '1月', month02: '2月', month03: '3月', month04: '4月', month05: '5月', month06: '6月', month07: '7月', month08: '8月', month09: '9月', month10: '10月', month11: '11月', month12: '12月',
@@ -212,6 +228,7 @@ export default function App() {
   const [adminSubTab, setAdminSubTab] = useState("tasks"); 
   const [execSubTab, setExecSubTab] = useState("dashboard"); 
   const [calendarFilter, setCalendarFilter] = useState("personal"); 
+  const [tableServiceFilter, setTableServiceFilter] = useState("all"); 
   
   const [language, setLanguage] = useState("TH");
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
@@ -226,6 +243,8 @@ export default function App() {
   const [hideImagesForPdf, setHideImagesForPdf] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [mobileModalTab, setMobileModalTab] = useState("details");
+  
+  const [zoomedImage, setZoomedImage] = useState(null);
   
   const [frontFormMode, setFrontFormMode] = useState("backend"); 
   const [frontListMode, setFrontListMode] = useState("backend");
@@ -443,7 +462,6 @@ export default function App() {
     return () => unsubs.forEach(fn => fn());
   }, [user, dbUsers]);
 
-  // App Badging API สำหรับแจ้งเตือนจำนวนข้อความบนมือถือ
   useEffect(() => {
     const totalUnread = Object.values(unreadCounts).filter(Boolean).length;
     if ('setAppBadge' in navigator && 'clearAppBadge' in navigator) {
@@ -779,6 +797,19 @@ export default function App() {
     }
   };
 
+  // 🎨 ฟังก์ชันใหม่: แบ่งสีพื้นหลังพาสเทลตามหมวดหมู่งาน
+  const getServiceTypeBg = (type) => {
+    if (type.includes('พิจารณาปีแรก')) return 'bg-blue-50 border-blue-100';
+    if (type.includes('พิจารณาปีต่อ')) return 'bg-green-50 border-green-100';
+    if (type.includes('สินไหม')) return 'bg-orange-50 border-orange-100';
+    if (type.includes('AIA')) return 'bg-pink-50 border-pink-100';
+    if (type.includes('วินาศภัย')) return 'bg-purple-50 border-purple-100';
+    if (type.includes('อสังหา')) return 'bg-amber-50 border-amber-100';
+    if (type.includes('ใบอนุญาต')) return 'bg-yellow-50 border-yellow-100';
+    if (type.includes('MOC')) return 'bg-indigo-50 border-indigo-100';
+    return 'bg-gray-50 border-gray-100';
+  };
+
   const formatBadgeText = (type, diffDays) => {
     if (language === 'JP' || language === 'EN') {
       if (type === 'overdue') return `${t('overdue')} ${diffDays} ${t('days')}`;
@@ -794,7 +825,7 @@ export default function App() {
     if (diffDays < 0) return <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-medium border border-red-100 mt-1">{formatBadgeText('overdue', Math.abs(diffDays))}</span>;
     if (diffDays <= 1) return <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full font-medium shadow-sm animate-pulse mt-1">🔴 {t('urgent')} ({formatBadgeText('left', diffDays)})</span>;
     if (diffDays <= 3) return <span className="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-medium border border-orange-100 mt-1">{formatBadgeText('left', diffDays)}</span>;
-    return <span className="text-[10px] bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full font-medium border border-gray-200 mt-1">{formatBadgeText('left', diffDays)}</span>;
+    return <span className="text-[10px] bg-white text-gray-500 px-2 py-0.5 rounded-full font-medium border border-gray-200 mt-1">{formatBadgeText('left', diffDays)}</span>;
   };
 
   const renderToast = () => {
@@ -825,58 +856,87 @@ export default function App() {
     </div>
   );
 
-  const renderTaskTable = (tasksList) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4 sm:mt-6 animate-[fadeIn_0.3s_ease-out]">
-      {tasksList.map(task => {
-        const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
-        return (
-          <div key={task.id} onClick={() => {
-              setSelectedTaskModal(task);
-              setTimeout(() => {
-                  const container = document.getElementById(`chat-container-${task.id}`);
-                  if (container) container.scrollTop = container.scrollHeight;
-              }, 100);
-          }} className="bg-white rounded-[1.5rem] p-5 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-gray-100 hover:border-[#DEFF00] hover:shadow-md transition-all cursor-pointer relative group flex flex-col h-full">
-             {hasUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse z-10"></span>}
-             <div className="flex justify-between items-start mb-4 gap-2">
-               <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-medium text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                  {task.urgency === 'ด่วน' ? 
-                    <span className="text-[10px] font-medium text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-md">{t('urgent')}</span> : 
-                    <span className="text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-md">{t('normal')}</span>
-                  }
-               </div>
-               <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-medium ${getStatusStyle(task.status)}`}>
-                 {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
-               </span>
-             </div>
-             <div className="flex-1 mb-5">
-               <h4 className="font-medium text-gray-800 text-[15px] mb-1.5 line-clamp-2">{task.clientName}</h4>
-               <p className="text-[11px] text-gray-500 font-light line-clamp-1">{t(task.serviceType)}</p>
-             </div>
-             <div className="pt-4 border-t border-gray-50 flex justify-between items-end mt-auto">
-               <div className="flex items-center gap-1.5 text-gray-500 text-[11px] font-light">
-                 <Users className="w-3.5 h-3.5"/>
-                 <span className="truncate max-w-[120px]">{task.faName}</span>
-               </div>
-               <div className="flex flex-col items-end gap-1">
-                 <div className="flex items-center gap-1.5 text-gray-500 text-[11px] font-light">
-                   <Clock className="w-3.5 h-3.5"/>
-                   <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
-                 </div>
-                 {renderCountdownBadge(task.dueDate, task.status)}
-               </div>
-             </div>
-          </div>
-        );
-      })}
-      {tasksList.length === 0 && (
-        <div className="col-span-full text-center py-16 bg-white rounded-[1.5rem] border border-dashed border-gray-200">
-           <p className="text-gray-400 font-light text-sm">{t('empty')}</p>
+  const renderTaskTable = (tasksList) => {
+    // กรองข้อมูลเฉพาะในตารางตามหมวดหมู่ที่เลือก
+    const displayedTasks = tableServiceFilter === 'all' 
+      ? tasksList 
+      : tasksList.filter(t => t.serviceType === tableServiceFilter);
+
+    return (
+      <div className="bg-white rounded-[2rem] p-4 sm:p-6 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-gray-50 mt-6 overflow-hidden">
+        
+        {/* ส่วนหัวและตัวกรองขอบเหลือง */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+           <h4 className="font-medium text-gray-800 text-sm ml-1 flex items-center gap-2">
+             <LayoutDashboard className="w-4 h-4 text-gray-400 stroke-[1.5]"/> {t('allTasks')}
+           </h4>
+           <select 
+             value={tableServiceFilter} 
+             onChange={e => setTableServiceFilter(e.target.value)}
+             className="bg-white border-2 border-[#DEFF00] px-5 py-2.5 rounded-full text-[12px] font-medium text-[#161A22] outline-none hover:shadow-sm cursor-pointer w-full sm:w-auto appearance-none pr-10"
+             style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23161A22' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1em' }}
+           >
+             <option value="all">-- ทุกประเภทงาน (ทั้งหมด) --</option>
+             {TASK_TYPES.map(type => <option key={type} value={type}>{t(type)}</option>)}
+           </select>
         </div>
-      )}
-    </div>
-  );
+
+        {/* ตารางแสดงผลแบบกล่อง (Card Grid) พร้อมสีพาสเทล */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {displayedTasks.map(task => {
+            const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
+            return (
+              <div key={task.id} onClick={() => {
+                  setSelectedTaskModal(task);
+                  setTimeout(() => {
+                      const container = document.getElementById(`chat-container-${task.id}`);
+                      if (container) container.scrollTop = container.scrollHeight;
+                  }, 100);
+              }} className={`rounded-[1.5rem] p-5 shadow-sm border hover:shadow-md transition-all cursor-pointer relative group flex flex-col h-full ${getServiceTypeBg(task.serviceType)}`}>
+                 
+                 {hasUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse z-10"></span>}
+                 
+                 <div className="flex justify-between items-start mb-4 gap-2">
+                   <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[10px] font-medium text-gray-500 bg-white/60 px-2.5 py-1 rounded-md tracking-widest uppercase shadow-sm">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                      {task.urgency === 'ด่วน' && <span className="text-[10px] font-medium text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-md shadow-sm">{t('urgent')}</span>}
+                   </div>
+                   <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-medium bg-white/90 shadow-sm border border-black/5 ${getStatusStyle(task.status)}`}>
+                     {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
+                   </span>
+                 </div>
+                 
+                 <div className="flex-1 mb-5">
+                   <h4 className="font-medium text-gray-800 text-[15px] mb-1.5 line-clamp-2">{task.clientName}</h4>
+                   <p className="text-[11px] text-gray-600 font-light line-clamp-1">{t(task.serviceType)}</p>
+                 </div>
+                 
+                 <div className="pt-4 border-t border-black/5 flex justify-between items-end mt-auto">
+                   <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium bg-white/50 px-2.5 py-1.5 rounded-lg border border-white/50 shadow-sm">
+                     <Users className="w-3.5 h-3.5"/>
+                     <span className="truncate max-w-[120px]">{task.faName?.split(' ')[0]}</span>
+                   </div>
+                   <div className="flex flex-col items-end gap-1">
+                     <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium bg-white/50 px-2.5 py-1.5 rounded-lg border border-white/50 shadow-sm">
+                       <Clock className="w-3.5 h-3.5"/>
+                       <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
+                     </div>
+                     {renderCountdownBadge(task.dueDate, task.status)}
+                   </div>
+                 </div>
+
+              </div>
+            );
+          })}
+          {displayedTasks.length === 0 && (
+            <div className="col-span-full text-center py-16 bg-gray-50/50 rounded-[1.5rem] border border-dashed border-gray-200">
+               <p className="text-gray-400 font-light text-sm">{t('empty')}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const renderCalendarView = () => {
     const displayMonthNum = selectedMonth === 'all' ? new Date().getMonth() + 1 : parseInt(selectedMonth);
@@ -1088,7 +1148,7 @@ export default function App() {
                     e.target.style.height = (e.target.scrollHeight) + 'px';
                 }} 
                 placeholder={t('typeMessage')} 
-                className="flex-1 bg-gray-50 px-4 py-2.5 text-sm font-light rounded-2xl outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200 resize-none overflow-hidden max-h-24" 
+                className="flex-1 bg-gray-50 px-4 py-2.5 text-sm font-light rounded-2xl outline-none text-gray-800 focus:bg-white border border-gray-100 focus:border-gray-200 resize-none overflow-hidden max-h-24 custom-scrollbar" 
               />
               <button type="submit" disabled={!dmInput.trim()} className="w-10 h-10 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50 mb-0.5"><Send className="w-4 h-4 ml-0.5 stroke-[1.5]"/></button>
             </form>
@@ -1435,10 +1495,10 @@ export default function App() {
     );
   };
 
-  if (loading) return <div className="min-h-screen bg-[#FDFDFD] flex items-center justify-center font-['Kanit',sans-serif]"><Loader2 className="w-8 h-8 animate-spin text-gray-300"/></div>;
+  if (loading) return <div className="min-h-[100dvh] bg-[#FDFDFD] flex items-center justify-center font-['Kanit',sans-serif]"><Loader2 className="w-8 h-8 animate-spin text-gray-300"/></div>;
 
   if (!user) return (
-    <div className="min-h-screen bg-[#FDFDFD] flex flex-col justify-center items-center font-['Kanit',sans-serif] selection:bg-[#DEFF00] selection:text-black relative">
+    <div className="min-h-[100dvh] bg-[#FDFDFD] flex flex-col justify-center items-center font-['Kanit',sans-serif] selection:bg-[#DEFF00] selection:text-black relative">
        {renderToast()}
        <div className="fixed inset-0 bg-gradient-to-br from-[#FDFDFD] via-[#FDFDFD] to-[#F5F7F0] -z-10"></div>
        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-[#DEFF00] rounded-full mix-blend-multiply blur-[150px] opacity-[0.12] pointer-events-none"></div>
@@ -1485,6 +1545,15 @@ export default function App() {
 
   return (
     <div className="min-h-[100dvh] bg-[#FDFDFD] text-gray-800 font-['Kanit',sans-serif] pb-24 selection:bg-[#DEFF00] selection:text-black relative z-0">
+      
+      {/* 🖼️ โมดอลซูมรูปภาพ */}
+      {zoomedImage && (
+        <div className="fixed inset-0 z-[4000] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-[fadeIn_0.2s_ease-out]" onClick={() => setZoomedImage(null)}>
+          <button className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"><X className="w-6 h-6"/></button>
+          <img src={zoomedImage} alt="Zoomed" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
+
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@100;200;300;400;500;600&display=swap');
         * { font-family: 'Kanit', sans-serif !important; }
@@ -1493,7 +1562,7 @@ export default function App() {
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
         @media print { body { background: white !important; } .no-print { display: none !important; } #pdf-content { box-shadow: none !important; padding: 0 !important; width: 100% !important; margin: 0 !important; border:none !important; } }
-        ${selectedTaskModal || showAssignModal || showEventModal || isDmOpen ? 'body { overflow: hidden; }' : ''}
+        ${selectedTaskModal || showAssignModal || showEventModal || isDmOpen || zoomedImage ? 'body { overflow: hidden; }' : ''}
       `}} />
 
       <div className="fixed inset-0 bg-gradient-to-br from-[#FDFDFD] via-[#FDFDFD] to-[#F7F9F2] -z-10"></div>
@@ -1501,6 +1570,7 @@ export default function App() {
       {renderToast()}
       {renderDMWidget()}
 
+      {}
       {selectedTaskModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
           <div className="relative w-full h-[100dvh] sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
@@ -1638,9 +1708,9 @@ export default function App() {
                               {msg.attachmentUrl && (
                                 <div className="mt-3 block pb-1">
                                   {(msg.attachmentUrl.match(/\.(jpeg|jpg|gif|png|webp)/i) || msg.attachmentType?.startsWith('image/')) ? 
-                                    <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="rounded-xl overflow-hidden border border-black/5 bg-gray-50 flex justify-center items-center p-3 hover:bg-gray-100 transition-colors cursor-pointer">
+                                    <div className="rounded-xl overflow-hidden border border-black/5 bg-gray-50 flex justify-center items-center p-3 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => setZoomedImage(msg.attachmentUrl)}>
                                         <img src={msg.attachmentUrl} alt="attachment" className="max-h-[200px] w-auto object-contain rounded-lg shadow-sm hover:scale-[1.02] transition-transform duration-200" title="คลิกเพื่อดูรูปขนาดเต็ม" />
-                                    </a> :
+                                    </div> :
                                     <a href={msg.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 underline flex items-center gap-1.5 mt-1 bg-white/50 px-3 py-2 rounded-lg border border-white"><Paperclip className="w-3.5 h-3.5"/> {msg.attachmentName || t('downloadAttach')}</a>
                                   }
                                 </div>
@@ -1667,7 +1737,7 @@ export default function App() {
                             e.target.style.height = (e.target.scrollHeight) + 'px';
                         }} 
                         placeholder={t('typeMessage')} 
-                        className="flex-1 bg-transparent px-2 py-2.5 text-sm font-light outline-none text-gray-800 resize-none overflow-hidden max-h-24"
+                        className="flex-1 bg-transparent px-2 py-2.5 text-sm font-light outline-none text-gray-800 resize-none overflow-hidden max-h-24 custom-scrollbar"
                     />
                     <button disabled={actionLoading[`chat-${selectedTaskModal.id}`] || !chatInputs[selectedTaskModal.id]?.trim()} onClick={()=>handleSendMessage(selectedTaskModal.id)} className="w-10 h-10 bg-[#161A22] text-[#DEFF00] rounded-full flex items-center justify-center shrink-0 hover:bg-black transition-colors disabled:opacity-50 mb-0.5"><Send className="w-4 h-4 ml-0.5 stroke-[1.5]"/></button>
                   </div>
@@ -1677,6 +1747,7 @@ export default function App() {
         </div>
       )}
 
+      {}
       {showAssignModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#161A22]/20 backdrop-blur-sm" onClick={() => setShowAssignModal(false)}></div>
@@ -1722,6 +1793,24 @@ export default function App() {
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
                   <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('typeMessage')}></textarea>
                 </div>
+                
+                <div>
+                  <label className="flex flex-col items-center justify-center w-full border border-dashed border-gray-200 bg-gray-50/50 hover:bg-gray-50 rounded-[1.5rem] p-4 cursor-pointer transition-colors">
+                    <Camera className="w-5 h-5 text-gray-400 mb-2 stroke-[1.5]"/><span className="text-[11px] text-gray-500 font-light">{t('attach')}</span>
+                    <input type="file" multiple className="hidden" accept="image/*,.pdf" onChange={(e) => handleFileChange(e, true)} />
+                  </label>
+                  {assignFilesToUpload.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      {assignFilesToUpload.map((f, i) => (
+                        <div key={i} className="flex justify-between items-center bg-gray-50 p-2.5 rounded-xl text-[11px] font-light border border-gray-100 text-gray-600">
+                          <span className="truncate pr-2">{f.name}</span>
+                          <button type="button" onClick={() => removeFile(i, true)} className="text-gray-400 hover:text-red-500"><X className="w-3.5 h-3.5"/></button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <button type="submit" disabled={assigningTask} className="w-full bg-[#161A22] text-[#DEFF00] py-4 rounded-full font-medium text-sm hover:bg-black transition-colors mt-2 flex justify-center items-center gap-2">
                   {assigningTask ? <><Loader2 className="w-4 h-4 animate-spin"/> กำลังดำเนินการ...</> : t('confirmAssign')}
                 </button>
@@ -1730,6 +1819,7 @@ export default function App() {
         </div>
       )}
 
+      {}
       <nav className="pt-6 pb-4 px-4 sm:px-10 max-w-[1500px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 relative z-[990]">
         <div className="flex flex-col sm:items-start text-center sm:text-left">
            <span className="text-3xl font-medium tracking-tight text-[#161A22] leading-none mb-1">MCDJ</span>
@@ -1744,7 +1834,6 @@ export default function App() {
           </div>
           
           <div className="flex gap-3 w-full sm:w-auto justify-center">
-            
             {userProfile && (
               <button 
                 onClick={handleLinkLine} 
@@ -1783,8 +1872,8 @@ export default function App() {
         </div>
       </nav>
 
+      {}
       <div className="max-w-[1500px] mx-auto px-4 sm:px-10 mt-2 relative z-10">
-        
         {activeTab === "front" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
             <div className="lg:col-span-4">
@@ -1878,13 +1967,13 @@ export default function App() {
                                           const container = document.getElementById(`chat-container-${task.id}`);
                                           if (container) container.scrollTop = container.scrollHeight;
                                       }, 100);
-                                  }} className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all">
+                                  }} className={`p-4 rounded-2xl border cursor-pointer hover:shadow-md transition-all ${getServiceTypeBg(task.serviceType)}`}>
                                     <div className="flex justify-between items-start mb-2">
-                                      <span className="text-[9px] text-gray-400 font-medium tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                                      <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
                                       {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium">{t('urgent')}</span>}
                                     </div>
                                     <p className="font-medium text-gray-800 text-[13px] mb-1">{task.clientName}</p>
-                                    <p className="text-[10px] text-gray-500 font-light truncate">{t(task.serviceType)}</p>
+                                    <p className="text-[10px] text-gray-600 font-light truncate">{t(task.serviceType)}</p>
                                   </div>
                                 ))
                               }
@@ -1894,16 +1983,14 @@ export default function App() {
                       })}
                    </div>
 
-                   <div className="mt-4 sm:mt-6">
-                     <h4 className="font-medium text-gray-800 mb-2 text-sm ml-1">{t('allTasks')}</h4>
-                     {renderTaskTable(filteredTasks)}
-                   </div>
+                   {renderTaskTable(filteredTasks)}
                  </div>
                )}
             </div>
           </div>
         )}
 
+        {}
         {(activeTab === "back" && (userProfile?.role === "Admin" || userProfile?.role === "Executive")) && (
           <div className="space-y-6">
             <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[0_4px_30px_rgb(0,0,0,0.03)] border border-gray-50 flex flex-col lg:flex-row justify-between lg:items-center gap-6">
@@ -1925,7 +2012,6 @@ export default function App() {
 
             {adminSubTab === 'tasks' && (
               <div className="animate-[fadeIn_0.3s_ease-out]">
-                 {/* 🟢 เพิ่ม Dashboard สรุปจำนวนงาน ให้กับ Admin */}
                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
                    <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border border-gray-50 h-28 sm:h-32 flex flex-col justify-between">
                      <span className="text-[9px] sm:text-[10px] font-medium text-gray-400 uppercase tracking-widest">{t('totalTasks')}</span>
@@ -1963,14 +2049,14 @@ export default function App() {
                                         const container = document.getElementById(`chat-container-${task.id}`);
                                         if (container) container.scrollTop = container.scrollHeight;
                                     }, 100);
-                                }} className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 cursor-pointer hover:bg-white hover:border-[#DEFF00] hover:shadow-sm transition-all">
+                                }} className={`p-4 rounded-2xl border cursor-pointer hover:shadow-md transition-all ${getServiceTypeBg(task.serviceType)}`}>
                                   <div className="flex justify-between items-start mb-2">
-                                    <span className="text-[9px] text-gray-400 font-medium tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                                    <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
                                     {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium">{t('urgent')}</span>}
                                   </div>
                                   <p className="font-medium text-gray-800 text-[13px] mb-1">{task.clientName}</p>
-                                  <p className="text-[10px] text-gray-500 font-light truncate">{t(task.serviceType)}</p>
-                                  <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                                  <p className="text-[10px] text-gray-600 font-light truncate">{t(task.serviceType)}</p>
+                                  <div className="mt-3 pt-3 border-t border-black/5 flex justify-between items-center">
                                      <span className="text-[9px] bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1.5"><Users className="w-3 h-3 text-gray-400"/> {task.faName?.split(' ')[0]}</span>
                                   </div>
                                 </div>
@@ -1987,6 +2073,7 @@ export default function App() {
           </div>
         )}
 
+        {}
         {(activeTab === "dashboard" && userProfile?.role === "Executive") && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-6 mb-4 sm:mb-8">
@@ -2032,7 +2119,7 @@ export default function App() {
                      <span className="text-4xl sm:text-5xl font-light text-[#161A22]">{filteredTasks.filter(t=>t.status==='Approved').length}</span>
                    </div>
                 </div>
-                <div className="mt-6 sm:mt-8">{renderTaskTable(filteredTasks)}</div>
+                {renderTaskTable(filteredTasks)}
               </div>
             )}
           </div>
