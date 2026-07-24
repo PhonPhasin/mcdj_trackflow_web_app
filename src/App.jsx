@@ -13,7 +13,7 @@ import {
   Lock, Mail, LogOut, CheckCircle, AlertTriangle, 
   Send, Loader2, Search, FileText, Camera, Paperclip, MessageSquare,
   LayoutDashboard, Users, X, Plus, Calendar as CalendarIcon, Trash2, Globe, MessageCircle, ChevronLeft, Download, Image as ImageIcon,
-  Clock
+  Clock, ChevronDown
 } from 'lucide-react';
 
 const firebaseConfig = {
@@ -101,7 +101,7 @@ const translations = {
     colClient: 'ชื่อลูกค้า / ชื่องาน *', colType: 'ประเภทงาน', colDue: 'กำหนดส่งงาน', colFa: 'ผู้รับผิดชอบ', colManage: 'จัดการ',
     viewData: 'ดูข้อมูล', totalTasks: 'งานทั้งหมด', clientName: 'ชื่อลูกค้า / ชื่องาน *',
     policyNumber: 'เลขกรมธรรม์ / เลขที่อ้างอิง', 
-    serviceType: 'ประเภทงาน', dueDate: 'กำหนดส่งงาน', urgency: 'ความเร่งด่วน', normal: 'ปกติ', urgent: 'ด่วน 🔥',
+    serviceType: 'ประเภทงาน', dueDate: 'กำหนดส่งงาน (ถ้ามี)', urgency: 'ความเร่งด่วน', normal: 'ปกติ', urgent: 'ด่วน 🔥',
     details: 'รายละเอียดเพิ่มเติม...', attach: 'ถ่ายรูป หรือ แนบไฟล์ PDF', submit: 'ส่งคำขอ', empty: 'ว่างเปล่า',
     personal: 'ส่วนตัว', company: 'บริษัท', assignTask: 'สั่งมอบหมายงาน',
     assignTo: 'มอบหมายให้ (FA/Admin) *', selectFa: '-- เลือกผู้รับผิดชอบ --', orderDetails: 'รายละเอียด / ข้อความสั่งงาน', confirmAssign: 'ยืนยันมอบหมายงาน',
@@ -142,7 +142,7 @@ const translations = {
     colClient: 'Client / Task *', colType: 'Service Type', colDue: 'Due Date', colFa: 'Assignee', colManage: 'Action',
     viewData: 'View', totalTasks: 'Total Tasks', clientName: 'Client Name *',
     policyNumber: 'Policy Number / Ref. No', 
-    serviceType: 'Service Type', dueDate: 'Due Date', urgency: 'Urgency', normal: 'Normal', urgent: 'Urgent 🔥',
+    serviceType: 'Service Type', dueDate: 'Due Date (Optional)', urgency: 'Urgency', normal: 'Normal', urgent: 'Urgent 🔥',
     details: 'More details...', attach: 'Upload Photo or PDF', submit: 'Submit', empty: 'Empty',
     personal: 'Personal', company: 'Company', assignTask: 'Assign Task',
     assignTo: 'Assign to (FA/Admin) *', selectFa: '-- Select Assignee --', orderDetails: 'Order Details', confirmAssign: 'Confirm Assign',
@@ -216,6 +216,19 @@ const translations = {
   }
 };
 
+const getServiceTypeColor = (serviceType) => {
+  if (!serviceType) return 'bg-white';
+  if (serviceType.includes('พิจารณาปีแรก')) return 'bg-[#F0F8FF] border-[#E0F0FF]'; 
+  if (serviceType.includes('พิจารณาปีต่อ')) return 'bg-[#F0FFF4] border-[#D1FADF]'; 
+  if (serviceType.includes('สินไหม')) return 'bg-[#FFF5F0] border-[#FFE4D6]'; 
+  if (serviceType.includes('เอกสาร AIA')) return 'bg-[#FFF0F5] border-[#FFE0EB]'; 
+  if (serviceType.includes('วินาศภัย')) return 'bg-[#F5F3FF] border-[#EDE9FE]'; 
+  if (serviceType.includes('อสังหาริมทรัพย์')) return 'bg-[#FDF8F6] border-[#F9ECE4]'; 
+  if (serviceType.includes('ต่อใบอนุญาต')) return 'bg-[#FFFFF0] border-[#FEF9C3]'; 
+  if (serviceType.includes('ผลงาน MOC')) return 'bg-[#EEF2FF] border-[#E0E7FF]'; 
+  return 'bg-gray-50 border-gray-100'; 
+};
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -229,12 +242,6 @@ export default function App() {
   const [execSubTab, setExecSubTab] = useState("dashboard"); 
   const [calendarFilter, setCalendarFilter] = useState("personal"); 
   
-  const [dataRange, setDataRange] = useState('30'); 
-
-  const [tableStatusFilter, setTableStatusFilter] = useState("all");
-  const [tableTypeFilter, setTableTypeFilter] = useState("all");
-  const [tableSearchQuery, setTableSearchQuery] = useState("");
-
   const [language, setLanguage] = useState("TH");
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const t = (key) => translations[language]?.[key] || translations['TH'][key] || key;
@@ -282,6 +289,11 @@ export default function App() {
   const [selectedFaFilter, setSelectedFaFilter] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState("all");
   const [selectedYear, setSelectedYear] = useState("all");
+  const [timeRange, setTimeRange] = useState("30"); 
+  
+  const [tableSearchQuery, setTableSearchQuery] = useState("");
+  const [tableStatusFilter, setTableStatusFilter] = useState("all");
+  const [tableServiceFilter, setTableServiceFilter] = useState("all");
   
   const [dbUsers, setDbUsers] = useState([]);
   const [isDmOpen, setIsDmOpen] = useState(false);
@@ -310,19 +322,6 @@ export default function App() {
     } catch (error) {
       console.error("LINE Webhook Error:", error);
     }
-  };
-
-  const getServiceTypeColor = (type) => {
-    if (!type) return 'bg-white border-gray-100 text-gray-800';
-    if (type.includes('พิจารณาปีแรก')) return 'bg-blue-50/50 border-blue-100/50 text-blue-950';
-    if (type.includes('พิจารณาปีต่อ')) return 'bg-emerald-50/50 border-emerald-100/50 text-emerald-950';
-    if (type.includes('สินไหม')) return 'bg-orange-50/50 border-orange-100/50 text-orange-950';
-    if (type.includes('เอกสาร AIA')) return 'bg-pink-50/50 border-pink-100/50 text-pink-950';
-    if (type.includes('วินาศภัย')) return 'bg-purple-50/50 border-purple-100/50 text-purple-950';
-    if (type.includes('อสังหาริมทรัพย์')) return 'bg-amber-50/50 border-amber-100/50 text-amber-950';
-    if (type.includes('ใบอนุญาต')) return 'bg-yellow-50 border-yellow-100 text-yellow-950';
-    if (type.includes('MOC')) return 'bg-indigo-50/50 border-indigo-100/50 text-indigo-950';
-    return 'bg-gray-50 border-gray-100 text-gray-950';
   };
 
   useEffect(() => {
@@ -405,12 +404,12 @@ export default function App() {
     if (!user || !userProfile) return;
     
     let qTasks;
-    if (dataRange === 'all') {
-      qTasks = collection(db, 'tasks');
+    if (timeRange === 'all') {
+       qTasks = collection(db, 'tasks');
     } else {
-      const pastDate = new Date();
-      pastDate.setDate(pastDate.getDate() - parseInt(dataRange));
-      qTasks = query(collection(db, 'tasks'), where('createdAt', '>=', pastDate.toISOString()));
+       const startDate = new Date();
+       startDate.setDate(startDate.getDate() - parseInt(timeRange));
+       qTasks = query(collection(db, 'tasks'), where('createdAt', '>=', startDate.toISOString()));
     }
 
     const unsub = onSnapshot(qTasks, (snap) => {
@@ -418,6 +417,26 @@ export default function App() {
       snap.forEach(d => taskList.push({ id: d.id, ...d.data() }));
       taskList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setTasks(taskList);
+      if (selectedTaskModal) {
+        const updated = taskList.find(t => t.id === selectedTaskModal.id);
+        if (updated) {
+           const oldLen = selectedTaskModal.messages?.length || 0;
+           const newLen = updated.messages?.length || 0;
+           setSelectedTaskModal(updated);
+           if (newLen > oldLen) {
+               setTimeout(() => {
+                   const container = document.getElementById(`chat-container-${updated.id}`);
+                   if (container) container.scrollTop = container.scrollHeight;
+               }, 100);
+           }
+        } else {
+           setSelectedTaskModal(null);
+        }
+      }
+      if (pdfTask) {
+        const updated = taskList.find(t => t.id === pdfTask.id);
+        setPdfTask(updated || null);
+      }
     });
 
     const qEvents = collection(db, 'events');
@@ -427,36 +446,7 @@ export default function App() {
       setEvents(eventList);
     });
     return () => { unsub(); unsubEvents(); };
-  }, [user, userProfile, dataRange]);
-
-  useEffect(() => {
-    if (selectedTaskModal) {
-      const updated = tasks.find(t => t.id === selectedTaskModal.id);
-      if (updated) {
-         const oldLen = selectedTaskModal.messages?.length || 0;
-         const newLen = updated.messages?.length || 0;
-         if (JSON.stringify(updated) !== JSON.stringify(selectedTaskModal)) {
-             setSelectedTaskModal(updated);
-             if (newLen > oldLen) {
-                 setTimeout(() => {
-                     const container = document.getElementById(`chat-container-${updated.id}`);
-                     if (container) container.scrollTop = container.scrollHeight;
-                 }, 100);
-             }
-         }
-      } else {
-         setSelectedTaskModal(null);
-      }
-    }
-    if (pdfTask) {
-      const updated = tasks.find(t => t.id === pdfTask.id);
-      if (updated && JSON.stringify(updated) !== JSON.stringify(pdfTask)) {
-          setPdfTask(updated);
-      } else if (!updated) {
-          setPdfTask(null);
-      }
-    }
-  }, [tasks]);
+  }, [user, userProfile, selectedTaskModal, pdfTask, timeRange]);
 
   useEffect(() => {
     if (!activeChatUser || !user) return;
@@ -823,27 +813,12 @@ export default function App() {
     return list;
   }, [tasks, activeTab, user, frontListMode, searchQuery, selectedFaFilter, selectedMonth, selectedYear]);
 
-  const tableDisplayedTasks = useMemo(() => {
-    if (!tableSearchQuery && tableStatusFilter === 'all' && tableTypeFilter === 'all') return [];
-    
-    return filteredTasks.filter(t => {
-       const matchStatus = tableStatusFilter === 'all' || t.status === tableStatusFilter;
-       const matchType = tableTypeFilter === 'all' || t.serviceType === tableTypeFilter;
-       const matchSearch = (t.clientName||'').toLowerCase().includes(tableSearchQuery.toLowerCase()) || 
-                           (t.policyNumber||'').toLowerCase().includes(tableSearchQuery.toLowerCase()) || 
-                           (t.faName||'').toLowerCase().includes(tableSearchQuery.toLowerCase()) || 
-                           (t.trackingId||'').toLowerCase().includes(tableSearchQuery.toLowerCase());
-       return matchStatus && matchType && matchSearch;
-    });
-  }, [filteredTasks, tableSearchQuery, tableStatusFilter, tableTypeFilter]);
-
-
   const getStatusStyle = (status) => {
     switch(status) {
-      case 'Approved': return 'text-[#059669] bg-green-50'; 
-      case 'In Progress': return 'text-[#0284c7] bg-sky-50'; 
-      case 'Rejected': return 'text-[#dc2626] bg-red-50'; 
-      default: return 'text-[#ca8a04] bg-yellow-50'; 
+      case 'Approved': return 'text-[#059669] bg-green-50 border border-green-100'; 
+      case 'In Progress': return 'text-[#0284c7] bg-sky-50 border border-sky-100'; 
+      case 'Rejected': return 'text-[#dc2626] bg-red-50 border border-red-100'; 
+      default: return 'text-[#ca8a04] bg-yellow-50 border border-yellow-100'; 
     }
   };
 
@@ -878,106 +853,125 @@ export default function App() {
   };
 
   const renderDateFilters = () => (
-    <div className="flex gap-2 w-full sm:w-auto">
-      <div className="relative flex-1 sm:flex-none">
+    <div className="flex gap-2">
+      <div className="relative">
         <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} className="bg-white border border-gray-100 w-full px-5 py-2.5 pl-10 text-[11px] font-light rounded-full cursor-pointer appearance-none text-gray-700 outline-none hover:bg-gray-50 transition-colors">
           <option value="all">{t('everyMonth')}</option>
           {MONTHS.map(m => <option key={m.val} value={m.val}>{t(`month${m.val}`)}</option>)}
         </select>
-        <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+        <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 stroke-[1.5]" />
       </div>
-      <select value={selectedYear} onChange={e=>setSelectedYear(e.target.value)} className="flex-1 sm:flex-none bg-white border border-gray-100 px-5 py-2.5 text-[11px] font-light rounded-full cursor-pointer appearance-none text-gray-700 outline-none hover:bg-gray-50 transition-colors">
+      <select value={selectedYear} onChange={e=>setSelectedYear(e.target.value)} className="bg-white border border-gray-100 px-5 py-2.5 text-[11px] font-light rounded-full cursor-pointer appearance-none text-gray-700 outline-none hover:bg-gray-50 transition-colors">
         <option value="all">{t('everyYear')}</option>
         {YEARS.filter(y=>y!=='all').map(y => <option key={y} value={y}>{y}</option>)}
       </select>
     </div>
   );
 
-  const renderTaskTable = () => (
-    <div className="mt-4 sm:mt-6 animate-[fadeIn_0.3s_ease-out]">
-      <h4 className="font-medium text-gray-800 mb-4 text-sm ml-1 flex items-center gap-2">
-          <LayoutDashboard className="w-4 h-4 text-gray-400"/> {t('allTasks')}
-      </h4>
-      
-      <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-white p-3 sm:p-4 rounded-[2rem] shadow-sm border border-gray-100">
-         <div className="relative flex-1">
-           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"/>
-           <input type="text" placeholder="ค้นหาชื่องาน, ลูกค้า, รหัส..." value={tableSearchQuery} onChange={e=>setTableSearchQuery(e.target.value)} className="w-full bg-gray-50 border border-gray-100 pl-11 pr-4 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-light outline-none focus:bg-white focus:border-[#DEFF00] transition-colors" />
-         </div>
-         <div className="flex gap-2">
-             <select value={tableStatusFilter} onChange={e=>setTableStatusFilter(e.target.value)} className="flex-1 sm:flex-none bg-gray-50 border border-gray-100 px-4 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-light text-gray-700 outline-none hover:bg-white focus:border-[#DEFF00] cursor-pointer min-w-[120px]">
-                <option value="all">ทุกสถานะ</option>
-                <option value="Pending">รอรับเรื่อง</option>
-                <option value="In Progress">กำลังดำเนินการ</option>
-                <option value="Approved">เสร็จสิ้นแล้ว</option>
-                <option value="Rejected">ส่งกลับแก้ไข</option>
-             </select>
-             <select value={tableTypeFilter} onChange={e=>setTableTypeFilter(e.target.value)} className="flex-1 sm:flex-none bg-white border-2 border-[#DEFF00] px-4 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-medium text-gray-800 outline-none cursor-pointer min-w-[140px] max-w-[180px] truncate">
-                <option value="all">ทุกประเภทงาน</option>
-                {TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}
-             </select>
-         </div>
-      </div>
+  const renderTaskTable = (tasksList) => {
+    const isSearching = tableSearchQuery.trim() !== "" || tableStatusFilter !== "all" || tableServiceFilter !== "all";
+    
+    let displayedTasks = [];
+    if (isSearching) {
+      displayedTasks = tasksList.filter(t => {
+        const matchSearch = (t.clientName||'').toLowerCase().includes(tableSearchQuery.toLowerCase()) || 
+                            (t.policyNumber||'').toLowerCase().includes(tableSearchQuery.toLowerCase()) || 
+                            (t.trackingId||'').toLowerCase().includes(tableSearchQuery.toLowerCase());
+        const matchStatus = tableStatusFilter === "all" || t.status === tableStatusFilter;
+        const matchService = tableServiceFilter === "all" || t.serviceType === tableServiceFilter;
+        return matchSearch && matchStatus && matchService;
+      });
+    }
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {tableSearchQuery === "" && tableStatusFilter === "all" && tableTypeFilter === "all" ? (
-          <div className="col-span-full text-center py-16 bg-white rounded-[1.5rem] border border-dashed border-gray-200">
-             <Search className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-             <p className="text-gray-500 font-medium text-sm">พิมพ์ค้นหา หรือเลือกตัวกรองด้านบน</p>
-             <p className="text-gray-400 font-light text-[11px] mt-1">เพื่อดูข้อมูลสรุปงาน (ป้องกันระบบโหลดข้อมูลหนักเกินไป)</p>
-          </div>
-        ) : tableDisplayedTasks.length === 0 ? (
-          <div className="col-span-full text-center py-16 bg-white rounded-[1.5rem] border border-dashed border-gray-200">
-             <p className="text-gray-400 font-light text-sm">ไม่พบข้อมูลที่ค้นหา</p>
-          </div>
-        ) : (
-          tableDisplayedTasks.map(task => {
-            const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
-            return (
-              <div key={task.id} onClick={() => {
-                  setSelectedTaskModal(task);
-                  setTimeout(() => {
-                      const container = document.getElementById(`chat-container-${task.id}`);
-                      if (container) container.scrollTop = container.scrollHeight;
-                  }, 100);
-              }} className={`rounded-[1.5rem] p-5 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border hover:border-[#DEFF00] hover:shadow-md transition-all cursor-pointer relative group flex flex-col h-full ${getServiceTypeColor(task.serviceType)}`}>
-                 {hasUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse z-10"></span>}
-                 <div className="flex justify-between items-start mb-4 gap-2">
-                   <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[10px] font-medium text-gray-500 bg-white/60 px-2.5 py-1 rounded-md tracking-widest uppercase shadow-sm">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                      {task.urgency === 'ด่วน' ? 
-                        <span className="text-[10px] font-medium text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-md shadow-sm">{t('urgent')}</span> : 
-                        <span className="text-[10px] font-medium text-gray-600 bg-white/60 border border-gray-100 px-2 py-1 rounded-md shadow-sm">{t('normal')}</span>
-                      }
-                   </div>
-                   <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-medium shadow-sm ${getStatusStyle(task.status)}`}>
-                     {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
-                   </span>
-                 </div>
-                 <div className="flex-1 mb-5">
-                   <h4 className="font-medium text-[15px] mb-1.5 line-clamp-2">{task.clientName}</h4>
-                   <p className="text-[11px] opacity-70 font-light line-clamp-1">{t(task.serviceType)}</p>
-                 </div>
-                 <div className="pt-4 border-t border-black/5 flex justify-between items-end mt-auto">
-                   <div className="flex items-center gap-1.5 opacity-70 text-[11px] font-medium">
-                     <Users className="w-3.5 h-3.5"/>
-                     <span className="truncate max-w-[120px]">{task.faName}</span>
-                   </div>
-                   <div className="flex flex-col items-end gap-1">
-                     <div className="flex items-center gap-1.5 opacity-70 text-[11px] font-medium">
-                       <Clock className="w-3.5 h-3.5"/>
-                       <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
+    return (
+      <div className="mt-6 sm:mt-8 animate-[fadeIn_0.3s_ease-out]">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-white p-3 sm:p-2.5 rounded-[1.5rem] sm:rounded-full border border-gray-100 shadow-[0_2px_20px_rgb(0,0,0,0.02)]">
+           
+           <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 stroke-[1.5]"/>
+              <input type="text" placeholder="พิมพ์ชื่อลูกค้า / รหัสงาน..." value={tableSearchQuery} onChange={e=>setTableSearchQuery(e.target.value)} className="w-full bg-gray-50 border border-transparent pl-11 pr-4 py-3 sm:py-2.5 rounded-xl sm:rounded-full text-[13px] font-light outline-none focus:bg-white focus:border-[#DEFF00] text-gray-800 transition-colors" />
+           </div>
+
+           <div className="flex gap-2 sm:gap-3">
+              <select value={tableStatusFilter} onChange={e=>setTableStatusFilter(e.target.value)} className="bg-gray-50 border border-transparent px-5 py-3 sm:py-2.5 rounded-xl sm:rounded-full text-[11px] font-medium text-gray-700 outline-none focus:bg-white hover:bg-gray-100 cursor-pointer transition-colors flex-1 sm:flex-none">
+                 <option value="all">ทุกสถานะ</option>
+                 <option value="Pending">รอรับเรื่อง</option>
+                 <option value="In Progress">กำลังดำเนินการ</option>
+                 <option value="Rejected">ส่งกลับแก้ไข</option>
+                 <option value="Approved">เสร็จสิ้นแล้ว</option>
+              </select>
+
+              <select value={tableServiceFilter} onChange={e=>setTableServiceFilter(e.target.value)} className="bg-white border-2 border-[#DEFF00] px-5 py-3 sm:py-2.5 rounded-xl sm:rounded-full text-[11px] font-medium text-gray-800 outline-none hover:bg-gray-50 cursor-pointer transition-colors shadow-sm flex-1 sm:flex-none">
+                 <option value="all">ทุกประเภทงาน</option>
+                 {TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}
+              </select>
+           </div>
+        </div>
+
+        {isSearching ? (
+          displayedTasks.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {displayedTasks.map(task => {
+                const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
+                return (
+                  <div key={task.id} onClick={() => {
+                      setSelectedTaskModal(task);
+                      setTimeout(() => {
+                          const container = document.getElementById(`chat-container-${task.id}`);
+                          if (container) container.scrollTop = container.scrollHeight;
+                      }, 100);
+                  }} className={`rounded-[1.5rem] p-5 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border hover:border-[#DEFF00] hover:shadow-md transition-all cursor-pointer relative group flex flex-col h-full ${getServiceTypeColor(task.serviceType)}`}>
+                     {hasUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse z-10"></span>}
+                     <div className="flex justify-between items-start mb-4 gap-2">
+                       <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] font-medium text-gray-500 bg-white/60 border border-black/5 px-2.5 py-1 rounded-md tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                          {task.urgency === 'ด่วน' ? 
+                            <span className="text-[10px] font-medium text-red-600 bg-white/80 border border-red-100 px-2 py-1 rounded-md shadow-sm">{t('urgent')}</span> : 
+                            <span className="text-[10px] font-medium text-gray-500 bg-white/50 border border-black/5 px-2 py-1 rounded-md">{t('normal')}</span>
+                          }
+                       </div>
+                       <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-medium shadow-sm ${getStatusStyle(task.status)}`}>
+                         {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
+                       </span>
                      </div>
-                     {renderCountdownBadge(task.dueDate, task.status)}
-                   </div>
-                 </div>
-              </div>
-            );
-          })
+                     <div className="flex-1 mb-5">
+                       <h4 className="font-medium text-gray-900 text-[15px] mb-1.5 line-clamp-2">{task.clientName}</h4>
+                       <p className="text-[11px] text-gray-600 font-medium line-clamp-1 bg-white/40 px-2 py-1 rounded-md w-fit">{t(task.serviceType)}</p>
+                     </div>
+                     <div className="pt-4 border-t border-black/5 flex justify-between items-end mt-auto">
+                       <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium bg-white/50 px-2.5 py-1.5 rounded-lg border border-black/5">
+                         <Users className="w-3.5 h-3.5"/>
+                         <span className="truncate max-w-[120px]">{task.faName}</span>
+                       </div>
+                       <div className="flex flex-col items-end gap-1">
+                         <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium">
+                           <Clock className="w-3.5 h-3.5"/>
+                           <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
+                         </div>
+                         {renderCountdownBadge(task.dueDate, task.status)}
+                       </div>
+                     </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-white rounded-[1.5rem] border border-dashed border-gray-200">
+               <Search className="w-8 h-8 mx-auto text-gray-300 mb-3 stroke-[1.5]" />
+               <p className="text-gray-500 font-medium text-sm">ไม่พบงานที่ตรงกับเงื่อนไข</p>
+               <p className="text-gray-400 font-light text-xs mt-1">ลองเปลี่ยนคำค้นหา หรือปรับตัวกรองด้านบนดูอีกครั้ง</p>
+            </div>
+          )
+        ) : (
+          <div className="text-center py-16 bg-gray-50/50 rounded-[1.5rem] border border-dashed border-gray-200">
+             <FileText className="w-8 h-8 mx-auto text-gray-300 mb-3 stroke-[1.5]" />
+             <p className="text-gray-500 font-medium text-sm">พิมพ์ค้นหา หรือเลือกตัวกรองด้านบน</p>
+             <p className="text-gray-400 font-light text-[11px] mt-1">เพื่อแสดงข้อมูลสรุปงานที่ต้องการ (ช่วยลดการโหลดข้อมูลและทำให้เว็บทำงานเร็วขึ้น)</p>
+          </div>
         )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderCalendarView = () => {
     const displayMonthNum = selectedMonth === 'all' ? new Date().getMonth() + 1 : parseInt(selectedMonth);
@@ -1547,6 +1541,9 @@ export default function App() {
        <style dangerouslySetInnerHTML={{__html: `
          @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@100;200;300;400;500;600&display=swap');
          * { font-family: 'Kanit', sans-serif !important; }
+         .glass-card { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.9); border-left: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.03); border-radius: 2.5rem; }
+         .input-glass { background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.6); border-top: 1px solid rgba(255, 255, 255, 0.9); border-left: 1px solid rgba(255, 255, 255, 0.9); box-shadow: inset 0 2px 5px rgba(0,0,0,0.02), 0 2px 10px rgba(0,0,0,0.02); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+         .input-glass:focus { background: rgba(255, 255, 255, 0.95); border-color: #DEFF00; outline: none; box-shadow: 0 0 0 4px rgba(222, 255, 0, 0.3), 0 4px 12px rgba(0,0,0,0.05); transform: translateY(-1px); }
        `}} />
 
        <div className="mb-10 text-center relative z-10 flex flex-col items-center">
@@ -1606,21 +1603,6 @@ export default function App() {
             top: 0;
             width: auto;
         }
-        
-        /* จัดการ Placeholder ให้ช่อง Date */
-        .date-input-wrapper { position: relative; }
-        .date-input-wrapper input[type="date"]:invalid::-webkit-datetime-edit { color: transparent; }
-        .date-input-wrapper::before {
-            content: attr(data-placeholder);
-            position: absolute;
-            left: 1.25rem; /* px-5 = 1.25rem */
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9CA3AF; /* text-gray-400 */
-            pointer-events: none;
-            display: block;
-        }
-        .date-input-wrapper input[type="date"]:valid + .date-input-wrapper::before { display: none; }
       `}} />
 
       <div className="fixed inset-0 bg-gradient-to-br from-[#FDFDFD] via-[#FDFDFD] to-[#F7F9F2] -z-10"></div>
@@ -1835,17 +1817,13 @@ export default function App() {
                 
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('dueDate')}</label>
-                  <div className="date-input-wrapper" data-placeholder="คลิกเพื่อเลือกวันที่...">
-                    <input 
-                      type="date" 
-                      required
-                      value={assignForm.dueDate} 
-                      onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} 
-                      className={`w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!assignForm.dueDate && 'text-transparent'}`} 
-                    />
-                  </div>
+                  <input 
+                    type="date" 
+                    value={assignForm.dueDate} 
+                    onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} 
+                    className={`relative w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!assignForm.dueDate ? 'text-transparent' : 'text-gray-800'}`} 
+                  />
                 </div>
-
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('urgency')}</label>
                   <div className="flex bg-gray-50 border border-gray-100 p-1.5 rounded-full">
@@ -1958,20 +1936,15 @@ export default function App() {
                       {TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}
                     </select>
                   </div>
-                  
                   <div>
                     <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('dueDate')}</label>
-                    <div className="date-input-wrapper" data-placeholder="คลิกเพื่อเลือกวันที่...">
-                      <input 
-                        type="date" 
-                        required
-                        value={dueDate} 
-                        onChange={e=>setDueDate(e.target.value)} 
-                        className={`w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!dueDate && 'text-transparent'}`} 
-                      />
-                    </div>
+                    <input 
+                      type="date" 
+                      value={dueDate} 
+                      onChange={e=>setDueDate(e.target.value)} 
+                      className={`relative w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!dueDate ? 'text-transparent' : 'text-gray-800'}`} 
+                    />
                   </div>
-
                   <div>
                     <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('urgency')}</label>
                     <div className="flex bg-white border border-gray-100 p-1.5 rounded-full">
@@ -1996,28 +1969,9 @@ export default function App() {
                <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-[0_4px_30px_rgb(0,0,0,0.03)] border border-gray-50">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                     <h3 className="text-lg font-medium text-gray-800">{t('myTasks')}</h3>
-                    
-                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                       <div className="relative w-full sm:w-auto z-[10]">
-                          <select value={dataRange} onChange={e=>setDataRange(e.target.value)} className="w-full sm:w-auto bg-white border border-gray-100 text-gray-700 pl-10 pr-8 py-2.5 rounded-full text-[11px] font-light outline-none cursor-pointer hover:bg-gray-50 transition-colors shadow-[0_2px_15px_rgb(0,0,0,0.02)] appearance-none">
-                             <option value="7">ย้อนหลัง 1 สัปดาห์</option>
-                             <option value="30">ย้อนหลัง 30 วัน</option>
-                             <option value="180">ย้อนหลัง 6 เดือน</option>
-                             <option value="365">ย้อนหลัง 1 ปี</option>
-                             <option value="all">ข้อมูลทั้งหมด</option>
-                          </select>
-                          <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M1 1L5 5L9 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </div>
-                       </div>
-
-                       <div className="bg-gray-50 p-1 rounded-full flex w-full sm:w-auto overflow-x-auto">
-                         <button onClick={()=>setFaSubTab('tasks')} className={`flex-1 sm:flex-none px-6 py-2.5 rounded-full text-[11px] font-medium transition-colors ${faSubTab === 'tasks' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('taskBoard')}</button>
-                         <button onClick={()=>setFaSubTab('calendar')} className={`flex-1 sm:flex-none px-6 py-2.5 rounded-full text-[11px] font-medium transition-colors ${faSubTab === 'calendar' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('calendar')}</button>
-                       </div>
+                    <div className="bg-gray-50 p-1 rounded-full flex w-full sm:w-auto overflow-x-auto">
+                      <button onClick={()=>setFaSubTab('tasks')} className={`flex-1 sm:flex-none px-6 py-2.5 rounded-full text-[11px] font-medium transition-colors ${faSubTab === 'tasks' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('taskBoard')}</button>
+                      <button onClick={()=>setFaSubTab('calendar')} className={`flex-1 sm:flex-none px-6 py-2.5 rounded-full text-[11px] font-medium transition-colors ${faSubTab === 'calendar' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('calendar')}</button>
                     </div>
                   </div>
 
@@ -2028,6 +1982,21 @@ export default function App() {
                         <button onClick={() => setFrontListMode('backend')} className={`flex-1 px-5 py-2 rounded-full text-[10px] font-medium transition-all ${frontListMode === 'backend' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400'}`}>{t('backendTask')}</button>
                       </div>
                       <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="relative">
+                          <select 
+                            value={timeRange} 
+                            onChange={e => setTimeRange(e.target.value)} 
+                            className="appearance-none bg-white border border-gray-200 text-gray-600 text-[11px] font-light pl-9 pr-8 py-2.5 rounded-full outline-none hover:bg-gray-50 cursor-pointer shadow-[0_2px_15px_rgb(0,0,0,0.02)] transition-colors"
+                          >
+                            <option value="7">ย้อนหลัง 1 สัปดาห์</option>
+                            <option value="30">ย้อนหลัง 30 วัน</option>
+                            <option value="180">ย้อนหลัง 6 เดือน</option>
+                            <option value="365">ย้อนหลัง 1 ปี</option>
+                            <option value="all">ข้อมูลทั้งหมด</option>
+                          </select>
+                          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 stroke-[1.5]" />
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                        </div>
                         {renderDateFilters()}
                         <div className="relative">
                           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"/>
@@ -2061,13 +2030,13 @@ export default function App() {
                                           const container = document.getElementById(`chat-container-${task.id}`);
                                           if (container) container.scrollTop = container.scrollHeight;
                                       }, 100);
-                                  }} className={`rounded-[1.5rem] p-4 border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
+                                  }} className={`p-4 rounded-2xl border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
                                     <div className="flex justify-between items-start mb-2">
-                                      <span className="text-[9px] text-gray-500 bg-white/60 px-2 py-0.5 rounded shadow-sm font-medium tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                                      {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium shadow-sm">{t('urgent')}</span>}
+                                      <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded-md border border-black/5">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                                      {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium border border-red-100 shadow-sm">{t('urgent')}</span>}
                                     </div>
-                                    <p className="font-medium text-[13px] mb-1 line-clamp-2">{task.clientName}</p>
-                                    <p className="text-[10px] opacity-70 font-light truncate">{t(task.serviceType)}</p>
+                                    <p className="font-medium text-gray-900 text-[13px] mb-1">{task.clientName}</p>
+                                    <p className="text-[10px] text-gray-600 font-medium truncate bg-white/40 px-2 py-1 rounded-md w-fit">{t(task.serviceType)}</p>
                                   </div>
                                 ))
                               }
@@ -2077,7 +2046,10 @@ export default function App() {
                       })}
                    </div>
 
-                   {renderTaskTable()}
+                   <div className="mt-4 sm:mt-6">
+                     <h4 className="font-medium text-gray-800 mb-2 text-sm ml-1">{t('allTasks')}</h4>
+                     {renderTaskTable(filteredTasks)}
+                   </div>
                  </div>
                )}
             </div>
@@ -2094,26 +2066,24 @@ export default function App() {
                   <button onClick={()=>setAdminSubTab('calendar')} className={`flex-1 sm:flex-none px-5 py-2 rounded-full text-[11px] font-medium transition-colors ${adminSubTab === 'calendar' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('calendar')}</button>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3 items-center w-full lg:w-auto">
-                
-                <div className="relative w-full sm:w-auto z-[10]">
-                   <select value={dataRange} onChange={e=>setDataRange(e.target.value)} className="w-full sm:w-auto bg-white border border-gray-100 text-gray-700 pl-10 pr-8 py-2.5 rounded-full text-[11px] font-light outline-none cursor-pointer hover:bg-gray-50 transition-colors shadow-[0_2px_15px_rgb(0,0,0,0.02)] appearance-none">
-                      <option value="7">ย้อนหลัง 1 สัปดาห์</option>
-                      <option value="30">ย้อนหลัง 30 วัน</option>
-                      <option value="180">ย้อนหลัง 6 เดือน</option>
-                      <option value="365">ย้อนหลัง 1 ปี</option>
-                      <option value="all">ข้อมูลทั้งหมด</option>
-                   </select>
-                   <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                     <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                       <path d="M1 1L5 5L9 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                     </svg>
-                   </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button onClick={()=>setShowAssignModal(true)} className="bg-[#161A22] text-[#DEFF00] px-6 py-2.5 rounded-full text-[11px] font-medium flex items-center justify-center gap-2 hover:bg-black transition-colors"><Plus className="w-3.5 h-3.5"/> {t('assignTask')}</button>
+                <select value={selectedFaFilter} onChange={e=>setSelectedFaFilter(e.target.value)} className="bg-white border border-gray-100 px-5 py-2.5 rounded-full text-[11px] font-light text-gray-700 outline-none hover:bg-gray-50 cursor-pointer"><option value="all">{t('allFa')}</option>{allAvailableFAs.map(fa=><option key={fa.uid} value={fa.uid}>{fa.name}</option>)}</select>
+                <div className="relative">
+                  <select 
+                    value={timeRange} 
+                    onChange={e => setTimeRange(e.target.value)} 
+                    className="appearance-none bg-white border border-gray-200 text-gray-600 text-[11px] font-light pl-9 pr-8 py-2.5 rounded-full outline-none hover:bg-gray-50 cursor-pointer shadow-[0_2px_15px_rgb(0,0,0,0.02)] transition-colors w-full"
+                  >
+                    <option value="7">ย้อนหลัง 1 สัปดาห์</option>
+                    <option value="30">ย้อนหลัง 30 วัน</option>
+                    <option value="180">ย้อนหลัง 6 เดือน</option>
+                    <option value="365">ย้อนหลัง 1 ปี</option>
+                    <option value="all">ข้อมูลทั้งหมด</option>
+                  </select>
+                  <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 stroke-[1.5]" />
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                 </div>
-
-                <button onClick={()=>setShowAssignModal(true)} className="w-full sm:w-auto bg-gray-100 text-gray-800 px-6 py-2.5 rounded-full text-[11px] font-medium flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"><Plus className="w-3.5 h-3.5"/> {t('assignTask')}</button>
-                <select value={selectedFaFilter} onChange={e=>setSelectedFaFilter(e.target.value)} className="w-full sm:w-auto bg-white border border-gray-100 px-5 py-2.5 rounded-full text-[11px] font-light text-gray-700 outline-none hover:bg-gray-50 cursor-pointer"><option value="all">{t('allFa')}</option>{allAvailableFAs.map(fa=><option key={fa.uid} value={fa.uid}>{fa.name}</option>)}</select>
                 {renderDateFilters()}
               </div>
             </div>
@@ -2159,15 +2129,15 @@ export default function App() {
                                         const container = document.getElementById(`chat-container-${task.id}`);
                                         if (container) container.scrollTop = container.scrollHeight;
                                     }, 100);
-                                }} className={`rounded-[1.5rem] p-4 border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
+                                }} className={`p-4 rounded-2xl border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
                                   <div className="flex justify-between items-start mb-2">
-                                    <span className="text-[9px] text-gray-500 bg-white/60 px-2 py-0.5 rounded shadow-sm font-medium tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                                    {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium shadow-sm">{t('urgent')}</span>}
+                                    <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded-md border border-black/5">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                                    {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium border border-red-100 shadow-sm">{t('urgent')}</span>}
                                   </div>
-                                  <p className="font-medium text-[13px] mb-1 line-clamp-2">{task.clientName}</p>
-                                  <p className="text-[10px] opacity-70 font-light truncate">{t(task.serviceType)}</p>
+                                  <p className="font-medium text-gray-900 text-[13px] mb-1">{task.clientName}</p>
+                                  <p className="text-[10px] text-gray-600 font-medium truncate bg-white/40 px-2 py-1 rounded-md w-fit">{t(task.serviceType)}</p>
                                   <div className="mt-3 pt-3 border-t border-black/5 flex justify-between items-center">
-                                     <span className="text-[9px] bg-white/60 border border-white text-gray-700 px-2 py-1 rounded-lg flex items-center gap-1.5 shadow-sm"><Users className="w-3 h-3 text-gray-500"/> {task.faName?.split(' ')[0]}</span>
+                                     <span className="text-[9px] bg-white/50 border border-black/5 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1.5"><Users className="w-3 h-3 text-gray-400"/> {task.faName?.split(' ')[0]}</span>
                                   </div>
                                 </div>
                               ))
@@ -2177,8 +2147,7 @@ export default function App() {
                       )
                     })}
                  </div>
-
-                 {renderTaskTable()}
+                 {renderTaskTable(filteredTasks)}
               </div>
             )}
           </div>
@@ -2191,23 +2160,8 @@ export default function App() {
                 <h2 className="text-[24px] sm:text-[28px] font-medium text-[#161A22] tracking-tight mb-2">{t('dashboard')}</h2>
                 <p className="text-[10px] sm:text-[11px] font-light text-gray-500 uppercase tracking-widest">{t('execSubtitle')}</p>
               </div>
-              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-                 <div className="relative w-full sm:w-auto">
-                    <select value={dataRange} onChange={e=>setDataRange(e.target.value)} className="w-full sm:w-auto bg-white border border-gray-100 text-gray-600 pl-9 pr-8 py-2.5 rounded-full text-[11px] font-light outline-none cursor-pointer hover:bg-gray-50 transition-colors shadow-[0_2px_15px_rgb(0,0,0,0.02)] appearance-none">
-                       <option value="7">ย้อนหลัง 1 สัปดาห์</option>
-                       <option value="30">ย้อนหลัง 30 วัน</option>
-                       <option value="180">ย้อนหลัง 6 เดือน</option>
-                       <option value="365">ย้อนหลัง 1 ปี</option>
-                       <option value="all">ข้อมูลทั้งหมด</option>
-                    </select>
-                    <CalendarIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 1L5 5L9 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </div>
-                 </div>
-                 <div className="bg-white p-1 rounded-full flex shadow-[0_2px_15px_rgb(0,0,0,0.02)] border border-gray-50 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                 <div className="bg-white p-1 rounded-full flex sm:mr-2 shadow-[0_2px_15px_rgb(0,0,0,0.02)] border border-gray-50 w-full sm:w-auto">
                     <button onClick={()=>setExecSubTab('dashboard')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-full text-[11px] font-medium transition-colors ${execSubTab === 'dashboard' ? 'bg-gray-50 text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('dashboard')}</button>
                     <button onClick={()=>setExecSubTab('calendar')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-full text-[11px] font-medium transition-colors ${execSubTab === 'calendar' ? 'bg-gray-50 text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('calendar')}</button>
                  </div>
@@ -2217,6 +2171,21 @@ export default function App() {
             
             <div className="flex flex-col sm:flex-row gap-2 justify-end">
                 <select value={selectedFaFilter} onChange={e=>setSelectedFaFilter(e.target.value)} className="bg-white px-5 py-2.5 rounded-full text-[11px] font-light border border-gray-50 shadow-[0_2px_15px_rgb(0,0,0,0.02)] text-gray-700 outline-none hover:bg-gray-50 cursor-pointer w-full sm:w-auto"><option value="all">{t('allFa')}</option>{allAvailableFAs.map(fa=><option key={fa.uid} value={fa.uid}>{fa.name}</option>)}</select>
+                <div className="relative w-full sm:w-auto">
+                  <select 
+                    value={timeRange} 
+                    onChange={e => setTimeRange(e.target.value)} 
+                    className="appearance-none bg-white border border-gray-200 text-gray-600 text-[11px] font-light pl-9 pr-8 py-2.5 rounded-full outline-none hover:bg-gray-50 cursor-pointer shadow-[0_2px_15px_rgb(0,0,0,0.02)] transition-colors w-full"
+                  >
+                    <option value="7">ย้อนหลัง 1 สัปดาห์</option>
+                    <option value="30">ย้อนหลัง 30 วัน</option>
+                    <option value="180">ย้อนหลัง 6 เดือน</option>
+                    <option value="365">ย้อนหลัง 1 ปี</option>
+                    <option value="all">ข้อมูลทั้งหมด</option>
+                  </select>
+                  <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 stroke-[1.5]" />
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                </div>
                 <div className="bg-white p-1 rounded-full border border-gray-50 shadow-[0_2px_15px_rgb(0,0,0,0.02)] w-full sm:w-auto">
                   {renderDateFilters()}
                 </div>
@@ -2244,8 +2213,7 @@ export default function App() {
                      <span className="text-4xl sm:text-5xl font-light text-[#161A22]">{filteredTasks.filter(t=>t.status==='Approved').length}</span>
                    </div>
                 </div>
-                
-                {renderTaskTable()}
+                <div className="mt-6 sm:mt-8">{renderTaskTable(filteredTasks)}</div>
               </div>
             )}
           </div>
