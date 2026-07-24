@@ -229,10 +229,8 @@ export default function App() {
   const [execSubTab, setExecSubTab] = useState("dashboard"); 
   const [calendarFilter, setCalendarFilter] = useState("personal"); 
   
-  // 🌟 State ใหม่สำหรับการจำกัดเวลาดึงข้อมูล (Firebase Data Range)
   const [dataRange, setDataRange] = useState('30'); 
 
-  // 🌟 State ใหม่สำหรับตัวกรองตารางสรุปงาน (Search First)
   const [tableStatusFilter, setTableStatusFilter] = useState("all");
   const [tableTypeFilter, setTableTypeFilter] = useState("all");
   const [tableSearchQuery, setTableSearchQuery] = useState("");
@@ -314,7 +312,6 @@ export default function App() {
     }
   };
 
-  // 🌟 ฟังก์ชันแจกแจงสีพื้นหลังพาสเทลให้กล่องการ์ด
   const getServiceTypeColor = (type) => {
     if (!type) return 'bg-white border-gray-100 text-gray-800';
     if (type.includes('พิจารณาปีแรก')) return 'bg-blue-50/50 border-blue-100/50 text-blue-950';
@@ -407,7 +404,6 @@ export default function App() {
   useEffect(() => {
     if (!user || !userProfile) return;
     
-    // 🌟 กรองข้อมูลจาก Firebase โดยตรง (Server-side Filtering) ลดปัญหาหน้าเว็บอืด
     let qTasks;
     if (dataRange === 'all') {
       qTasks = collection(db, 'tasks');
@@ -433,7 +429,6 @@ export default function App() {
     return () => { unsub(); unsubEvents(); };
   }, [user, userProfile, dataRange]);
 
-  // 🌟 ตัวจัดการอัปเดตข้อมูลใน Modal เมื่อมีข้อความใหม่เข้ามา (แยก useEffect เพื่อความเสถียร)
   useEffect(() => {
     if (selectedTaskModal) {
       const updated = tasks.find(t => t.id === selectedTaskModal.id);
@@ -502,7 +497,6 @@ export default function App() {
     return () => unsubs.forEach(fn => fn());
   }, [user, dbUsers]);
 
-  // App Badging API
   useEffect(() => {
     const totalUnread = Object.values(unreadCounts).filter(Boolean).length;
     if ('setAppBadge' in navigator && 'clearAppBadge' in navigator) {
@@ -829,12 +823,9 @@ export default function App() {
     return list;
   }, [tasks, activeTab, user, frontListMode, searchQuery, selectedFaFilter, selectedMonth, selectedYear]);
 
-  // 🌟 ประมวลผลข้อมูลสำหรับ "ตารางสรุปงานทั้งหมด (Search-First)"
   const tableDisplayedTasks = useMemo(() => {
-    // ถ้ายังไม่ได้กรอกอะไรเลย ให้ส่ง Array ว่างกลับไป (ซ่อนข้อมูล)
     if (!tableSearchQuery && tableStatusFilter === 'all' && tableTypeFilter === 'all') return [];
     
-    // ถ้ามีการค้นหา ค่อยกรองข้อมูลมาแสดง
     return filteredTasks.filter(t => {
        const matchStatus = tableStatusFilter === 'all' || t.status === tableStatusFilter;
        const matchType = tableTypeFilter === 'all' || t.serviceType === tableTypeFilter;
@@ -902,7 +893,6 @@ export default function App() {
     </div>
   );
 
-  // 🌟 ฟังก์ชันเรนเดอร์ "ตารางสรุปงานทั้งหมด" แบบ Search-First และ Filter
   const renderTaskTable = () => (
     <div className="mt-4 sm:mt-6 animate-[fadeIn_0.3s_ease-out]">
       <h4 className="font-medium text-gray-800 mb-4 text-sm ml-1 flex items-center gap-2">
@@ -1602,6 +1592,35 @@ export default function App() {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
         @media print { body { background: white !important; } .no-print { display: none !important; } #pdf-content { box-shadow: none !important; padding: 0 !important; width: 100% !important; margin: 0 !important; border:none !important; } }
         ${selectedTaskModal || showAssignModal || showEventModal || isDmOpen ? 'body { overflow: hidden; }' : ''}
+        
+        /* CSS Hack สำหรับซ่อนไอคอนปฏิทินที่ติดมากับ Browser Safari/Chrome */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
+        
+        /* จัดการ Placeholder ให้ช่อง Date */
+        .date-input-wrapper { position: relative; }
+        .date-input-wrapper input[type="date"]:invalid::-webkit-datetime-edit { color: transparent; }
+        .date-input-wrapper::before {
+            content: attr(data-placeholder);
+            position: absolute;
+            left: 1.25rem; /* px-5 = 1.25rem */
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9CA3AF; /* text-gray-400 */
+            pointer-events: none;
+            display: block;
+        }
+        .date-input-wrapper input[type="date"]:valid + .date-input-wrapper::before { display: none; }
       `}} />
 
       <div className="fixed inset-0 bg-gradient-to-br from-[#FDFDFD] via-[#FDFDFD] to-[#F7F9F2] -z-10"></div>
@@ -1609,7 +1628,6 @@ export default function App() {
       {renderToast()}
       {renderDMWidget()}
 
-      {}
       {selectedTaskModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
           <div className="relative w-full h-[100dvh] sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
@@ -1786,7 +1804,6 @@ export default function App() {
         </div>
       )}
 
-      {}
       {showAssignModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#161A22]/20 backdrop-blur-sm" onClick={() => setShowAssignModal(false)}></div>
@@ -1816,18 +1833,17 @@ export default function App() {
                   <select value={assignForm.serviceType} onChange={e=>setAssignForm({...assignForm, serviceType:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light appearance-none outline-none">{TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}</select>
                 </div>
                 
-                {/* 🌟 จุดที่แก้ไข: ช่องใส่วันที่ในหน้าผู้จัดการ (Admin) ให้ใช้กล่องข้อความเหมือนด้านนอก */}
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('dueDate')}</label>
-                  <input 
-                    type="text" 
-                    onFocus={(e) => { e.target.type = 'date'; }} 
-                    onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} 
-                    value={assignForm.dueDate} 
-                    onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} 
-                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00] transition-colors" 
-                    placeholder="คลิกเพื่อเลือกวันที่..."
-                  />
+                  <div className="date-input-wrapper" data-placeholder="คลิกเพื่อเลือกวันที่...">
+                    <input 
+                      type="date" 
+                      required
+                      value={assignForm.dueDate} 
+                      onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} 
+                      className={`w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!assignForm.dueDate && 'text-transparent'}`} 
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -1868,7 +1884,6 @@ export default function App() {
         </div>
       )}
 
-      {}
       <nav className="pt-6 pb-4 px-4 sm:px-10 max-w-[1500px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 relative z-[990]">
         <div className="flex flex-col sm:items-start text-center sm:text-left">
            <span className="text-3xl font-medium tracking-tight text-[#161A22] leading-none mb-1">MCDJ</span>
@@ -1922,7 +1937,6 @@ export default function App() {
         </div>
       </nav>
 
-      {}
       <div className="max-w-[1500px] mx-auto px-4 sm:px-10 mt-2 relative z-10">
         
         {activeTab === "front" && (
@@ -1945,18 +1959,17 @@ export default function App() {
                     </select>
                   </div>
                   
-                  {/* 🌟 จุดที่แก้ไข: ช่องใส่วันที่ในหน้ายื่นงาน (FA) ให้ใช้กล่องข้อความธรรมดาแทน */}
                   <div>
                     <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('dueDate')}</label>
-                    <input 
-                      type="text" 
-                      onFocus={(e) => { e.target.type = 'date'; }} 
-                      onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} 
-                      value={dueDate} 
-                      onChange={e=>setDueDate(e.target.value)} 
-                      className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 outline-none focus:border-[#DEFF00] transition-colors" 
-                      placeholder="คลิกเพื่อเลือกวันที่..."
-                    />
+                    <div className="date-input-wrapper" data-placeholder="คลิกเพื่อเลือกวันที่...">
+                      <input 
+                        type="date" 
+                        required
+                        value={dueDate} 
+                        onChange={e=>setDueDate(e.target.value)} 
+                        className={`w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!dueDate && 'text-transparent'}`} 
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -1984,7 +1997,6 @@ export default function App() {
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                     <h3 className="text-lg font-medium text-gray-800">{t('myTasks')}</h3>
                     
-                    {/* 🌟 กล่องตัวเลือกดึงข้อมูลจาก Server (สำหรับ FA) - ปรับดีไซน์ Minimal */}
                     <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                        <div className="relative w-full sm:w-auto z-[10]">
                           <select value={dataRange} onChange={e=>setDataRange(e.target.value)} className="w-full sm:w-auto bg-white border border-gray-100 text-gray-700 pl-10 pr-8 py-2.5 rounded-full text-[11px] font-light outline-none cursor-pointer hover:bg-gray-50 transition-colors shadow-[0_2px_15px_rgb(0,0,0,0.02)] appearance-none">
@@ -1997,7 +2009,7 @@ export default function App() {
                           <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                           <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M1 1L5 5L9 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinelinejoin="round"/>
+                              <path d="M1 1L5 5L9 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                           </div>
                        </div>
@@ -2049,7 +2061,7 @@ export default function App() {
                                           const container = document.getElementById(`chat-container-${task.id}`);
                                           if (container) container.scrollTop = container.scrollHeight;
                                       }, 100);
-                                  }} className={`p-4 rounded-2xl border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
+                                  }} className={`rounded-[1.5rem] p-4 border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
                                     <div className="flex justify-between items-start mb-2">
                                       <span className="text-[9px] text-gray-500 bg-white/60 px-2 py-0.5 rounded shadow-sm font-medium tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
                                       {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium shadow-sm">{t('urgent')}</span>}
@@ -2065,7 +2077,6 @@ export default function App() {
                       })}
                    </div>
 
-                   {/* 🌟 แสดงตารางค้นหาสรุปงาน */}
                    {renderTaskTable()}
                  </div>
                )}
@@ -2085,7 +2096,6 @@ export default function App() {
               </div>
               <div className="flex flex-col sm:flex-row gap-3 items-center w-full lg:w-auto">
                 
-                {/* 🌟 กล่องตัวเลือกดึงข้อมูลจาก Server (สำหรับ Admin) - ปรับดีไซน์ Minimal */}
                 <div className="relative w-full sm:w-auto z-[10]">
                    <select value={dataRange} onChange={e=>setDataRange(e.target.value)} className="w-full sm:w-auto bg-white border border-gray-100 text-gray-700 pl-10 pr-8 py-2.5 rounded-full text-[11px] font-light outline-none cursor-pointer hover:bg-gray-50 transition-colors shadow-[0_2px_15px_rgb(0,0,0,0.02)] appearance-none">
                       <option value="7">ย้อนหลัง 1 สัปดาห์</option>
@@ -2097,7 +2107,7 @@ export default function App() {
                    <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                       <path d="M1 1L5 5L9 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinelinejoin="round"/>
+                       <path d="M1 1L5 5L9 1" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                      </svg>
                    </div>
                 </div>
@@ -2149,7 +2159,7 @@ export default function App() {
                                         const container = document.getElementById(`chat-container-${task.id}`);
                                         if (container) container.scrollTop = container.scrollHeight;
                                     }, 100);
-                                }} className={`p-4 rounded-2xl border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
+                                }} className={`rounded-[1.5rem] p-4 border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
                                   <div className="flex justify-between items-start mb-2">
                                     <span className="text-[9px] text-gray-500 bg-white/60 px-2 py-0.5 rounded shadow-sm font-medium tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
                                     {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium shadow-sm">{t('urgent')}</span>}
@@ -2168,7 +2178,6 @@ export default function App() {
                     })}
                  </div>
 
-                 {/* 🌟 แสดงตารางค้นหาสรุปงาน */}
                  {renderTaskTable()}
               </div>
             )}
@@ -2236,7 +2245,6 @@ export default function App() {
                    </div>
                 </div>
                 
-                {/* 🌟 แสดงตารางค้นหาสรุปงาน */}
                 {renderTaskTable()}
               </div>
             )}
