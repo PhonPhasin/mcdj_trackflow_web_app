@@ -4,7 +4,7 @@ import {
   getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
 } from 'firebase/auth';
 import { 
-  getFirestore, doc, getDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, arrayUnion, query, orderBy, limit, where 
+  getFirestore, doc, getDoc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, arrayUnion, query, orderBy, limit 
 } from 'firebase/firestore';
 import { 
   getStorage, ref, uploadBytesResumable, getDownloadURL 
@@ -101,7 +101,7 @@ const translations = {
     colClient: 'ชื่อลูกค้า / ชื่องาน *', colType: 'ประเภทงาน', colDue: 'กำหนดส่งงาน', colFa: 'ผู้รับผิดชอบ', colManage: 'จัดการ',
     viewData: 'ดูข้อมูล', totalTasks: 'งานทั้งหมด', clientName: 'ชื่อลูกค้า / ชื่องาน *',
     policyNumber: 'เลขกรมธรรม์ / เลขที่อ้างอิง', 
-    serviceType: 'ประเภทงาน', dueDate: 'กำหนดส่งงาน (ถ้ามี)', urgency: 'ความเร่งด่วน', normal: 'ปกติ', urgent: 'ด่วน 🔥',
+    serviceType: 'ประเภทงาน', dueDate: 'กำหนดส่งงาน', urgency: 'ความเร่งด่วน', normal: 'ปกติ', urgent: 'ด่วน 🔥',
     details: 'รายละเอียดเพิ่มเติม...', attach: 'ถ่ายรูป หรือ แนบไฟล์ PDF', submit: 'ส่งคำขอ', empty: 'ว่างเปล่า',
     personal: 'ส่วนตัว', company: 'บริษัท', assignTask: 'สั่งมอบหมายงาน',
     assignTo: 'มอบหมายให้ (FA/Admin) *', selectFa: '-- เลือกผู้รับผิดชอบ --', orderDetails: 'รายละเอียด / ข้อความสั่งงาน', confirmAssign: 'ยืนยันมอบหมายงาน',
@@ -142,7 +142,7 @@ const translations = {
     colClient: 'Client / Task *', colType: 'Service Type', colDue: 'Due Date', colFa: 'Assignee', colManage: 'Action',
     viewData: 'View', totalTasks: 'Total Tasks', clientName: 'Client Name *',
     policyNumber: 'Policy Number / Ref. No', 
-    serviceType: 'Service Type', dueDate: 'Due Date (Optional)', urgency: 'Urgency', normal: 'Normal', urgent: 'Urgent 🔥',
+    serviceType: 'Service Type', dueDate: 'Due Date', urgency: 'Urgency', normal: 'Normal', urgent: 'Urgent 🔥',
     details: 'More details...', attach: 'Upload Photo or PDF', submit: 'Submit', empty: 'Empty',
     personal: 'Personal', company: 'Company', assignTask: 'Assign Task',
     assignTo: 'Assign to (FA/Admin) *', selectFa: '-- Select Assignee --', orderDetails: 'Order Details', confirmAssign: 'Confirm Assign',
@@ -216,19 +216,6 @@ const translations = {
   }
 };
 
-const getServiceTypeColor = (serviceType) => {
-  if (!serviceType) return 'bg-white';
-  if (serviceType.includes('พิจารณาปีแรก')) return 'bg-[#F0F8FF] border-[#E0F0FF]'; 
-  if (serviceType.includes('พิจารณาปีต่อ')) return 'bg-[#F0FFF4] border-[#D1FADF]'; 
-  if (serviceType.includes('สินไหม')) return 'bg-[#FFF5F0] border-[#FFE4D6]'; 
-  if (serviceType.includes('เอกสาร AIA')) return 'bg-[#FFF0F5] border-[#FFE0EB]'; 
-  if (serviceType.includes('วินาศภัย')) return 'bg-[#F5F3FF] border-[#EDE9FE]'; 
-  if (serviceType.includes('อสังหาริมทรัพย์')) return 'bg-[#FDF8F6] border-[#F9ECE4]'; 
-  if (serviceType.includes('ต่อใบอนุญาต')) return 'bg-[#FFFFF0] border-[#FEF9C3]'; 
-  if (serviceType.includes('ผลงาน MOC')) return 'bg-[#EEF2FF] border-[#E0E7FF]'; 
-  return 'bg-gray-50 border-gray-100'; 
-};
-
 export default function App() {
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -285,13 +272,12 @@ export default function App() {
   const [actionLoading, setActionLoading] = useState({});
   const [chatInputs, setChatInputs] = useState({});
   const [isUploadingChatFile, setIsUploadingChatFile] = useState(false);
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFaFilter, setSelectedFaFilter] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState("all");
   const [selectedYear, setSelectedYear] = useState("all");
-  const [timeRange, setTimeRange] = useState("30"); 
-  
-  const [tableSearchQuery, setTableSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState("30days");
   const [tableStatusFilter, setTableStatusFilter] = useState("all");
   const [tableServiceFilter, setTableServiceFilter] = useState("all");
   
@@ -402,16 +388,7 @@ export default function App() {
 
   useEffect(() => {
     if (!user || !userProfile) return;
-    
-    let qTasks;
-    if (timeRange === 'all') {
-       qTasks = collection(db, 'tasks');
-    } else {
-       const startDate = new Date();
-       startDate.setDate(startDate.getDate() - parseInt(timeRange));
-       qTasks = query(collection(db, 'tasks'), where('createdAt', '>=', startDate.toISOString()));
-    }
-
+    const qTasks = collection(db, 'tasks');
     const unsub = onSnapshot(qTasks, (snap) => {
       const taskList = [];
       snap.forEach(d => taskList.push({ id: d.id, ...d.data() }));
@@ -438,7 +415,6 @@ export default function App() {
         setPdfTask(updated || null);
       }
     });
-
     const qEvents = collection(db, 'events');
     const unsubEvents = onSnapshot(qEvents, (snap) => {
       const eventList = [];
@@ -446,7 +422,7 @@ export default function App() {
       setEvents(eventList);
     });
     return () => { unsub(); unsubEvents(); };
-  }, [user, userProfile, selectedTaskModal, pdfTask, timeRange]);
+  }, [user, userProfile, selectedTaskModal, pdfTask]);
 
   useEffect(() => {
     if (!activeChatUser || !user) return;
@@ -777,6 +753,20 @@ export default function App() {
   const filteredTasks = useMemo(() => {
     let list = tasks;
     
+    const now = new Date();
+    list = list.filter(t => {
+      if (dateRange === 'all') return true;
+      const taskDate = new Date(t.createdAt);
+      const diffTime = Math.abs(now - taskDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (dateRange === '7days') return diffDays <= 7;
+      if (dateRange === '30days') return diffDays <= 30;
+      if (dateRange === '6months') return diffDays <= 180;
+      if (dateRange === '1year') return diffDays <= 365;
+      return true;
+    });
+
     if (activeTab === 'front') {
       list = list.filter(t => t.faUid === user?.uid && t.formMode === frontListMode);
     } else {
@@ -792,7 +782,11 @@ export default function App() {
       const d = new Date(t.createdAt);
       const matchMonth = selectedMonth === "all" || (d.getMonth() + 1).toString().padStart(2, '0') === selectedMonth;
       const matchYear = selectedYear === "all" || d.getFullYear().toString() === selectedYear;
-      return matchSearch && matchFa && matchMonth && matchYear;
+      
+      const matchTableStatus = tableStatusFilter === "all" || t.status === tableStatusFilter;
+      const matchTableService = tableServiceFilter === "all" || t.serviceType === tableServiceFilter;
+
+      return matchSearch && matchFa && matchMonth && matchYear && matchTableStatus && matchTableService;
     });
 
     list.sort((a, b) => {
@@ -811,15 +805,32 @@ export default function App() {
     });
 
     return list;
-  }, [tasks, activeTab, user, frontListMode, searchQuery, selectedFaFilter, selectedMonth, selectedYear]);
+  }, [tasks, activeTab, user, frontListMode, searchQuery, selectedFaFilter, selectedMonth, selectedYear, dateRange, tableStatusFilter, tableServiceFilter]);
 
   const getStatusStyle = (status) => {
     switch(status) {
-      case 'Approved': return 'text-[#059669] bg-green-50 border border-green-100'; 
-      case 'In Progress': return 'text-[#0284c7] bg-sky-50 border border-sky-100'; 
-      case 'Rejected': return 'text-[#dc2626] bg-red-50 border border-red-100'; 
-      default: return 'text-[#ca8a04] bg-yellow-50 border border-yellow-100'; 
+      case 'Approved': return 'text-[#059669] bg-green-50 border-green-100'; 
+      case 'In Progress': return 'text-[#0284c7] bg-sky-50 border-sky-100'; 
+      case 'Rejected': return 'text-[#dc2626] bg-red-50 border-red-100'; 
+      default: return 'text-[#ca8a04] bg-yellow-50 border-yellow-100'; 
     }
+  };
+
+  const getServiceTypeColor = (type) => {
+    const colors = {
+        'พิจารณาปีแรก ประกันรายเดี่ยว': 'bg-blue-50/70 border-blue-100 hover:border-blue-300',
+        'พิจารณาปีแรก ประกันกลุ่ม': 'bg-indigo-50/70 border-indigo-100 hover:border-indigo-300',
+        'พิจารณาปีต่อ ประกันรายเดี่ยว': 'bg-purple-50/70 border-purple-100 hover:border-purple-300',
+        'พิจารณาปีต่อ ประกันกลุ่ม': 'bg-fuchsia-50/70 border-fuchsia-100 hover:border-fuchsia-300',
+        'ติดตามสินไหม ประกันกลุ่ม / ประกันรายเดี่ยว': 'bg-rose-50/70 border-rose-100 hover:border-rose-300',
+        'ติดตามเอกสาร AIA': 'bg-orange-50/70 border-orange-100 hover:border-orange-300',
+        'ติดตาม ประกันวินาศภัย': 'bg-amber-50/70 border-amber-100 hover:border-amber-300',
+        'ติดตาม อสังหาริมทรัพย์': 'bg-yellow-50/70 border-yellow-100 hover:border-yellow-300',
+        'ติดตาม ต่อใบอนุญาต': 'bg-lime-50/70 border-lime-100 hover:border-lime-300',
+        'ติดตาม ผลงาน MOC': 'bg-emerald-50/70 border-emerald-100 hover:border-emerald-300',
+        'อื่นๆ': 'bg-gray-50/70 border-gray-100 hover:border-gray-300'
+    };
+    return colors[type] || 'bg-white border-gray-100';
   };
 
   const formatBadgeText = (type, diffDays) => {
@@ -853,120 +864,121 @@ export default function App() {
   };
 
   const renderDateFilters = () => (
-    <div className="flex gap-2">
-      <div className="relative">
-        <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} className="bg-white border border-gray-100 w-full px-5 py-2.5 pl-10 text-[11px] font-light rounded-full cursor-pointer appearance-none text-gray-700 outline-none hover:bg-gray-50 transition-colors">
-          <option value="all">{t('everyMonth')}</option>
-          {MONTHS.map(m => <option key={m.val} value={m.val}>{t(`month${m.val}`)}</option>)}
-        </select>
+    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+      <div className="relative w-full sm:w-auto">
         <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 stroke-[1.5]" />
+        <select value={dateRange} onChange={e=>setDateRange(e.target.value)} className="bg-white border border-gray-100 w-full sm:w-auto pl-10 pr-8 py-2.5 text-[11px] font-light rounded-full cursor-pointer appearance-none text-gray-700 outline-none hover:bg-gray-50 transition-colors shadow-[0_2px_15px_rgb(0,0,0,0.02)]">
+          <option value="7days">ย้อนหลัง 1 สัปดาห์</option>
+          <option value="30days">ย้อนหลัง 30 วัน</option>
+          <option value="6months">ย้อนหลัง 6 เดือน</option>
+          <option value="1year">ย้อนหลัง 1 ปี</option>
+          <option value="all">ข้อมูลทั้งหมด</option>
+        </select>
+        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
       </div>
-      <select value={selectedYear} onChange={e=>setSelectedYear(e.target.value)} className="bg-white border border-gray-100 px-5 py-2.5 text-[11px] font-light rounded-full cursor-pointer appearance-none text-gray-700 outline-none hover:bg-gray-50 transition-colors">
-        <option value="all">{t('everyYear')}</option>
-        {YEARS.filter(y=>y!=='all').map(y => <option key={y} value={y}>{y}</option>)}
-      </select>
+      <div className="flex gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none">
+            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 stroke-[1.5]" />
+            <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} className="bg-white border border-gray-100 w-full pl-8 pr-3 py-2.5 text-[11px] font-light rounded-full cursor-pointer appearance-none text-gray-700 outline-none hover:bg-gray-50 transition-colors shadow-[0_2px_15px_rgb(0,0,0,0.02)] text-center">
+              <option value="all">ทุกเดือน</option>
+              {MONTHS.map(m => <option key={m.val} value={m.val}>{t(`month${m.val}`)}</option>)}
+            </select>
+          </div>
+          <div className="relative flex-1 sm:flex-none">
+            <select value={selectedYear} onChange={e=>setSelectedYear(e.target.value)} className="bg-white border border-gray-100 w-full px-3 py-2.5 text-[11px] font-light rounded-full cursor-pointer appearance-none text-gray-700 outline-none hover:bg-gray-50 transition-colors shadow-[0_2px_15px_rgb(0,0,0,0.02)] text-center">
+              <option value="all">ทุกปี</option>
+              {YEARS.filter(y=>y!=='all').map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+      </div>
     </div>
   );
 
   const renderTaskTable = (tasksList) => {
-    const isSearching = tableSearchQuery.trim() !== "" || tableStatusFilter !== "all" || tableServiceFilter !== "all";
-    
-    let displayedTasks = [];
-    if (isSearching) {
-      displayedTasks = tasksList.filter(t => {
-        const matchSearch = (t.clientName||'').toLowerCase().includes(tableSearchQuery.toLowerCase()) || 
-                            (t.policyNumber||'').toLowerCase().includes(tableSearchQuery.toLowerCase()) || 
-                            (t.trackingId||'').toLowerCase().includes(tableSearchQuery.toLowerCase());
-        const matchStatus = tableStatusFilter === "all" || t.status === tableStatusFilter;
-        const matchService = tableServiceFilter === "all" || t.serviceType === tableServiceFilter;
-        return matchSearch && matchStatus && matchService;
-      });
-    }
+    const isSearching = searchQuery.trim() !== "" || tableStatusFilter !== "all" || tableServiceFilter !== "all" || selectedFaFilter !== "all";
 
     return (
-      <div className="mt-6 sm:mt-8 animate-[fadeIn_0.3s_ease-out]">
-        <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-white p-3 sm:p-2.5 rounded-[1.5rem] sm:rounded-full border border-gray-100 shadow-[0_2px_20px_rgb(0,0,0,0.02)]">
-           
+      <div className="mt-4 sm:mt-6 animate-[fadeIn_0.3s_ease-out]">
+        
+        <div className="flex flex-col sm:flex-row gap-3 mb-4 bg-white p-3 sm:p-4 rounded-[1.5rem] shadow-[0_2px_15px_rgb(0,0,0,0.02)] border border-gray-50">
            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 stroke-[1.5]"/>
-              <input type="text" placeholder="พิมพ์ชื่อลูกค้า / รหัสงาน..." value={tableSearchQuery} onChange={e=>setTableSearchQuery(e.target.value)} className="w-full bg-gray-50 border border-transparent pl-11 pr-4 py-3 sm:py-2.5 rounded-xl sm:rounded-full text-[13px] font-light outline-none focus:bg-white focus:border-[#DEFF00] text-gray-800 transition-colors" />
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+             <input type="text" placeholder={t('searchClient')} value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-transparent rounded-xl text-sm font-light outline-none focus:bg-white focus:border-[#DEFF00] transition-all" />
            </div>
-
-           <div className="flex gap-2 sm:gap-3">
-              <select value={tableStatusFilter} onChange={e=>setTableStatusFilter(e.target.value)} className="bg-gray-50 border border-transparent px-5 py-3 sm:py-2.5 rounded-xl sm:rounded-full text-[11px] font-medium text-gray-700 outline-none focus:bg-white hover:bg-gray-100 cursor-pointer transition-colors flex-1 sm:flex-none">
+           <div className="flex flex-col sm:flex-row gap-3">
+             <div className="relative w-full sm:w-auto">
+               <select value={tableStatusFilter} onChange={e=>setTableStatusFilter(e.target.value)} className="w-full sm:w-auto pl-5 pr-8 py-3 bg-gray-50 border border-transparent rounded-xl text-xs sm:text-sm font-light outline-none focus:bg-white focus:border-[#DEFF00] appearance-none cursor-pointer transition-colors">
                  <option value="all">ทุกสถานะ</option>
-                 <option value="Pending">รอรับเรื่อง</option>
-                 <option value="In Progress">กำลังดำเนินการ</option>
-                 <option value="Rejected">ส่งกลับแก้ไข</option>
-                 <option value="Approved">เสร็จสิ้นแล้ว</option>
-              </select>
-
-              <select value={tableServiceFilter} onChange={e=>setTableServiceFilter(e.target.value)} className="bg-white border-2 border-[#DEFF00] px-5 py-3 sm:py-2.5 rounded-xl sm:rounded-full text-[11px] font-medium text-gray-800 outline-none hover:bg-gray-50 cursor-pointer transition-colors shadow-sm flex-1 sm:flex-none">
+                 {KANBAN_COLUMNS.map(c => <option key={c.id} value={c.id}>{t(c.tKey)}</option>)}
+               </select>
+               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+             </div>
+             <div className="relative w-full sm:w-auto">
+               <select value={tableServiceFilter} onChange={e=>setTableServiceFilter(e.target.value)} className="w-full sm:w-auto pl-5 pr-8 py-3 bg-white border border-[#DEFF00] rounded-xl text-xs sm:text-sm font-medium outline-none focus:shadow-sm appearance-none cursor-pointer transition-all">
                  <option value="all">ทุกประเภทงาน</option>
-                 {TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}
-              </select>
+                 {TASK_TYPES.map(type => <option key={type} value={type}>{t(type)}</option>)}
+               </select>
+               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-800 pointer-events-none" />
+             </div>
            </div>
         </div>
 
-        {isSearching ? (
-          displayedTasks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {displayedTasks.map(task => {
-                const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
-                return (
-                  <div key={task.id} onClick={() => {
-                      setSelectedTaskModal(task);
-                      setTimeout(() => {
-                          const container = document.getElementById(`chat-container-${task.id}`);
-                          if (container) container.scrollTop = container.scrollHeight;
-                      }, 100);
-                  }} className={`rounded-[1.5rem] p-5 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border hover:border-[#DEFF00] hover:shadow-md transition-all cursor-pointer relative group flex flex-col h-full ${getServiceTypeColor(task.serviceType)}`}>
-                     {hasUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse z-10"></span>}
-                     <div className="flex justify-between items-start mb-4 gap-2">
-                       <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] font-medium text-gray-500 bg-white/60 border border-black/5 px-2.5 py-1 rounded-md tracking-widest uppercase">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                          {task.urgency === 'ด่วน' ? 
-                            <span className="text-[10px] font-medium text-red-600 bg-white/80 border border-red-100 px-2 py-1 rounded-md shadow-sm">{t('urgent')}</span> : 
-                            <span className="text-[10px] font-medium text-gray-500 bg-white/50 border border-black/5 px-2 py-1 rounded-md">{t('normal')}</span>
-                          }
-                       </div>
-                       <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-medium shadow-sm ${getStatusStyle(task.status)}`}>
-                         {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
-                       </span>
-                     </div>
-                     <div className="flex-1 mb-5">
-                       <h4 className="font-medium text-gray-900 text-[15px] mb-1.5 line-clamp-2">{task.clientName}</h4>
-                       <p className="text-[11px] text-gray-600 font-medium line-clamp-1 bg-white/40 px-2 py-1 rounded-md w-fit">{t(task.serviceType)}</p>
-                     </div>
-                     <div className="pt-4 border-t border-black/5 flex justify-between items-end mt-auto">
-                       <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium bg-white/50 px-2.5 py-1.5 rounded-lg border border-black/5">
-                         <Users className="w-3.5 h-3.5"/>
-                         <span className="truncate max-w-[120px]">{task.faName}</span>
-                       </div>
-                       <div className="flex flex-col items-end gap-1">
-                         <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium">
-                           <Clock className="w-3.5 h-3.5"/>
-                           <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
-                         </div>
-                         {renderCountdownBadge(task.dueDate, task.status)}
-                       </div>
-                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-16 bg-white rounded-[1.5rem] border border-dashed border-gray-200">
-               <Search className="w-8 h-8 mx-auto text-gray-300 mb-3 stroke-[1.5]" />
-               <p className="text-gray-500 font-medium text-sm">ไม่พบงานที่ตรงกับเงื่อนไข</p>
-               <p className="text-gray-400 font-light text-xs mt-1">ลองเปลี่ยนคำค้นหา หรือปรับตัวกรองด้านบนดูอีกครั้ง</p>
-            </div>
-          )
-        ) : (
-          <div className="text-center py-16 bg-gray-50/50 rounded-[1.5rem] border border-dashed border-gray-200">
-             <FileText className="w-8 h-8 mx-auto text-gray-300 mb-3 stroke-[1.5]" />
+        {!isSearching ? (
+           <div className="text-center py-16 bg-white rounded-[1.5rem] border border-dashed border-gray-200 shadow-sm">
+             <FileText className="w-8 h-8 text-gray-300 mx-auto mb-3" />
              <p className="text-gray-500 font-medium text-sm">พิมพ์ค้นหา หรือเลือกตัวกรองด้านบน</p>
-             <p className="text-gray-400 font-light text-[11px] mt-1">เพื่อแสดงข้อมูลสรุปงานที่ต้องการ (ช่วยลดการโหลดข้อมูลและทำให้เว็บทำงานเร็วขึ้น)</p>
+             <p className="text-gray-400 font-light text-[11px] sm:text-xs mt-1 px-4">เพื่อแสดงข้อมูลสรุปงานที่ต้องการ (ช่วยลดการโหลดข้อมูลและทำให้เว็บทำงานเร็วขึ้น)</p>
+           </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {tasksList.map(task => {
+              const hasUnread = task.messages?.length > 0 && task.messages[task.messages.length - 1].senderName !== userProfile?.name;
+              return (
+                <div key={task.id} onClick={() => {
+                    setSelectedTaskModal(task);
+                    setTimeout(() => {
+                        const container = document.getElementById(`chat-container-${task.id}`);
+                        if (container) container.scrollTop = container.scrollHeight;
+                    }, 100);
+                }} className={`rounded-[1.5rem] p-5 shadow-[0_2px_20px_rgb(0,0,0,0.02)] border transition-all cursor-pointer relative group flex flex-col h-full ${getServiceTypeColor(task.serviceType)}`}>
+                   {hasUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse z-10"></span>}
+                   <div className="flex justify-between items-start mb-4 gap-2">
+                     <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-medium text-gray-500 bg-white/60 px-2.5 py-1 rounded-md tracking-widest uppercase border border-white/50">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                        {task.urgency === 'ด่วน' ? 
+                          <span className="text-[10px] font-medium text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-md">{t('urgent')}</span> : 
+                          <span className="text-[10px] font-medium text-gray-500 bg-white/60 border border-white/50 px-2 py-1 rounded-md">{t('normal')}</span>
+                        }
+                     </div>
+                     <span className={`shrink-0 px-3 py-1 rounded-full text-[10px] font-medium border ${getStatusStyle(task.status)}`}>
+                       {t(KANBAN_COLUMNS.find(c=>c.id===task.status)?.tKey) || task.status}
+                     </span>
+                   </div>
+                   <div className="flex-1 mb-5">
+                     <h4 className="font-medium text-gray-800 text-[15px] mb-1.5 line-clamp-2">{task.clientName}</h4>
+                     <p className="text-[11px] text-gray-600 font-light line-clamp-1">{t(task.serviceType)}</p>
+                   </div>
+                   <div className="pt-4 border-t border-black/5 flex justify-between items-end mt-auto">
+                     <div className="flex items-center gap-1.5 text-gray-600 text-[11px] font-medium">
+                       <Users className="w-3.5 h-3.5"/>
+                       <span className="truncate max-w-[120px]">{task.faName}</span>
+                     </div>
+                     <div className="flex flex-col items-end gap-1">
+                       <div className="flex items-center gap-1.5 text-gray-500 text-[11px] font-light">
+                         <Clock className="w-3.5 h-3.5"/>
+                         <span>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('th-TH') : '-'}</span>
+                       </div>
+                       {renderCountdownBadge(task.dueDate, task.status)}
+                     </div>
+                   </div>
+                </div>
+              );
+            })}
+            {tasksList.length === 0 && (
+              <div className="col-span-full text-center py-16 bg-white rounded-[1.5rem] border border-dashed border-gray-200">
+                 <p className="text-gray-400 font-light text-sm">{t('empty')}</p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1012,20 +1024,20 @@ export default function App() {
     };
 
     return (
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-[0_4px_30px_rgb(0,0,0,0.03)] border border-gray-50 mt-6 animate-[fadeIn_0.3s_ease-out]">
-        <div className="flex justify-between items-center mb-8">
+      <div className="bg-white rounded-[2.5rem] p-4 sm:p-8 shadow-[0_4px_30px_rgb(0,0,0,0.03)] border border-gray-50 mt-6 animate-[fadeIn_0.3s_ease-out] overflow-x-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 min-w-[600px]">
           <h2 className="text-xl font-medium text-gray-800 flex items-center gap-2"><CalendarIcon className="w-5 h-5 text-gray-400 stroke-[1.5]"/> {t('calendar')}</h2>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
              <div className="bg-gray-50 p-1 rounded-full flex text-[11px] font-medium border border-gray-100">
                 <button onClick={()=>setCalendarFilter('personal')} className={`px-5 py-2 rounded-full transition-all ${calendarFilter === 'personal' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('personal')}</button>
                 <button onClick={()=>setCalendarFilter('company')} className={`px-5 py-2 rounded-full transition-all ${calendarFilter === 'company' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('company')}</button>
              </div>
-             <div className="flex items-center gap-4 text-sm font-medium text-gray-700">
+             <div className="flex items-center gap-4 text-sm font-medium text-gray-700 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
                {monthName} {displayYearText}
              </div>
           </div>
         </div>
-        <div className="grid grid-cols-7 gap-px bg-gray-100 border border-gray-100 rounded-3xl overflow-hidden">
+        <div className="grid grid-cols-7 gap-px bg-gray-100 border border-gray-100 rounded-3xl overflow-hidden min-w-[600px]">
           {[t('sun'), t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat')].map((d, index) => <div key={index} className="bg-white text-center text-[10px] font-light text-gray-400 uppercase tracking-widest py-4">{d}</div>)}
           {days.map((d, i) => {
             const isToday = d === today.getDate() && displayMonthNum === today.getMonth() + 1 && displayYearNum === today.getFullYear();
@@ -1530,10 +1542,10 @@ export default function App() {
     );
   };
 
-  if (loading) return <div className="min-h-screen bg-[#FDFDFD] flex items-center justify-center font-['Kanit',sans-serif]"><Loader2 className="w-8 h-8 animate-spin text-gray-300"/></div>;
+  if (loading) return <div className="min-h-[100dvh] bg-[#FDFDFD] flex items-center justify-center font-['Kanit',sans-serif]"><Loader2 className="w-8 h-8 animate-spin text-gray-300"/></div>;
 
   if (!user) return (
-    <div className="min-h-screen bg-[#FDFDFD] flex flex-col justify-center items-center font-['Kanit',sans-serif] selection:bg-[#DEFF00] selection:text-black relative">
+    <div className="min-h-[100dvh] bg-[#FDFDFD] flex flex-col justify-center items-center font-['Kanit',sans-serif] selection:bg-[#DEFF00] selection:text-black relative">
        {renderToast()}
        <div className="fixed inset-0 bg-gradient-to-br from-[#FDFDFD] via-[#FDFDFD] to-[#F5F7F0] -z-10"></div>
        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-[#DEFF00] rounded-full mix-blend-multiply blur-[150px] opacity-[0.12] pointer-events-none"></div>
@@ -1541,9 +1553,6 @@ export default function App() {
        <style dangerouslySetInnerHTML={{__html: `
          @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@100;200;300;400;500;600&display=swap');
          * { font-family: 'Kanit', sans-serif !important; }
-         .glass-card { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.9); border-left: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.03); border-radius: 2.5rem; }
-         .input-glass { background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.6); border-top: 1px solid rgba(255, 255, 255, 0.9); border-left: 1px solid rgba(255, 255, 255, 0.9); box-shadow: inset 0 2px 5px rgba(0,0,0,0.02), 0 2px 10px rgba(0,0,0,0.02); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-         .input-glass:focus { background: rgba(255, 255, 255, 0.95); border-color: #DEFF00; outline: none; box-shadow: 0 0 0 4px rgba(222, 255, 0, 0.3), 0 4px 12px rgba(0,0,0,0.05); transform: translateY(-1px); }
        `}} />
 
        <div className="mb-10 text-center relative z-10 flex flex-col items-center">
@@ -1579,7 +1588,7 @@ export default function App() {
   if (activeTab === "pdf") return renderPdfView();
 
   return (
-    <div className="min-h-[100dvh] bg-[#FDFDFD] text-gray-800 font-['Kanit',sans-serif] pb-24 selection:bg-[#DEFF00] selection:text-black relative z-0">
+    <div className="min-h-[100dvh] bg-[#FDFDFD] text-gray-800 font-['Kanit',sans-serif] pb-24 selection:bg-[#DEFF00] selection:text-black relative z-0 overflow-x-hidden">
       <style dangerouslySetInnerHTML={{__html: `
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@100;200;300;400;500;600&display=swap');
         * { font-family: 'Kanit', sans-serif !important; }
@@ -1587,22 +1596,13 @@ export default function App() {
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+        
+        /* Clean Date Input Trick */
+        input[type="date"]::-webkit-datetime-edit, input[type="date"]::-webkit-inner-spin-button, input[type="date"]::-webkit-clear-button { color: currentColor; position: relative; }
+        input[type="date"]::-webkit-calendar-picker-indicator { background: transparent; bottom: 0; color: transparent; cursor: pointer; height: auto; left: 0; position: absolute; right: 0; top: 0; width: auto; }
+        
         @media print { body { background: white !important; } .no-print { display: none !important; } #pdf-content { box-shadow: none !important; padding: 0 !important; width: 100% !important; margin: 0 !important; border:none !important; } }
         ${selectedTaskModal || showAssignModal || showEventModal || isDmOpen ? 'body { overflow: hidden; }' : ''}
-        
-        /* CSS Hack สำหรับซ่อนไอคอนปฏิทินที่ติดมากับ Browser Safari/Chrome */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            background: transparent;
-            bottom: 0;
-            color: transparent;
-            cursor: pointer;
-            height: auto;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: auto;
-        }
       `}} />
 
       <div className="fixed inset-0 bg-gradient-to-br from-[#FDFDFD] via-[#FDFDFD] to-[#F7F9F2] -z-10"></div>
@@ -1610,6 +1610,7 @@ export default function App() {
       {renderToast()}
       {renderDMWidget()}
 
+      {}
       {selectedTaskModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-6 bg-white sm:bg-[#161A22]/20 sm:backdrop-blur-sm">
           <div className="relative w-full h-[100dvh] sm:h-[90vh] sm:max-h-[90vh] max-w-5xl bg-white sm:rounded-[2.5rem] sm:shadow-[0_10px_50px_rgba(0,0,0,0.1)] flex flex-col animate-[fadeIn_0.2s_ease-out] overflow-hidden">
@@ -1618,7 +1619,7 @@ export default function App() {
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
                   <span className="text-[10px] font-light text-gray-500 tracking-widest bg-white sm:bg-white/60 px-2.5 py-1 rounded-full border border-gray-200">#{selectedTaskModal.trackingId || selectedTaskModal.id.slice(-6).toUpperCase()}</span>
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium ${getStatusStyle(selectedTaskModal.status)}`}>{t(KANBAN_COLUMNS.find(c=>c.id===selectedTaskModal.status)?.tKey) || selectedTaskModal.status}</span>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium border ${getStatusStyle(selectedTaskModal.status)}`}>{t(KANBAN_COLUMNS.find(c=>c.id===selectedTaskModal.status)?.tKey) || selectedTaskModal.status}</span>
                   {selectedTaskModal.urgency === 'ด่วน' && <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-red-100 text-red-600">{t('urgent')}</span>}
                 </div>
                 <h3 className="text-lg sm:text-xl font-medium text-gray-800">{selectedTaskModal.clientName}</h3>
@@ -1646,6 +1647,7 @@ export default function App() {
             </div>
 
             <div className="flex-1 overflow-hidden flex flex-col md:grid md:grid-cols-2 gap-0 md:gap-8 p-0 sm:p-8">
+               {/* Details Tab */}
                <div className={`${mobileModalTab === 'details' ? 'flex' : 'hidden'} md:flex flex-col space-y-6 overflow-y-auto p-4 sm:p-0 custom-scrollbar h-full pb-10 sm:pb-0`}>
                   <div className="bg-gray-50/50 rounded-[2rem] p-5 sm:p-6 border border-gray-100">
                     <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4">{t('taskDetails')}</h4>
@@ -1657,16 +1659,19 @@ export default function App() {
                        <div>
                          <span className="text-gray-400 block text-[11px] mb-1">{t('colFa')}</span>
                          {(userProfile?.role === 'Admin' || userProfile?.role === 'Executive') ? (
-                           <select 
-                             value={selectedTaskModal.faUid}
-                             onChange={(e) => handleChangeAssignee(selectedTaskModal.id, e.target.value)}
-                             disabled={actionLoading[`assign-${selectedTaskModal.id}`]}
-                             className="w-full bg-white border border-gray-200 px-3 py-2 rounded-xl text-sm font-medium text-gray-800 outline-none focus:border-[#DEFF00] hover:border-gray-300 transition-colors cursor-pointer disabled:opacity-50"
-                           >
-                             {allAvailableFAs.map(fa => (
-                               <option key={fa.uid} value={fa.uid}>{fa.name} ({fa.role || 'FA'})</option>
-                             ))}
-                           </select>
+                           <div className="relative">
+                             <select 
+                               value={selectedTaskModal.faUid}
+                               onChange={(e) => handleChangeAssignee(selectedTaskModal.id, e.target.value)}
+                               disabled={actionLoading[`assign-${selectedTaskModal.id}`]}
+                               className="w-full bg-white border border-gray-200 px-3 py-2 rounded-xl text-sm font-medium text-gray-800 outline-none focus:border-[#DEFF00] hover:border-gray-300 transition-colors cursor-pointer disabled:opacity-50 appearance-none"
+                             >
+                               {allAvailableFAs.map(fa => (
+                                 <option key={fa.uid} value={fa.uid}>{fa.name} ({fa.role || 'FA'})</option>
+                               ))}
+                             </select>
+                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                           </div>
                          ) : (
                            <span className="text-gray-800">{selectedTaskModal.faName}</span>
                          )}
@@ -1733,6 +1738,7 @@ export default function App() {
                   )}
                </div>
 
+               {/* Chat Tab */}
                <div className={`${mobileModalTab === 'chat' ? 'flex' : 'hidden'} md:flex flex-col bg-white sm:bg-gray-50/50 sm:rounded-[2rem] p-4 sm:p-6 border-t sm:border border-gray-100 h-full overflow-hidden`}>
                   <h4 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mb-4 shrink-0">{t('chatHistory')}</h4>
                   <div id={`chat-container-${selectedTaskModal.id}`} className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
@@ -1786,6 +1792,7 @@ export default function App() {
         </div>
       )}
 
+      {}
       {showAssignModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#161A22]/20 backdrop-blur-sm" onClick={() => setShowAssignModal(false)}></div>
@@ -1797,32 +1804,33 @@ export default function App() {
              <form onSubmit={handleAssignSubmit} className="p-8 space-y-5 overflow-y-auto max-h-[70vh] custom-scrollbar">
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('assignTo')}</label>
-                  <select required value={assignForm.faUid} onChange={e=>setAssignForm({...assignForm, faUid:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light appearance-none outline-none">
-                    <option value="" disabled>{t('selectFa')}</option>
-                    {allAvailableFAs.map(fa=><option key={fa.uid} value={fa.uid}>{fa.name} ({fa.role || 'FA'})</option>)}
-                  </select>
+                  <div className="relative">
+                    <select required value={assignForm.faUid} onChange={e=>setAssignForm({...assignForm, faUid:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light appearance-none outline-none focus:border-[#DEFF00]">
+                      <option value="" disabled>{t('selectFa')}</option>
+                      {allAvailableFAs.map(fa=><option key={fa.uid} value={fa.uid}>{fa.name} ({fa.role || 'FA'})</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('clientName')}</label>
-                  <input required type="text" value={assignForm.clientName} onChange={e=>setAssignForm({...assignForm, clientName:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none" placeholder={t('clientName')} />
+                  <input required type="text" value={assignForm.clientName} onChange={e=>setAssignForm({...assignForm, clientName:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00]" placeholder={t('clientName')} />
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('policyNumber')}</label>
-                  <input type="text" value={assignForm.policyNumber} onChange={e=>setAssignForm({...assignForm, policyNumber:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none" placeholder={t('policyNumber')} />
+                  <input type="text" value={assignForm.policyNumber} onChange={e=>setAssignForm({...assignForm, policyNumber:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00]" placeholder={t('policyNumber')} />
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('serviceType')}</label>
-                  <select value={assignForm.serviceType} onChange={e=>setAssignForm({...assignForm, serviceType:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light appearance-none outline-none">{TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}</select>
+                  <div className="relative">
+                    <select value={assignForm.serviceType} onChange={e=>setAssignForm({...assignForm, serviceType:e.target.value})} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light appearance-none outline-none focus:border-[#DEFF00]">{TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}</select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
                 
                 <div>
-                  <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('dueDate')}</label>
-                  <input 
-                    type="date" 
-                    value={assignForm.dueDate} 
-                    onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} 
-                    className={`relative w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!assignForm.dueDate ? 'text-transparent' : 'text-gray-800'}`} 
-                  />
+                  <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('dueDate')} (ถ้ามี)</label>
+                  <input type="date" value={assignForm.dueDate} onChange={e=>setAssignForm({...assignForm, dueDate:e.target.value})} className={`w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!assignForm.dueDate ? 'text-transparent' : 'text-gray-800'}`} />
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('urgency')}</label>
@@ -1834,7 +1842,7 @@ export default function App() {
 
                 <div>
                   <label className="block text-[11px] font-medium text-gray-400 mb-2 uppercase tracking-widest">{t('orderDetails')}</label>
-                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none" placeholder={t('typeMessage')}></textarea>
+                  <textarea rows="3" value={assignForm.notes} onChange={e=>setAssignForm({...assignForm, notes:e.target.value})} className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm font-light resize-none outline-none focus:border-[#DEFF00]" placeholder={t('typeMessage')}></textarea>
                 </div>
                 
                 <div>
@@ -1862,6 +1870,7 @@ export default function App() {
         </div>
       )}
 
+      {}
       <nav className="pt-6 pb-4 px-4 sm:px-10 max-w-[1500px] mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 relative z-[990]">
         <div className="flex flex-col sm:items-start text-center sm:text-left">
            <span className="text-3xl font-medium tracking-tight text-[#161A22] leading-none mb-1">MCDJ</span>
@@ -1915,8 +1924,10 @@ export default function App() {
         </div>
       </nav>
 
-      <div className="max-w-[1500px] mx-auto px-4 sm:px-10 mt-2 relative z-10">
+      {}
+      <div className="max-w-[1500px] mx-auto px-4 sm:px-10 mt-2 relative z-10 w-full overflow-hidden">
         
+        {/* FA View */}
         {activeTab === "front" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
             <div className="lg:col-span-4">
@@ -1931,19 +1942,15 @@ export default function App() {
                 <form onSubmit={handleSubmitTask} className="space-y-4 sm:space-y-5">
                   <div><input required type="text" value={clientName} onChange={e=>setClientName(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 outline-none focus:border-[#DEFF00] transition-colors" placeholder={t('clientName')} /></div>
                   <div><input type="text" value={policyNumber} onChange={e=>setPolicyNumber(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 outline-none focus:border-[#DEFF00] transition-colors" placeholder={t('policyNumber')} /></div>
-                  <div>
+                  <div className="relative">
                     <select value={serviceType} onChange={e=>setServiceType(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light text-gray-800 appearance-none outline-none focus:border-[#DEFF00] transition-colors">
                       {TASK_TYPES.map(type=><option key={type} value={type}>{t(type)}</option>)}
                     </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('dueDate')}</label>
-                    <input 
-                      type="date" 
-                      value={dueDate} 
-                      onChange={e=>setDueDate(e.target.value)} 
-                      className={`relative w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!dueDate ? 'text-transparent' : 'text-gray-800'}`} 
-                    />
+                    <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('dueDate')} (ถ้ามี)</label>
+                    <input type="date" value={dueDate} onChange={e=>setDueDate(e.target.value)} className={`w-full px-5 py-3.5 bg-white border border-gray-100 rounded-full text-sm font-light outline-none focus:border-[#DEFF00] transition-colors ${!dueDate ? 'text-transparent' : 'text-gray-800'}`} />
                   </div>
                   <div>
                     <label className="block text-[11px] text-gray-400 ml-5 mb-1">{t('urgency')}</label>
@@ -1966,7 +1973,7 @@ export default function App() {
             </div>
 
             <div className="lg:col-span-8 space-y-6">
-               <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-[0_4px_30px_rgb(0,0,0,0.03)] border border-gray-50">
+               <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-[0_4px_30px_rgb(0,0,0,0.03)] border border-gray-50 overflow-hidden">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                     <h3 className="text-lg font-medium text-gray-800">{t('myTasks')}</h3>
                     <div className="bg-gray-50 p-1 rounded-full flex w-full sm:w-auto overflow-x-auto">
@@ -1981,27 +1988,8 @@ export default function App() {
                         <button onClick={() => setFrontListMode('private')} className={`flex-1 px-5 py-2 rounded-full text-[10px] font-medium transition-all ${frontListMode === 'private' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400'}`}>{t('privateTask')}</button>
                         <button onClick={() => setFrontListMode('backend')} className={`flex-1 px-5 py-2 rounded-full text-[10px] font-medium transition-all ${frontListMode === 'backend' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400'}`}>{t('backendTask')}</button>
                       </div>
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <div className="relative">
-                          <select 
-                            value={timeRange} 
-                            onChange={e => setTimeRange(e.target.value)} 
-                            className="appearance-none bg-white border border-gray-200 text-gray-600 text-[11px] font-light pl-9 pr-8 py-2.5 rounded-full outline-none hover:bg-gray-50 cursor-pointer shadow-[0_2px_15px_rgb(0,0,0,0.02)] transition-colors"
-                          >
-                            <option value="7">ย้อนหลัง 1 สัปดาห์</option>
-                            <option value="30">ย้อนหลัง 30 วัน</option>
-                            <option value="180">ย้อนหลัง 6 เดือน</option>
-                            <option value="365">ย้อนหลัง 1 ปี</option>
-                            <option value="all">ข้อมูลทั้งหมด</option>
-                          </select>
-                          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 stroke-[1.5]" />
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                        </div>
+                      <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                         {renderDateFilters()}
-                        <div className="relative">
-                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"/>
-                          <input type="text" placeholder={t('searchClient')} value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} className="bg-white border border-gray-100 w-full sm:w-56 pl-10 pr-4 py-2.5 rounded-full text-[11px] font-light outline-none hover:border-gray-300 focus:border-[#DEFF00] text-gray-800 transition-colors" />
-                        </div>
                       </div>
                     </div>
                   ) : null}
@@ -2030,13 +2018,13 @@ export default function App() {
                                           const container = document.getElementById(`chat-container-${task.id}`);
                                           if (container) container.scrollTop = container.scrollHeight;
                                       }, 100);
-                                  }} className={`p-4 rounded-2xl border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
+                                  }} className={`p-4 rounded-2xl border cursor-pointer hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
                                     <div className="flex justify-between items-start mb-2">
-                                      <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded-md border border-black/5">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                                      {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium border border-red-100 shadow-sm">{t('urgent')}</span>}
+                                      <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded-md border border-white/50">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                                      {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium">{t('urgent')}</span>}
                                     </div>
-                                    <p className="font-medium text-gray-900 text-[13px] mb-1">{task.clientName}</p>
-                                    <p className="text-[10px] text-gray-600 font-medium truncate bg-white/40 px-2 py-1 rounded-md w-fit">{t(task.serviceType)}</p>
+                                    <p className="font-medium text-gray-800 text-[13px] mb-1">{task.clientName}</p>
+                                    <p className="text-[10px] text-gray-600 font-light truncate">{t(task.serviceType)}</p>
                                   </div>
                                 ))
                               }
@@ -2056,9 +2044,10 @@ export default function App() {
           </div>
         )}
 
+        {}
         {(activeTab === "back" && (userProfile?.role === "Admin" || userProfile?.role === "Executive")) && (
           <div className="space-y-6">
-            <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 shadow-[0_4px_30px_rgb(0,0,0,0.03)] border border-gray-50 flex flex-col lg:flex-row justify-between lg:items-center gap-6">
+            <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-[0_4px_30px_rgb(0,0,0,0.03)] border border-gray-50 flex flex-col lg:flex-row justify-between lg:items-center gap-6">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <h2 className="text-xl font-medium text-gray-800 flex items-center gap-3"><LayoutDashboard className="w-5 h-5 text-gray-400 stroke-[1.5]"/> {t('taskBoard')} (Admin)</h2>
                 <div className="bg-gray-50 p-1 rounded-full flex sm:ml-4 w-full sm:w-auto">
@@ -2066,22 +2055,13 @@ export default function App() {
                   <button onClick={()=>setAdminSubTab('calendar')} className={`flex-1 sm:flex-none px-5 py-2 rounded-full text-[11px] font-medium transition-colors ${adminSubTab === 'calendar' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('calendar')}</button>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button onClick={()=>setShowAssignModal(true)} className="bg-[#161A22] text-[#DEFF00] px-6 py-2.5 rounded-full text-[11px] font-medium flex items-center justify-center gap-2 hover:bg-black transition-colors"><Plus className="w-3.5 h-3.5"/> {t('assignTask')}</button>
-                <select value={selectedFaFilter} onChange={e=>setSelectedFaFilter(e.target.value)} className="bg-white border border-gray-100 px-5 py-2.5 rounded-full text-[11px] font-light text-gray-700 outline-none hover:bg-gray-50 cursor-pointer"><option value="all">{t('allFa')}</option>{allAvailableFAs.map(fa=><option key={fa.uid} value={fa.uid}>{fa.name}</option>)}</select>
-                <div className="relative">
-                  <select 
-                    value={timeRange} 
-                    onChange={e => setTimeRange(e.target.value)} 
-                    className="appearance-none bg-white border border-gray-200 text-gray-600 text-[11px] font-light pl-9 pr-8 py-2.5 rounded-full outline-none hover:bg-gray-50 cursor-pointer shadow-[0_2px_15px_rgb(0,0,0,0.02)] transition-colors w-full"
-                  >
-                    <option value="7">ย้อนหลัง 1 สัปดาห์</option>
-                    <option value="30">ย้อนหลัง 30 วัน</option>
-                    <option value="180">ย้อนหลัง 6 เดือน</option>
-                    <option value="365">ย้อนหลัง 1 ปี</option>
-                    <option value="all">ข้อมูลทั้งหมด</option>
+              <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                <button onClick={()=>setShowAssignModal(true)} className="w-full sm:w-auto bg-[#161A22] text-[#DEFF00] px-6 py-2.5 rounded-full text-[11px] font-medium flex items-center justify-center gap-2 hover:bg-black transition-colors shrink-0"><Plus className="w-3.5 h-3.5"/> {t('assignTask')}</button>
+                <div className="relative w-full sm:w-auto">
+                  <select value={selectedFaFilter} onChange={e=>setSelectedFaFilter(e.target.value)} className="w-full bg-white border border-gray-100 pl-5 pr-8 py-2.5 rounded-full text-[11px] font-light text-gray-700 outline-none hover:bg-gray-50 cursor-pointer shadow-[0_2px_15px_rgb(0,0,0,0.02)] appearance-none">
+                    <option value="all">{t('allFa')}</option>
+                    {allAvailableFAs.map(fa=><option key={fa.uid} value={fa.uid}>{fa.name}</option>)}
                   </select>
-                  <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 stroke-[1.5]" />
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                 </div>
                 {renderDateFilters()}
@@ -2129,15 +2109,15 @@ export default function App() {
                                         const container = document.getElementById(`chat-container-${task.id}`);
                                         if (container) container.scrollTop = container.scrollHeight;
                                     }, 100);
-                                }} className={`p-4 rounded-2xl border cursor-pointer hover:border-[#DEFF00] hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
+                                }} className={`p-4 rounded-2xl border cursor-pointer hover:shadow-sm transition-all ${getServiceTypeColor(task.serviceType)}`}>
                                   <div className="flex justify-between items-start mb-2">
-                                    <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded-md border border-black/5">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
-                                    {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium border border-red-100 shadow-sm">{t('urgent')}</span>}
+                                    <span className="text-[9px] text-gray-500 font-medium tracking-widest uppercase bg-white/60 px-2 py-0.5 rounded-md border border-white/50">#{task.trackingId || task.id.slice(-6).toUpperCase()}</span>
+                                    {task.urgency === 'ด่วน' && <span className="text-[9px] bg-red-50 text-red-500 px-2 py-0.5 rounded-full font-medium">{t('urgent')}</span>}
                                   </div>
-                                  <p className="font-medium text-gray-900 text-[13px] mb-1">{task.clientName}</p>
-                                  <p className="text-[10px] text-gray-600 font-medium truncate bg-white/40 px-2 py-1 rounded-md w-fit">{t(task.serviceType)}</p>
+                                  <p className="font-medium text-gray-800 text-[13px] mb-1">{task.clientName}</p>
+                                  <p className="text-[10px] text-gray-600 font-light truncate">{t(task.serviceType)}</p>
                                   <div className="mt-3 pt-3 border-t border-black/5 flex justify-between items-center">
-                                     <span className="text-[9px] bg-white/50 border border-black/5 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1.5"><Users className="w-3 h-3 text-gray-400"/> {task.faName?.split(' ')[0]}</span>
+                                     <span className="text-[9px] bg-white border border-gray-100 text-gray-600 px-2 py-1 rounded-lg flex items-center gap-1.5"><Users className="w-3 h-3 text-gray-400"/> {task.faName?.split(' ')[0]}</span>
                                   </div>
                                 </div>
                               ))
@@ -2153,6 +2133,7 @@ export default function App() {
           </div>
         )}
 
+        {}
         {(activeTab === "dashboard" && userProfile?.role === "Executive") && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-6 mb-4 sm:mb-8">
@@ -2165,30 +2146,19 @@ export default function App() {
                     <button onClick={()=>setExecSubTab('dashboard')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-full text-[11px] font-medium transition-colors ${execSubTab === 'dashboard' ? 'bg-gray-50 text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('dashboard')}</button>
                     <button onClick={()=>setExecSubTab('calendar')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-full text-[11px] font-medium transition-colors ${execSubTab === 'calendar' ? 'bg-gray-50 text-gray-800' : 'text-gray-400 hover:text-gray-600'}`}>{t('calendar')}</button>
                  </div>
-                 <button onClick={()=>setShowAssignModal(true)} className="w-full sm:w-auto bg-[#161A22] text-[#DEFF00] px-6 py-3 rounded-full text-[11px] font-medium flex items-center justify-center gap-2 hover:bg-black transition-colors shadow-sm"><Plus className="w-3.5 h-3.5"/> {t('assignTask')}</button>
+                 <button onClick={()=>setShowAssignModal(true)} className="w-full sm:w-auto bg-[#161A22] text-[#DEFF00] px-6 py-3 rounded-full text-[11px] font-medium flex items-center justify-center gap-2 hover:bg-black transition-colors shadow-sm shrink-0"><Plus className="w-3.5 h-3.5"/> {t('assignTask')}</button>
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                <select value={selectedFaFilter} onChange={e=>setSelectedFaFilter(e.target.value)} className="bg-white px-5 py-2.5 rounded-full text-[11px] font-light border border-gray-50 shadow-[0_2px_15px_rgb(0,0,0,0.02)] text-gray-700 outline-none hover:bg-gray-50 cursor-pointer w-full sm:w-auto"><option value="all">{t('allFa')}</option>{allAvailableFAs.map(fa=><option key={fa.uid} value={fa.uid}>{fa.name}</option>)}</select>
+            <div className="flex flex-col sm:flex-row gap-2 sm:justify-end w-full">
                 <div className="relative w-full sm:w-auto">
-                  <select 
-                    value={timeRange} 
-                    onChange={e => setTimeRange(e.target.value)} 
-                    className="appearance-none bg-white border border-gray-200 text-gray-600 text-[11px] font-light pl-9 pr-8 py-2.5 rounded-full outline-none hover:bg-gray-50 cursor-pointer shadow-[0_2px_15px_rgb(0,0,0,0.02)] transition-colors w-full"
-                  >
-                    <option value="7">ย้อนหลัง 1 สัปดาห์</option>
-                    <option value="30">ย้อนหลัง 30 วัน</option>
-                    <option value="180">ย้อนหลัง 6 เดือน</option>
-                    <option value="365">ย้อนหลัง 1 ปี</option>
-                    <option value="all">ข้อมูลทั้งหมด</option>
+                  <select value={selectedFaFilter} onChange={e=>setSelectedFaFilter(e.target.value)} className="w-full bg-white pl-5 pr-8 py-2.5 rounded-full text-[11px] font-light border border-gray-50 shadow-[0_2px_15px_rgb(0,0,0,0.02)] text-gray-700 outline-none hover:bg-gray-50 cursor-pointer appearance-none">
+                    <option value="all">{t('allFa')}</option>
+                    {allAvailableFAs.map(fa=><option key={fa.uid} value={fa.uid}>{fa.name}</option>)}
                   </select>
-                  <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 stroke-[1.5]" />
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                 </div>
-                <div className="bg-white p-1 rounded-full border border-gray-50 shadow-[0_2px_15px_rgb(0,0,0,0.02)] w-full sm:w-auto">
-                  {renderDateFilters()}
-                </div>
+                {renderDateFilters()}
             </div>
             
             {execSubTab === 'calendar' && renderCalendarView()}
